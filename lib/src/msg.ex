@@ -3,7 +3,7 @@ defmodule Sorcery.Msg do
   defstruct [
     status: :ok,
     flash: "",
-    body: nil,
+    body: %{},
     cb: &__MODULE__.noop/0
   ]
 

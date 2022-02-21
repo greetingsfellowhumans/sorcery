@@ -2,6 +2,8 @@ defmodule Sorcery.Specs.Primative do
   use Norm
 
   def any(), do: spec(fn _ -> true end)
+  def pid(), do: spec(is_pid())
+  def string(), do: spec(is_binary)
   def atom(), do: spec(is_atom())
   def struct(), do: spec(is_struct())
   def map(), do: spec(is_map())
@@ -10,27 +12,29 @@ defmodule Sorcery.Specs.Primative do
   def id(), do: one_of([ spec(is_binary()), id_int() ])
 
   def entity(), do: schema(%{id: id()})
-  def tk(), do: one_of([atom(), struct()])
+  def tk(), do: atom()
   def attr(), do: atom()
 
-  def path(), do: spec(is_list() and fn [tk, i, attr] -> 
-    !!conform!(tk, atom()) and !!conform!(i, id()) and !!conform!(attr, atom()) 
-  end)
-  def shortpath(), do: spec(is_list() and fn [tk, i] -> 
-    !!conform!(tk, atom()) and !!conform!(i, id())
-  end)
-  def anypath(), do: spec(is_list() and fn
-    [tk, i, attr] -> !!conform!(tk, atom()) and !!conform!(i, id()) and !!conform!(attr, atom()) 
-    [tk, i] -> !!conform!(tk, atom()) and !!conform!(i, id())
+
+  def db(), do: spec(is_map() and fn d ->
+    Enum.all?(d, fn {tk, table} -> 
+      is_atom(tk) and Enum.all?(table, fn {id, %{id: item_id}} ->
+        (is_integer(id) or is_binary(id)) and id == item_id
+      end)
+    end)
   end)
 
-  def lawn(), do: spec(is_map() and fn l ->
-    keys = Map.keys(l)
-    Enum.all?(keys, fn p -> conform!(p, path()) end)
-  end)
   ############
 
-  def ctx(), do: spec(is_struct(Ctx))
   def src(), do: spec(is_struct(Sorcery.Src))
+  def msg(), do: spec(is_struct(Sorcery.Msg))
+  def subject(), do: spec(is_struct(Sorcery.Src.Subject))
+
+  def watch_meta(), do: schema(%{
+    pid: pid(),
+    subject: subject()
+  })
+
+  def presences(), do: schema(%{"src_subjects" => schema(%{metas: coll_of(watch_meta())})})
 
 end

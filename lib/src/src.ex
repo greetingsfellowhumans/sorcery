@@ -3,7 +3,7 @@ defmodule Sorcery.Src do
   #alias Specs.Primative, as: T
   alias Sorcery.Msg
   alias Sorcery.Src
-  alias Sorcery.Src.Utils
+  #1alias Sorcery.Src.Utils
 
 
   @moduledoc """
@@ -41,6 +41,9 @@ defmodule Sorcery.Src do
 
 
   defstruct [
+    # List of Subject structs for determining *what* data you care about.
+    subjects: [],
+
     # Misc private data 
     # i.e. user_id, etc.
     args: %{}, 
@@ -48,6 +51,9 @@ defmodule Sorcery.Src do
     # The shared data
     original_db: %{},
     changes_db: %{},
+
+    # When deleting an entity from the backend. For example: [{:person, 1}]
+    deletes: [],
 
     # List of functions that take a src and return a source.
     interceptors: [],
@@ -63,12 +69,16 @@ defmodule Sorcery.Src do
   end
 
 
-
   @doc """
   Get all ids for a given table
   @TODO This might need more work if you delete an entity and the id is still in original_db.
   """
-  def all_ids(src, tk), do: Map.keys(src[tk])
+  def all_ids(%{original_db: og, changes_db: ch, deletes: del}, tk) do
+    o = Map.get(og, tk, %{}) |> Map.keys()
+    c = Map.get(ch, tk, %{}) |> Map.keys()
+    d = Enum.reduce(del, [], fn {t, id}, acc -> if t == tk, do: [id | acc], else: acc end)
+    MapSet.new(o ++ c ++ d) |> MapSet.to_list()
+  end
 
 
   ###############################

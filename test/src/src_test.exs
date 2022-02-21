@@ -37,6 +37,9 @@ defmodule SrcTest do
     assert src.original_db[:person][1].name == "Aaron"
     assert src.changes_db[:person][1].name == "NOT Aaron"
     assert get_in(src, [:person, 1]) == %{id: 1, name: "NOT Aaron", age: 100}
+
+    src = %Src{original_db: %{:person => %{1 => @p1, 2 => @p2}}, deletes: [{:person, 1}]}
+    assert nil == get_in(src, [:person, 1])
   end
 
   test "Enumerable" do
@@ -48,6 +51,11 @@ defmodule SrcTest do
 
     id_sum = Enum.reduce(src, 0, fn {_tk, id, _item}, acc -> id + acc end)
     assert id_sum == 4
+
+
+    src = %Src{original_db: %{person: %{1 => @p1, 2 => @p2}, foo: %{1 => @p1}}, deletes: [{:person, 1}]}
+    id_sum = Enum.reduce(src, 0, fn {_tk, id, _item}, acc -> id + acc end)
+    assert id_sum == 3
   end
 
 
