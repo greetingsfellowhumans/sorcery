@@ -16,11 +16,35 @@ defmodule Sorcery.Specs.Primative do
   def attr(), do: atom()
 
 
+  @doc """
+  Map format for a list of entities of a given type.
+  %{
+    1 => %{id: 1, name: "asdf"},
+    2 => %{id: 2, name: "qwerty"},
+  }
+  """
+  def tablemap(), do: spec(is_map() and fn t ->
+    Enum.all?(t, fn {id, %{id: entity_id}} ->
+      (is_integer(id) and id == entity_id)
+    end)
+  end)
+
+  @doc """
+  Format for the collection of all entities
+  %{
+    user: %{
+      1 => %{id: 1, name: "asdf"},
+      2 => %{id: 2, name: "qwerty"},
+    },
+    comment: %{
+      1 => %{id: 1, body: "asdf"},
+      2 => %{id: 2, body: "qwerty"},
+    },
+  }
+  """
   def db(), do: spec(is_map() and fn d ->
     Enum.all?(d, fn {tk, table} -> 
-      is_atom(tk) and Enum.all?(table, fn {id, %{id: item_id}} ->
-        (is_integer(id) or is_binary(id)) and id == item_id
-      end)
+      is_atom(tk) and conform!(table, tablemap())
     end)
   end)
 
