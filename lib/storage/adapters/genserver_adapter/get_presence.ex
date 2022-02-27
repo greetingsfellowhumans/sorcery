@@ -18,7 +18,7 @@ defmodule Sorcery.Storage.GenserverAdapter.GetPresence do
       case presence.list("portals:#{tk}") do
         nil -> acc
         presences ->
-          Enum.reduce(presences, acc, fn {_ref, %{metas: [%{portal: portal}]}}, acc ->
+          Enum.reduce(presences, acc, fn {_ref, %{metas: [portal]}}, acc ->
             if portal.pid == self() do
               [portal | acc]
             else

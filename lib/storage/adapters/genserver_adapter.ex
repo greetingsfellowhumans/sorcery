@@ -107,6 +107,7 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
       def handle_call({:create_portal, portal, opts}, {from, _}, state) do
         portal = CreatePortal.create_portal_map(Map.merge(portal, opts), from)
+                 |> CreatePortal.parse_portal(state)
         Task.start_link(fn ->
           state.presence.track(from, "portals:#{portal.tk}", portal.id, portal)
         end)
@@ -114,9 +115,6 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
       @impl true
-      #def handle_cast({:push, head}, tail) do
-      #  {:noreply, [head | tail]}
-      #end
       def handle_cast({:add_entities, tk, entities}, state) do
         new_state = Enum.reduce(entities, state, fn %{id: id} = entity, acc ->
           e = if is_struct(entity), do: Map.from_struct(entity), else: entity
@@ -129,56 +127,12 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
 
       def handle_call({:view_portal, ref, tk}, from, state) do
-        portal = state.presence.list("portals:#{tk}")
-                |> Enum.find(fn {id, _} -> id == ref end)
-                |> case do
-                  {_ref, %{metas: [portal]}} -> 
-                    portal
-                  portal -> 
-                    portal
-                end
+        %{metas: [portal]} = state.presence.get_by_key("portals:#{tk}", ref)
         handle_call({:view_portal, portal}, from, state)
       end
-      def handle_call({:view_portal, %{tk: tk, guards: guards}}, from, state) do
-        entities_db = get_in(state, [:db, tk])
-
-        # @TODO redo this trash...
-        # it seems that the first fn clause NEVER passes. It should, whenever the guard needs to ref another portal
-        # But it doesn't. I don't know why.
-        # Redo it.
-
-        set = Enum.reduce(guards, %{}, fn 
-          #@TODO handle when the guard refs another portal.
-          #i.[e. {:in, :location_id, {ref, :location, :id}}
-          {fun_atom, attr, {ref, tk, attr}}, outer_acc ->
-            IO.inspect({ref, tk, attr}, label: "SUBPORTAL!")
-            fun = Function.capture(Kernel, fun_atom, 2)  # Kernel.in/2
-
-            # [%Location{}]
-            ref_entities = __MODULE__.handle_call({:view_portal, ref, tk}, from, state)
-
-            # [1, 2, 3]
-            ref_attrs = Enum.map(ref_entities, fn {_, e} -> Map.get(e, attr) end)
-
-            # All :units, where unit.location_id in locations.id
-            Map.filter(entities_db, fn {_, entity} -> 
-              ev = Map.get(entity, attr)
-              fun.(ev, ref_attrs) 
-            end)
-            |> Map.merge(outer_acc) # @TODO this is wrong. entity must pass ALL guards.
-
-
-          {fun_atom, attr, guard_val}, outer_acc ->
-            IO.inspect({fun_atom, attr, guard_val}, label: "Main Portal")
-            fun = Function.capture(Kernel, fun_atom, 2)
-            Map.filter(entities_db, fn {_id, entity} ->
-              ent_val = Map.get(entity, attr)
-              fun.(ent_val, guard_val)
-            end) 
-            |> Map.merge(outer_acc) # @TODO this is wrong. entity must pass ALL guards.
-
-        end)
-        {:reply, set, state}
+      def handle_call({:view_portal, %{tk: _tk, guards: _guards} = portal}, from, state) do
+        table = Sorcery.Storage.GenserverAdapter.ViewPortal.view_portal(portal, state)
+        {:reply, table, state}
       end
 
 

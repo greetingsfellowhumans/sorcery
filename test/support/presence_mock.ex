@@ -7,9 +7,9 @@ defmodule Sorcery.Storage.PresenceMock do
   end
 
 
-  def track(pid, "portals:" <> tk_str, portal_ref, portal) do
+  def track(_pid, "portals:" <> tk_str, portal_ref, portal) do
     tk = String.to_existing_atom(tk_str)
-    presence = %{metas: [%{pid: pid, portal: portal}]}
+    presence = %{metas: [portal]}
     Agent.update(__MODULE__, fn topics ->
       Map.update(topics, tk, %{portal_ref => presence}, fn topic ->
         Map.put(topic, portal_ref, presence)

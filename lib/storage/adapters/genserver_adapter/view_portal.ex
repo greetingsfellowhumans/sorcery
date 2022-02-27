@@ -9,11 +9,11 @@ defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
 
 
 
-  @contract view_portal(PT.portal(), AdapterT.client_state()) :: T.tablemap() 
+  #@contract view_portal(PT.portal(), AdapterT.client_state()) :: T.tablemap() 
   @doc """
   Given a portal, and the state, return a map of all the entities which satisfy all guards.
   """
-  def view_portal(%{tk: tk, guards: guards} = _portal, state) do
+  def view_portal(%{tk: tk, resolved_guards: guards} = _portal, state) do
     table = Map.get(state.db, tk, %{})
     Enum.reduce(table, %{}, fn {id, entity}, acc ->
       if satisfies_all_guards?(entity, guards) do
@@ -22,6 +22,15 @@ defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
         acc
       end
     end)
+  end
+  #@contract view_portal(PT.portal_ref(), AdapterT.client_state()) :: T.tablemap() 
+  def view_portal(ref, state) do
+    [tk | _] = String.split(ref, ":")
+    tk = String.to_existing_atom(tk)
+    case state.presence.get_by_key("portals:#{tk}", ref) do
+      %{metas: [portal]} -> view_portal(portal, state)
+      [] -> %{}
+    end
   end
 
 
@@ -35,6 +44,14 @@ defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
 
 
 
+  defp satisfies_guard?(entity, {:or, guards}) do
+    Enum.any?(guards, fn guard -> satisfies_guard?(entity, guard) end)
+  end
+  # Otherwise, compiler says Kernel.in/2 is undefined. I don't know why. This is a fix for now.
+  defp satisfies_guard?(entity, {:in, attr, guard_value}) do
+    ent_val = Map.get(entity, attr)
+    Kernel.in(ent_val, guard_value)
+  end
   defp satisfies_guard?(entity, {fun_atom, attr, guard_value}) do
     fun = Function.capture(Kernel, fun_atom, 2)
     ent_val = Map.get(entity, attr)

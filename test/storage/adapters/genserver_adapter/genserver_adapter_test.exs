@@ -9,6 +9,36 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
   alias Sorcery.Entities.{User, Post, Comment}
   alias Sorcery.Storage.PresenceMock, as: Presence
 
+  @li_users [
+    %User{id: 1, name: "Aaron", karma: 5},
+    %User{id: 2, name: "Not Aaron", karma: 15},
+    %User{id: 3, name: "Someone else", karma: 105}
+  ]
+
+  @li_posts [
+    %Post{id: 10, title: "Post 1", body: "Something good", author_id: 1, views: 25},
+    %Post{id: 20, title: "Post 2", body: "Something bad", author_id: 2, views: 50}
+  ]
+
+  @li_comments [
+    %Comment{id: 100, post_id: 10, body: "That was really good", author_id: 2, likes: 25},
+    %Comment{id: 200, post_id: 20, body: "That was really bad", author_id: 3, likes: 50}
+  ]
+
+  @post_portal_spec %{tk: :post, guards: [{:==, :id, 10}], indices: [:author_id]}
+
+  def comment_portal_spec(post_ref) do
+    %{tk: :comment, guards: [{:in, :post_id, {post_ref, :id}}], indices: [:post_id, :author_id]}
+  end
+
+  def author_portal_spec(comment_ref, post_ref) do
+    %{tk: :user, guards: [
+      {:or, [
+        {:in, :id, {post_ref, :author_id}},
+        {:in, :id, {comment_ref, :author_id}}
+      ]}
+    ]}
+  end
 
   test "Startup state" do
     opts = %{name: :startup_test}
@@ -28,73 +58,56 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
   end
 
 
-  test "Creating Portals" do
-    client_opts = %{name: :create_portals_test_client}
-    socket = %{assigns: %{}}
+  test "Create Portal Map" do
+    p1 = Portal.new(%{tk: :user, guards: [{:==, :id, 1}]})
+    assert p1.indices == %{id: MapSet.new()}
 
-    # So the presence returns and uses a pid
-    pres = start_supervised!({Presence, %{}})
-    pres_opts = Map.put(client_opts, :pid, pres)
-    assert %{} == Agent.get(pres, fn s -> s end)
+    p2 = Portal.new(%{tk: :user, guards: [{:==, :id, 1}], indices: [:karma]})
+    assert p2.indices == %{id: MapSet.new(), karma: MapSet.new()}
 
-    # But the client uses the name in the options
-    client = start_supervised!({Client, client_opts})
-    assert Client.get_state(client_opts).db.user == %{}
+    p3 = Portal.new(%{tk: :user, guards: [{:==, :id, 1}], indices: nil})
+    assert p3.indices == %{id: MapSet.new()}
+  end
 
-    li_users = [
-      %User{id: 1, name: "Aaron", karma: 5},
-      %User{id: 2, name: "Not Aaron", karma: 15},
-      %User{id: 3, name: "Someone else", karma: 105}
-    ]
-    Client.add_entities(:user, li_users, client_opts)
-    new_portal = Portal.new(%{tk: :user, pid: self(), guards: [{:==, :id, 1}]})
-    socket = Client.create_portal(pres, new_portal, pres_opts)
-    Process.sleep(100)
+  test "Basic Portal Crud" do
+    presence_pid = start_supervised!({Presence, %{}})
+    opts = %{name: :portal_crud, pid: presence_pid}
+    client = start_supervised!({Client, opts})
 
-    #Presence.track(self(), "portals:user", new_portal.id, new_portal, %{name: pres})
-    m = Presence.list("portals:user")
-    portal_map = Map.from_struct(new_portal)
-    assert Map.get(m, new_portal.id) == %{metas: [%{pid: self(), portal: portal_map}]}
+    Client.add_entities(:user, @li_users, opts)
+    Client.add_entities(:post, @li_posts, opts)
+    Client.add_entities(:comment, @li_comments, opts)
 
-    viewed = ViewPortal.view_portal(new_portal, Client.get_state(client_opts))
-    assert %{1 => %{id: 1, karma: 5, name: "Aaron"}} == viewed
-
-    assert conform!(viewed, T.tablemap())
-
-    portal = UpdatePortal.add_indices(new_portal, Client.get_state(client_opts))
-    assert MapSet.new([1]) == portal.indices.id
-
-    # Let's get more dynamic portals now
-    li_posts = [
-      %Post{id: 10, title: "Post 1", body: "Something good", author_id: 1, views: 25},
-      %Post{id: 20, title: "Post 2", body: "Something bad", author_id: 2, views: 50}
-    ]
-    li_comments = [
-      %Comment{id: 100, post_id: 10, body: "That was really good", author_id: 1, likes: 25},
-      %Comment{id: 200, post_id: 20, body: "That was really bad", author_id: 3, likes: 50}
-    ]
-    Client.add_entities(:post, li_posts, client_opts)
-    Client.add_entities(:comment, li_comments, client_opts)
-
-    post_portal = Portal.new(%{tk: :post, pid: self(), guards: [{:==, :id, 10}]})
-    socket = Client.create_portal(pres, post_portal, pres_opts)
-    #viewed = ViewPortal.view_portal(portal, Client.get_state(client_opts))
-
-    #comment_portal = Portal.new(:comment, self(), [{:in, :post_id, {post_portal, :id}}])
-
-    portals_list = GetPresence.my_portals(Client, Presence, client_opts)
-    assert conform!(portals_list, coll_of(PortalT.portal()))
-
-    post_portal = GetPresence.get_portal(Presence, portal.id, client_opts)
-    assert conform!(post_portal, PortalT.portal())
-    #assert my_portals == pres1
+    post_portal_ref = Client.create_portal(presence_pid, @post_portal_spec, opts)
+    post_table = Client.view_portal(post_portal_ref, :post, opts)
+    assert post_table[10].title == "Post 1"
   end
 
 
-#  #test "Mock Presence" do
-#  #  #{:ok, pid} = Presence.start_link()
-#  #  #assert is_pid(pid)
-#  #end
+
+  test "Advanced Portal Crud" do
+    presence_pid = start_supervised!({Presence, %{}})
+    opts = %{name: :portal_crud, pid: presence_pid}
+    client = start_supervised!({Client, opts})
+
+    Client.add_entities(:user, @li_users, opts)
+    Client.add_entities(:post, @li_posts, opts)
+    Client.add_entities(:comment, @li_comments, opts)
+
+    post_portal_ref = Client.create_portal(presence_pid, @post_portal_spec, opts)
+    comment_spec = comment_portal_spec(post_portal_ref)
+    comment_portal_ref = Client.create_portal(presence_pid, comment_spec, opts)
+    comment_table = Client.view_portal(comment_portal_ref, :comment, opts)
+
+    author_spec = author_portal_spec(comment_portal_ref, post_portal_ref)
+    author_portal_ref = Client.create_portal(presence_pid, author_spec, opts)
+    author_table = Client.view_portal(author_portal_ref, :user, opts)
+     
+    Process.sleep(150) # Might have a race condition in the tests. Investigate later.
+    assert Map.keys(author_table) == [1, 2]
+  end
+
+
 
 
 end
