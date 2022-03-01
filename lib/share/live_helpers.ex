@@ -10,8 +10,14 @@ defmodule Sorcery.Share.LiveHelper do
           table = Sorcery.Storage.GenserverAdapter.ViewPortal.view_portal(portal, state)
           %{assigns: assigns} = socket
           portal_assigns = Map.get(assigns, :portals, %{})
+          table_assigns = Map.get(assigns, :portal_tables, [])
+
           new_portal_assigns = Map.put(portal_assigns, portal.key, table)
-          new_assigns = Map.put(assigns, :portals, new_portal_assigns)
+          new_table_assigns = [{portal.key, portal.tk} | table_assigns]
+
+          new_assigns = assigns
+                        |> Map.put(:portals, new_portal_assigns)
+                        |> Map.put(:portal_tables, new_table_assigns)
           Map.put(socket, :assigns, new_assigns)
         end)
       end
