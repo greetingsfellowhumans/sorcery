@@ -1,12 +1,12 @@
 defmodule Sorcery.Src.Access do
   alias Sorcery.Src.Utils
   @moduledoc """
-  Functions to help implement Access for the Ctx struct.
+  Functions to help implement Access for the Src struct.
   """
 
 
-  def fetch(%{changes_db: ch, original_db: og}, k) do
-    db = Map.merge(og, ch)
+  def fetch(%{changes_db: ch, original_db: og, deletes: del}, k) do
+    db = Map.merge(og, ch) |> Utils.remove_dels_from_db(del)
     Map.fetch(db, k)
   end
 

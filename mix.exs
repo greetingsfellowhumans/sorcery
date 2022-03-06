@@ -6,11 +6,15 @@ defmodule Sorcery.MixProject do
       app: :sorcery,
       version: "0.1.0",
       elixir: "~> 1.13",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       preferred_cli_env: ["test.watch": :test],
       deps: deps()
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -26,6 +30,7 @@ defmodule Sorcery.MixProject do
       {:norm, "~> 0.13"},
       {:jason, "~> 1.2"},
       {:stream_data, "~> 0.4"},
+      {:memento, "~> 0.3.2"},
 
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
