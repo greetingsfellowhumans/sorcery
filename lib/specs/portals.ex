@@ -25,8 +25,9 @@ defmodule Sorcery.Specs.Portals do
     id: T.id,
     pid: T.pid(),
     tk: T.tk(),
-    ids: coll_of(T.id),
-    guards: coll_of(guard())
+    indices: spec(is_map()),
+    guards: coll_of(guard()),
+    resolved_guards: coll_of(guard())
   })
 
 

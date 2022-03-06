@@ -10,6 +10,13 @@ defmodule Sorcery.Storage.GenserverAdapter.UpdateDb do
 
   @doc """
   """
+  def apply_src!(%{db: db} = state, src) do
+    db = 
+      db
+      |> Map.merge(src.changes_db)
+
+    Map.put(state, :db, db)
+  end
 
 end
 

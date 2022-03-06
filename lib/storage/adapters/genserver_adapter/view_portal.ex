@@ -26,7 +26,6 @@ defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
   #@contract view_portal(PT.portal_ref(), AdapterT.client_state()) :: T.tablemap() 
   def view_portal(ref, state) do
     [tk | _] = String.split(ref, ":")
-    tk = String.to_existing_atom(tk)
     case state.presence.get_by_key("portals:#{tk}", ref) do
       %{metas: [portal]} -> view_portal(portal, state)
       [] -> %{}

@@ -1,9 +1,10 @@
 defmodule Sorcery.Storage.GenserverAdapter do
   use Norm
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
-  alias Sorcery.Storage.GenserverAdapter.CreatePortal
+  alias Sorcery.Storage.GenserverAdapter.{CreatePortal, UpdateDb}
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Specs.Portals, as: PT
+  alias Sorcery.Share.Watch
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -77,6 +78,12 @@ defmodule Sorcery.Storage.GenserverAdapter do
         end)
         |> List.flatten()
       end
+
+      def push_src!(src, opts \\ %{}) do
+        opts = Map.merge(opts, @opts)
+        name = opts[:name] || @name
+        GenServer.cast(name, {:push_src, src, self(), opts})
+      end
      
       ## Callbacks
 
@@ -108,9 +115,9 @@ defmodule Sorcery.Storage.GenserverAdapter do
       def handle_call({:create_portal, portal, opts}, {from, _}, state) do
         portal = CreatePortal.create_portal_map(Map.merge(portal, opts), from)
                  |> CreatePortal.parse_portal(state)
-        Task.start_link(fn ->
-          state.presence.track(from, "portals:#{portal.tk}", portal.id, portal)
-        end)
+        #Task.start_link(fn ->
+        state.presence.track(from, "portals:#{portal.tk}", portal.id, portal)
+        #end)
         {:reply, portal, state}
       end
 
@@ -125,6 +132,27 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
 
+      def handle_cast({:push_src, src, from, opts}, state) do
+        state = UpdateDb.apply_src!(state, src)
+
+        Task.start(fn ->
+          # The caller gets priority. Tell them to recalculate immediately.
+          send(from, "assign_portals")
+        end)
+
+        Task.start(fn ->
+          portals = Sorcery.Portal.all_portals(state)
+          pids = Watch.get_pids_from_changes(src, portals)
+          IO.inspect(pids, label: "ALL PIDS")
+
+          # @TODO Now go through the portals and assigns, and determine all the portals that are affected by this Src.
+          nil
+        end)
+
+        {:noreply, state}
+      end
+
+
 
       def handle_call({:view_portal, ref, tk}, from, state) do
         %{metas: [portal]} = state.presence.get_by_key("portals:#{tk}", ref)
@@ -135,6 +163,8 @@ defmodule Sorcery.Storage.GenserverAdapter do
         {:reply, table, state}
       end
 
+
+      
 
     end
 

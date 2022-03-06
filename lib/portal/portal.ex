@@ -3,6 +3,10 @@ defmodule Sorcery.PortalPresence do
 end
 
 defmodule Sorcery.Portal do
+  use Norm
+  alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  alias Sorcery.Specs.Portals, as: PT
+
   defstruct [
     :id, :pid, :tk, :indices, :guards, :key, :resolved_guards
   ]
@@ -25,6 +29,16 @@ defmodule Sorcery.Portal do
     end
     Enum.reduce(li, %{}, fn k, acc ->
       Map.put(acc, k, MapSet.new())
+    end)
+  end
+
+
+  @contract all_portals(AdapterT.client_state()) :: coll_of(PT.portal())
+  def all_portals(state) do
+    tks = Map.keys(state.db)
+    Enum.flat_map(tks, fn tk ->
+      state.presence.list("portals:#{tk}")
+      |> Enum.map(fn {_ref, %{metas: [portal]}} -> portal end)
     end)
   end
 

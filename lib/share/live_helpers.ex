@@ -3,24 +3,32 @@ defmodule Sorcery.Share.LiveHelper do
     #quote bind_quoted: [client: client, presence: presence] do
     quote do
 
+
       def assign_portals(socket) do
         my_portals = Sorcery.Storage.GenserverAdapter.GetPresence.my_portals(unquote(client), unquote(presence), %{})
         state = unquote(client).get_state(%{})
-        Enum.reduce(my_portals, socket, fn portal, socket ->
+        portal_meta = []
+        portals = %{}
+
+        {portal_meta, portals} = Enum.reduce(my_portals, {portal_meta, portals}, fn portal, {portal_meta, portals} ->
           table = Sorcery.Storage.GenserverAdapter.ViewPortal.view_portal(portal, state)
-          %{assigns: assigns} = socket
-          portal_assigns = Map.get(assigns, :portals, %{})
-          table_assigns = Map.get(assigns, :portal_tables, [])
+          {
+            [{portal.key, portal} | portal_meta],
+            Map.put(portals, portal.key, table)
+          }
 
-          new_portal_assigns = Map.put(portal_assigns, portal.key, table)
-          new_table_assigns = [{portal.key, portal.tk} | table_assigns]
-
-          new_assigns = assigns
-                        |> Map.put(:portals, new_portal_assigns)
-                        |> Map.put(:portal_tables, new_table_assigns)
-          Map.put(socket, :assigns, new_assigns)
         end)
+
+        socket
+        |> assign(:portals, portals)
+        |> assign(:portal_meta, portal_meta)
       end
+
+      def handle_info("assign_portals", socket) do
+        {:noreply, assign_portals(socket)}
+      end
+
+
 
       #def watch_subject(socket, %Sorcery.Src.Subject{} = sub) do
       #  Presence.track(self(), "src_subjects", "src_subjects", %{pid: self(), subject: sub})

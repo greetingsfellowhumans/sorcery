@@ -2,8 +2,12 @@ defmodule Sorcery.Specs.Primative do
   use Norm
 
   def any(), do: spec(fn _ -> true end)
-  def pid(), do: spec(is_pid())
+
+  # Due to the difficulty of hardcoding pids in tests, we allow integers.
+  def pid(), do: spec(is_pid() or is_integer())
+
   def string(), do: spec(is_binary)
+  def bool(), do: spec(is_boolean())
   def atom(), do: spec(is_atom())
   def struct(), do: spec(is_struct())
   def map(), do: spec(is_map())

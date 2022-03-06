@@ -13,5 +13,6 @@ defmodule Sorcery.Storage.GenserverAdapter.Specs do
   def client_module(), do: T.atom()
   def presence_module(), do: T.atom()
 
+  def qmeta, do: spec(is_struct(Sorcery.Storage.GenserverAdapter.QueryMeta))
 
 end

@@ -55,6 +55,8 @@ defmodule Sorcery.Src do
     # When deleting an entity from the backend. For example: [{:person, 1}]
     deletes: [],
 
+    inserts: %{},
+
     # List of functions that take a src and return a source.
     interceptors: [],
 

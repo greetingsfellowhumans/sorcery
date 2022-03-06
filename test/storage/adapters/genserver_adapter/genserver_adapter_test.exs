@@ -2,10 +2,10 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
   use ExUnit.Case, async: true
   use Norm
   alias Sorcery.Portal
-  alias Sorcery.Storage.GenserverAdapter
-  alias Sorcery.Storage.GenserverAdapter.{Client, Specs, ViewPortal, UpdatePortal, GetPresence}
-  alias Sorcery.Specs.Primative, as: T
-  alias Sorcery.Specs.Portals, as: PortalT
+  #alias Sorcery.Storage.GenserverAdapter
+  alias Sorcery.Storage.GenserverAdapter.{Client, Specs}
+  #alias Sorcery.Specs.Primative, as: T
+  #alias Sorcery.Specs.Portals, as: PortalT
   alias Sorcery.Entities.{User, Post, Comment}
   alias Sorcery.Storage.PresenceMock, as: Presence
 
@@ -44,13 +44,13 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
     opts = %{name: :startup_test}
     p = start_supervised!({Client, name: opts[:name]})
     assert is_pid(p)
-    state = conform!(Client.get_state(opts), Specs.client_state())
+    assert conform!(Client.get_state(opts), Specs.client_state())
   end
 
 
   test "Loading Entities" do
     opts = %{name: :loading_entities_test}
-    p = start_supervised!({Client, name: opts.name})
+    _p = start_supervised!({Client, name: opts.name})
     state_before = conform!(Client.get_state(opts), Specs.client_state())
     Client.add_entities(:user, [%User{id: 1, name: "Aaron", karma: 5}], %{name: opts.name})
     state_after = conform!(Client.get_state(%{name: opts.name}), Specs.client_state())
@@ -72,7 +72,7 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
   test "Basic Portal Crud" do
     presence_pid = start_supervised!({Presence, %{}})
     opts = %{name: :portal_crud, pid: presence_pid}
-    client = start_supervised!({Client, opts})
+    _client = start_supervised!({Client, opts})
 
     Client.add_entities(:user, @li_users, opts)
     Client.add_entities(:post, @li_posts, opts)
@@ -88,7 +88,7 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
   test "Advanced Portal Crud" do
     presence_pid = start_supervised!({Presence, %{}})
     opts = %{name: :portal_crud, pid: presence_pid}
-    client = start_supervised!({Client, opts})
+    _client = start_supervised!({Client, opts})
 
     Client.add_entities(:user, @li_users, opts)
     Client.add_entities(:post, @li_posts, opts)
@@ -97,7 +97,7 @@ defmodule Sorcery.Storage.GenserverAdapterTest do
     post_portal_ref = Client.create_portal(presence_pid, @post_portal_spec, opts)
     comment_spec = comment_portal_spec(post_portal_ref)
     comment_portal_ref = Client.create_portal(presence_pid, comment_spec, opts)
-    comment_table = Client.view_portal(comment_portal_ref, :comment, opts)
+    _comment_table = Client.view_portal(comment_portal_ref, :comment, opts)
 
     author_spec = author_portal_spec(comment_portal_ref, post_portal_ref)
     author_portal_ref = Client.create_portal(presence_pid, author_spec, opts)
