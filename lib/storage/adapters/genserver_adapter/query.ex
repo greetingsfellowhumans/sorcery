@@ -14,7 +14,7 @@ defmodule Sorcery.Storage.GenserverAdapter.QueryMeta do
   ]
 
   def new(state) do
-    %__MODULE__{old_db: state.db}
+    %__MODULE__{new_db: state.db}
   end
   def new(src, state) do
     qm = %__MODULE__{}

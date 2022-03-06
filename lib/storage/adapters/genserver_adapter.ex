@@ -1,10 +1,9 @@
 defmodule Sorcery.Storage.GenserverAdapter do
   use Norm
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
-  alias Sorcery.Storage.GenserverAdapter.{CreatePortal, UpdateDb}
+  alias Sorcery.Storage.GenserverAdapter.{CreatePortal}
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Specs.Portals, as: PT
-  alias Sorcery.Share.Watch
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -16,10 +15,13 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
       def start_link(opts) do
         name = opts[:name] || @name
-        %{tables: tables, presence: presence} = @opts
+
+        %{tables: tables, presence: presence, repo: repo, ecto: ecto} = @opts
         state = %{
           tables: tables,
           presence: presence,
+          repo: repo,
+          ecto: ecto,
           db: Enum.reduce(tables, %{}, fn {tk, _}, acc -> Map.put(acc, tk, %{}) end)
         }
         GenServer.start_link(__MODULE__, state, name: name)
@@ -133,7 +135,9 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
 
       def handle_cast({:push_src, src, from, opts}, state) do
-        state = UpdateDb.apply_src!(state, src)
+        db = Sorcery.Storage.EctoAdapter.persist_src(src, state)
+        db = Map.merge(state.db, db)
+        state = Map.put(state, :db, db)
 
         Task.start(fn ->
           # The caller gets priority. Tell them to recalculate immediately.
@@ -142,8 +146,13 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
         Task.start(fn ->
           portals = Sorcery.Portal.all_portals(state)
-          pids = Watch.get_pids_from_changes(src, portals)
-          IO.inspect(pids, label: "ALL PIDS")
+          qmeta = Sorcery.Storage.GenserverAdapter.QueryMeta.new(state)
+          pids = Sorcery.Storage.GenserverAdapter.Query.affected_pids(portals, qmeta)
+                 |> List.delete(from)
+
+          for pid <- pids do
+            send(pid, "assign_portals")
+          end
 
           # @TODO Now go through the portals and assigns, and determine all the portals that are affected by this Src.
           nil

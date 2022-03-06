@@ -6,6 +6,8 @@ defmodule Sorcery.Storage.GenserverAdapter.Specs do
     db: T.map(),
     presence: T.atom(),
     tables: T.map(),
+    repo: T.atom(),
+    ecto: T.atom(),
   })
 
 

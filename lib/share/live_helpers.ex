@@ -5,16 +5,22 @@ defmodule Sorcery.Share.LiveHelper do
 
 
       def assign_portals(socket) do
-        my_portals = Sorcery.Storage.GenserverAdapter.GetPresence.my_portals(unquote(client), unquote(presence), %{})
+        portals = Sorcery.Storage.GenserverAdapter.GetPresence.my_portals(unquote(client), unquote(presence), %{})
         state = unquote(client).get_state(%{})
+        assign_portals(socket, portals, state)
+      end
+      def assign_portals(socket, my_portals, state) do
+        qm = Sorcery.Storage.GenserverAdapter.QueryMeta.new(state)
         portal_meta = []
         portals = %{}
 
         {portal_meta, portals} = Enum.reduce(my_portals, {portal_meta, portals}, fn portal, {portal_meta, portals} ->
-          table = Sorcery.Storage.GenserverAdapter.ViewPortal.view_portal(portal, state)
+          tk = Map.get(portal, :tk)
+          assigns_key = Map.get(portal, :assigns_key, tk)
+          db = Sorcery.Storage.GenserverAdapter.Query.solve_portal(portal, qm)
           {
-            [{portal.key, portal} | portal_meta],
-            Map.put(portals, portal.key, table)
+            [{assigns_key, portal} | portal_meta],
+            Map.put(portals, assigns_key, db[tk])
           }
 
         end)
@@ -25,7 +31,9 @@ defmodule Sorcery.Share.LiveHelper do
       end
 
       def handle_info("assign_portals", socket) do
-        {:noreply, assign_portals(socket)}
+        portals = Sorcery.Storage.GenserverAdapter.GetPresence.my_portals(unquote(client), unquote(presence), %{})
+        state = unquote(client).get_state(%{})
+        {:noreply, assign_portals(socket, portals, state)}
       end
 
 

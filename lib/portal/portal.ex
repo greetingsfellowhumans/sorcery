@@ -8,7 +8,7 @@ defmodule Sorcery.Portal do
   alias Sorcery.Specs.Portals, as: PT
 
   defstruct [
-    :id, :pid, :tk, :indices, :guards, :key, :resolved_guards
+    :id, :pid, :tk, :indices, :guards, :assigns_key, :resolved_guards
   ]
 
 
@@ -47,7 +47,7 @@ defmodule Sorcery.Portal do
   def new(%{tk: tk, guards: guards} = attr) do
     attr = attr
     |> Map.put_new(:id, tk_ref(tk))
-    |> Map.put_new(:key, tk)
+    |> Map.put_new(:assigns_key, tk)
     |> Map.put(:indices, format_indices(attr))
     |> Map.put_new(:resolved_guards, guards)
 
