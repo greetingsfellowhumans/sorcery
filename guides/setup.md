@@ -68,3 +68,17 @@ end
 You must do this for every entity type you wish to track with portals, and update with Src.
 
 And don't forget to pass the schema into the App.Sorcery tables configuration.
+
+7. Add the LiveView helpers to your `app_web.ex`
+```elixir
+...
+def live_view do
+  quote do
+    use Phoenix.LiveView, ...
+
+    use Sorcery.LiveHelper,
+      client: App.Sorcery,
+      presence: AppWeb.Presence
+  end
+end
+```

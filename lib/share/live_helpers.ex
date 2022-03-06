@@ -1,4 +1,4 @@
-defmodule Sorcery.Share.LiveHelper do
+defmodule Sorcery.LiveHelper do
   defmacro __using__([client: client, presence: presence]) do
     #quote bind_quoted: [client: client, presence: presence] do
     quote do
@@ -77,7 +77,7 @@ defmodule Sorcery.Share.LiveHelper do
       #end
 
 
-      #def handle_info(%{msg: "src_push", src: src}, socket) do
+      def handle_info(%{msg: "src_push", src: src}, socket) do
       #  presences = Presence.list("src_subjects")
       #  pids = Sorcery.Share.Watch.get_pids_from_changes(src, presences) |> MapSet.delete(self())
       #  for pid <- pids do
@@ -90,13 +90,13 @@ defmodule Sorcery.Share.LiveHelper do
       #        |> Map.put(:changes_db, %{})
       #        |> Map.put(:deletes, [])
 
-      #  {:noreply, assign(socket, :src, src)}
-      #end
+        {:noreply, assign(socket, :src, src)}
+      end
 
 
-      #def push_src!(src) do
-      #  send(self(), %{msg: "src_push", src: src})
-      #end
+      def push_src!(src) do
+        send(self(), %{msg: "src_push", src: src})
+      end
 
       
 

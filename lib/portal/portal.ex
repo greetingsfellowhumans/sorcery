@@ -1,7 +1,3 @@
-defmodule Sorcery.PortalPresence do
-  defstruct [:pid, :phx_ref, :portal]
-end
-
 defmodule Sorcery.Portal do
   use Norm
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
