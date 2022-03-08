@@ -1,11 +1,18 @@
 # Setup
 Unfortunately there are a few steps you must take to get up and running.
 
-1. Add to mix.exs deps
+### 1. Add to mix.exs deps
+```elixir
+def deps do
+  [
+    {:sorcery, "~> 0.1.0"},
+  ]
+end
+```
 
-2. `mix deps.get`
+### 2. `mix deps.get`
 
-3. Create a phoenix presence module if you haven't already.
+### 3. Create a phoenix presence module if you haven't already.
 ```elixir
 defmodule AppWeb.Presence do
   use Phoenix.Presence,
@@ -14,7 +21,7 @@ defmodule AppWeb.Presence do
 end
 ```
 
-4. Create a module like `App.Sorcery`.
+### 4. Create a module like `App.Sorcery`.
 ```elixir
 defmodule App.Sorcery do
   alias App.Accounts.User
@@ -35,7 +42,7 @@ defmodule App.Sorcery do
 end
 ```
 
-5. Add those modules to the supervision tree.
+### 5. Add those modules to the supervision tree.
 ```application.ex
 children = [
   {Phoenix.PubSub, name: App.PubSub},
@@ -47,7 +54,7 @@ children = [
 
 ```
 
-6. Prepare your schemas
+### 6. Prepare your schemas
 Sorcery expects every schema module to implement the functions `sorcery_update/2` and `sorcery_insert/2`
 
 Both must take a struct and attrs, and return a changeset.
@@ -69,7 +76,7 @@ You must do this for every entity type you wish to track with portals, and updat
 
 And don't forget to pass the schema into the App.Sorcery tables configuration.
 
-7. Add the LiveView helpers to your `app_web.ex`
+### 7. Add the LiveView helpers to your `app_web.ex`
 ```elixir
 ...
 def live_view do

@@ -2,6 +2,7 @@ defmodule Sorcery.Storage.EctoAdapter do
   use Norm
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  #alias Sorcery.Utils.Maps
 
   def int_id(), do: spec(is_integer())
   def placeholder_id(), do: spec(is_binary() and fn id ->
@@ -34,11 +35,14 @@ defmodule Sorcery.Storage.EctoAdapter do
     |> case do
       {:ok, ops} ->
         Enum.reduce(ops, %{}, fn {name, entity}, acc ->
-          [tk_str, _id_str] = String.split(name, ":")
-          tk = String.to_existing_atom(tk_str)
-          acc
-          |> Map.put_new(tk, %{})
-          |> put_in([tk, entity.id], Map.from_struct(entity))
+            tk_str = case String.split(name, ":") do
+              [tk_str, _id_str] -> tk_str
+              ["$sorcery", _id_str, tk_str] -> tk_str
+            end
+            tk = String.to_existing_atom(tk_str)
+            acc
+            |> Map.put_new(tk, %{})
+            |> put_in([tk, entity.id], Map.from_struct(entity))
         end)
 
       error -> error
@@ -54,7 +58,7 @@ defmodule Sorcery.Storage.EctoAdapter do
         # Every id here should be in the format of "$sorcery:int"
         schema = client.tables[tk].schema
         cs = schema.sorcery_insert(struct(schema), entity)
-        multi_mod(client).insert(multi, id, cs)
+        multi_mod(client).insert(multi, id <> ":#{tk}", cs)
       end)
     end)
   end
@@ -78,7 +82,7 @@ defmodule Sorcery.Storage.EctoAdapter do
   defp build_multi_deletes(multi, src, client) do
     Enum.reduce(src.deletes, multi, fn {tk, id}, multi ->
       schema = client.tables[tk].schema
-      cs = schema.sorcery_update(struct(schema, %{id: id}), %{})
+      cs = struct(schema, %{id: id})
       multi_mod(client).delete(multi, "#{tk}:#{id}", cs)
     end)
   end
@@ -98,6 +102,7 @@ defmodule Sorcery.Storage.EctoAdapter do
   # We must be careful to handle the placeholders first.
   # They can go under :inserts
   # And they can be removed from :changes_db
+  # While we're in there, we can also un-struct to avoid Access errors.
   defp separate_inserts(src) do
     empty_src =
       src
@@ -107,6 +112,8 @@ defmodule Sorcery.Storage.EctoAdapter do
 
     Enum.reduce(src.changes_db, empty_src, fn {tk, table}, acc ->
       {i, u} = Enum.reduce(table, {%{}, %{}}, fn {id, entity}, {i, u} ->
+        entity = if is_struct(entity), do: Map.from_struct(entity), else: entity
+
         case id do
           "$sorcery:" <> _ -> {Map.put(i, id, entity), u}
           _ -> {i, Map.put(u, id, entity)}

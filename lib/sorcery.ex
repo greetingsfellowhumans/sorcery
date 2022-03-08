@@ -5,6 +5,5 @@ defmodule Sorcery do
   """
 
 
-  def new(db \\ %{}, args \\ %{}), do: %Src{original_db: db, args: args}
 
 end

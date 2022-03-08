@@ -41,9 +41,6 @@ defmodule Sorcery.Src do
 
 
   defstruct [
-    # List of Subject structs for determining *what* data you care about.
-    subjects: [],
-
     # Misc private data 
     # i.e. user_id, etc.
     args: %{}, 

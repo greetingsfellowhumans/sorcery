@@ -80,7 +80,6 @@ defmodule Sorcery.Storage.GenserverAdapter.QueryTest do
       }
     },
     deletes: [],
-    inserts: %{},
     interceptors: [],
     msg: %Sorcery.Msg{body: %{}, cb: &Sorcery.Msg.noop/0, flash: "", status: :ok},
     original_db: %{},
