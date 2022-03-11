@@ -70,12 +70,21 @@ defmodule Sorcery.Storage.EctoAdapter do
         # Every id here should be an integer
         schema = client.tables[tk].schema
         multi_mod(client).update(multi, "#{tk}:#{id}", fn prev_ops ->
-          entity = resolve_placeholder_ids(entity, prev_ops)
-          cs = schema.sorcery_update(struct(schema, %{id: id}), entity)
+          original_entity = get_original_entity(client.db, tk, id, schema)
+          new_entity = resolve_placeholder_ids(entity, prev_ops)
+          cs = schema.sorcery_update(original_entity, new_entity)
           cs
         end)
       end)
     end)
+  end
+
+
+  defp get_original_entity(db, tk, id, schema) do
+    table = Map.get(db, tk, %{})
+    entity = Map.get(table, id, %{})
+    defaults = struct(schema)
+    Map.merge(defaults, entity)
   end
 
 
