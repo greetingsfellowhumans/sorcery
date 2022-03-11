@@ -4,7 +4,6 @@ defmodule Sorcery.Storage.GenserverAdapter do
   alias Sorcery.Storage.GenserverAdapter.{CreatePortal}
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Specs.Portals, as: PT
-  alias Sorcery.Utils.Maps
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -126,21 +125,18 @@ defmodule Sorcery.Storage.GenserverAdapter do
 
       @impl true
       def handle_cast({:add_entities, tk, entities}, state) do
-        db = Map.get(state, :db)
-        db = Map.put_new(db, tk, %{})
-        new_db = Enum.reduce(entities, db, fn %{id: id} = entity, acc ->
+        new_state = Enum.reduce(entities, state, fn %{id: id} = entity, acc ->
           e = if is_struct(entity), do: Map.from_struct(entity), else: entity
           acc
-          |> put_in([tk, id], e)
+          |> put_in([:db, tk, id], e)
         end)
-        new_state = Map.put(state, :db, new_db)
         {:noreply, new_state}
       end
 
 
       def handle_cast({:src_push, src, from, opts}, state) do
         db = Sorcery.Storage.EctoAdapter.persist_src(src, state)
-        db = Maps.deep_merge(state.db, db)
+        db = Map.merge(state.db, db)
         state = Map.put(state, :db, db)
 
         Task.start(fn ->

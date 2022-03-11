@@ -16,6 +16,8 @@ defmodule Sorcery.Storage.GenserverAdapter.Client do
 
   use GenserverAdapter, %{
     presence: Sorcery.Storage.PresenceMock,
+    ecto: :ecto_placeholder,
+    repo: :repo_placeholder,
     tables: %{
       user: %{schema: User, index: []},
       post: %{schema: Post, index: [:author_id]},
