@@ -50,6 +50,7 @@ children = [
   AppWeb.Presence, # Must comme AFTER PubSub
 
   App.Sorcery, # Must come AFTER presence
+  Sorcery.PortalMonitor,
 ]
 
 ```

@@ -12,35 +12,12 @@ Think of it like a PubSub, except instead of topic strings, you get queries that
 
 You don't 'subscribe' to a topic, but open a portal to specific data, and use whatever you see on the other side.
 
-## A real life case study 
-### The problem this solves
-Say you have a classic blog App with Users, Posts, and Comments.
-
-User alice is on "/posts/52" rendered by a LiveView
-She can see the body of the Post, all the Comments, and the names of Users writing Comments.
-
-Another User, joe, is on his own Account.Settings LiveView. 
-He decides to change his name to "The JoeMeister". 
-Thanks to Phoenix LiveViews, he sees his name update instantly! #magic
-
-But Alice, reading his comment on another page, doesn't get the update.
-
-Ok, so you implement a PubSub, subscribing her to a topic like `user:#{joe.id}` for every user in mount/3.
-
-But wait... You don't really want a new PubSub topic for every user posting a comment, right?
-
-So maybe you have a topic like `authors_of_comments:#{post_id}`
-
-Better, but what would happen if a user registers to the site AFTER alice visits the page, and THEN change their name. Alice still wouldn't be subscribed to them.
-
-Ok, fine, we can just pile on a bunch of logic. For example, every time a user updates, you could find all their comments, and broadcast to each `authors_of_comments:#{comment.post_id}`, or... something...? :-\
-And every LiveView subscribing will need some handle_info for sorting it out.
-
-It's an ugly, non-performant solution. This should be self evident. How can we blame the intern...
+## Setup
+See the [setup guide](https://github.com/greetingsfellowhumans/sorcery/blob/master/guides/setup.md)
 
 
 ### Enter, Sorcery
-Instead of a PubSub with topics, we use Sorcery with Portals.
+For our example, we look at a simple blog app with User, Post, and Comment tables.
 
 account.settings_live.ex
 ```elixir
@@ -57,8 +34,8 @@ account.settings_live.ex
     App.Sorcery.create_portal(socket, portal, %{})
 
     # This comes from the live_helper
+    # Now we'll get socket.assigns.portals == %{user: %{1 => user}}
     socket = assign_portals(socket)
-    # socket.assigns.portals == %{user: %{1 => user}}
     
     {:ok, socket}
   end
@@ -128,10 +105,10 @@ Now you're thinking with portals!
 ## Mutating data
 So how do you actually make changes? 
 
-Here we want to add a like to one of the comments.
+Here we want to add a :like to one of the comments.
 ```elixir
 def handle_event("inc_likes", %{comment_id: comment_id}, socket) do
-  args = %{} # Ignore this for now...
+  args = %{} # Ignore this for now, we'll come back to it in the interceptors section...
 
   # We create a %Sorcery.Src{} struct to update the Source upon which all portals depend.
 
@@ -148,7 +125,7 @@ end
 ```
 As soon as those changes are finished, every portal that should care about that comment will get the update.
 
-By the way, we're using the built in Ecto adapter here, so it will actually send those changes to the database in a transaction.
+By the way, we're using the Sorcery.Ecto adapter here, so it will actually send those changes to the database in a transaction.
 Eventually I would like to make it so you can either skip that, or implement your own adapter.
 
 ## Src
@@ -157,10 +134,10 @@ Src is the original reason for the name Sorcery.
 It was meant to be used for transforming a lot of data in weird ways.
 You start by passing in a map of data, in exactly the format the portals come in. Cool coincidence!
 
-Src has two such maps, actually. :original_db, and :changes_db (which starts life its empty %{})
+Src has two such maps, actually. :original_db, and :changes_db (which starts its life as %{})
 
-As you might have guessed, it implements Access, so you can simply use get_in, put_in, etc.
-Those functions will target the most up-to-date data possible, whether that means data from changes, or original.
+As you might have guessed, Src implements Access, so you can simply use get_in, put_in, etc.
+Those functions will target the most up-to-date data possible, whether that means data from changes, or original, or even a combination.
 
 It also implements Enumerable which you can use like: Enum.map(src, fn {tk, id, entity} -> ...end)
 
@@ -188,7 +165,7 @@ In a single transaction, this Src will:
 - Create a new post with title "Hello"
 - Change existing comment with id: 50, to have a post_id pointing at the post we just made.
 
-Note the string "$sorcery:1" is a placeholder. The "1" isn't important, you could just as easily have "$sorcery:magic! WHOAAAA "
+Note the string "$sorcery:1" is a placeholder. The "1" isn't important, you could just as easily have "$sorcery:magic! WHOAAAA =-D"
 As long as it starts with "$sorcery:"
 
 
@@ -200,6 +177,7 @@ Along the way, they may or may not stop the pipeline, change the list of interce
 You can even do TIME TRAVEL!
 
 Simple example of an interceptor that increments a like for the current comment
+(Now we're finally using Src :args passed as the second argument of Src.new/2)
 ```elixir
 def intercept(%{args: %{comment_id: comment_id}} = src) do
   update_in(src, [:comment, comment_id, :likes], fn likes -> likes + 1 end)
@@ -220,18 +198,18 @@ end
 
 Here's one that will go back in time by 2 interceptors, and change the comment we're working on, if likes > 100.
 
+Do be careful to change something so you don't end up in an infinite loop. Didn't your mother ever tell you that time travel is dangerous?
 ```elixir
 def intercept(src) do
-  %{comment_id: comment_id} = args
+  %{comment_id: comment_id} = src.args
   likes = get_in(src, [:comment, comment_id, :likes])
   if likes > 100 do
-    new_args = Map.put(args, :comment_id, 25)
     src
     |> Src.time_backward(2)
-    |> Map.put(:args, new_args)
+    |> put_in([:comment, 25, :likes], 0) # Just to be safe
   else
     src
   end
 end
 ```
-
+There is also a Src.time_forward/2 function which is far safer. It just skips the next (n) interceptors in the list.

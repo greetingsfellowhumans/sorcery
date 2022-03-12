@@ -4,12 +4,23 @@ defmodule Sorcery.MixProject do
   def project do
     [
       app: :sorcery,
+      name: "Sorcery",
       version: "0.1.0",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       preferred_cli_env: ["test.watch": :test],
+      source_url: "https://github.com/greetingsfellowhumans/sorcery",
+      package: package(),
       deps: deps()
+    ]
+  end
+
+  defp package do
+    [
+      name: "sorcery",
+      description: "Share some data in your assigns between multiple LiveView processes.",
+      licenses: ["MIT"],
     ]
   end
 
@@ -30,9 +41,6 @@ defmodule Sorcery.MixProject do
       {:norm, "~> 0.13"},
       {:jason, "~> 1.2"},
       {:stream_data, "~> 0.4"},
-
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end
 end
