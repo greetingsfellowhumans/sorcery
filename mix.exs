@@ -21,6 +21,7 @@ defmodule Sorcery.MixProject do
       name: "sorcery",
       description: "Share some data in your assigns between multiple LiveView processes.",
       licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/greetingsfellowhumans/sorcery"},
     ]
   end
 
