@@ -3,11 +3,14 @@
 > "89% of magic tricks are not magic. Technically, they are Sorcery."
 > - Portal 2
 
-Like a PubSub, but better.
+## TLDR
+This library allows you to share some assigns data between multiple LiveViews. 
 
-Sorcery feels like having your LiveView assigns connected to a private cloud, a (fake) single *source* of truth that automatically stays synced with other users and LiveViews. 
-Replacing topic strings with more powerful query and filter functions to subscribe to precisely the data you need.
+When the data changes it updates all the assigns that watch it.
 
+Think of it like a PubSub, except instead of topic strings, you get queries that can even reference each other.
+
+You don't 'subscribe' to a topic, but open a portal to specific data, and use whatever you see on the other side.
 
 ## A real life case study 
 ### The problem this solves
@@ -30,7 +33,7 @@ So maybe you have a topic like `authors_of_comments:#{post_id}`
 
 Better, but what would happen if a user registers to the site AFTER alice visits the page, and THEN change their name. Alice still wouldn't be subscribed to them.
 
-Ok, fine, we can just pile on a bunch of logic. For example, every time a user updates, you could find all their comments, and broadcast to each `authors_of_comments:#{comment.post_id}` or something :-\
+Ok, fine, we can just pile on a bunch of logic. For example, every time a user updates, you could find all their comments, and broadcast to each `authors_of_comments:#{comment.post_id}`, or... something...? :-\
 And every LiveView subscribing will need some handle_info for sorting it out.
 
 It's an ugly, non-performant solution. This should be self evident. How can we blame the intern...
@@ -42,8 +45,7 @@ Instead of a PubSub with topics, we use Sorcery with Portals.
 account.settings_live.ex
 ```elixir
   def mount(_params, session, socket) do
-    # however you normally get this
-    user_id = ... get_user(socket)
+    user_id = # whatever you would normally do to get this
     user = Repo.get(User, user_id)
 
     # We always need to load in data before it can be shared.
@@ -120,3 +122,46 @@ post.comments_live.ex
   """
   end
 ```
+
+Now you're thinking with portals!
+
+## Mutating data
+So how do you actually make changes? 
+
+Here we want to add a like to one of the comments.
+```elixir
+def handle_event("inc_likes", %{comment_id: comment_id}, socket) do
+  args = %{} # Ignore this for now...
+
+  # We create a %Sorcery.Src{} struct to update the Source upon which all portals depend.
+
+  src = Src.new(socket.assigns.portals, args)
+        |> update_in([:comment, comment_id, :likes], fn likes -> likes + 1 end)
+
+  # Now use the Src!
+  # This was included with the live_helper.
+  src_push!(src)
+
+  {:noreply, socket}
+end
+
+# As soon as those changes are finished, every portal that should care about that comment will get the update.
+
+```
+
+## Src
+Src is the original reason for the name Sorcery.
+
+It was meant to be used for transforming a lot of data in weird ways.
+You start by passing in a map of data, in exactly the format the portals come in. Cool coincidence!
+
+Src has two such maps, actually. :original_db, and :changes_db (which starts life its empty %{})
+
+As you might have guessed, it implements Access, so you can simply use get_in, put_in, etc.
+Those functions will target the most up-to-date data possible, whether that means data from changes, or original.
+
+## Interceptors
+These are functions that take a Src and return a Src.
+They are meant to be piped together for a series of transformations when a normal pipeline won't cut it.
+
+Along the way, they may or may not alter some metadata, which could potentially stop the pipeline, change the list of interceptors on the fly, etc.

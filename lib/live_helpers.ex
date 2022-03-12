@@ -24,10 +24,18 @@ defmodule Sorcery.LiveHelper do
 
         end)
 
+        Sorcery.PortalMonitor.monitor(self(), __MODULE__)
+
         socket
         |> assign(:portals, portals)
         |> assign(:portal_meta, portal_meta)
       end
+
+
+      def sorcery_unmount(pid) do
+        unquote(client).unmount(pid)
+      end
+
 
       def handle_info("assign_portals", socket) do
         portals = Sorcery.Storage.GenserverAdapter.GetPresence.my_portals(unquote(client), unquote(presence), %{})

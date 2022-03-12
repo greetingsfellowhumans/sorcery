@@ -4,6 +4,8 @@ defmodule Sorcery do
   Documentation for `Sorcery`.
   """
 
+  def unmount() do
+  end
 
 
 end
