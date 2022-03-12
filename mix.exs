@@ -42,6 +42,7 @@ defmodule Sorcery.MixProject do
       {:norm, "~> 0.13"},
       {:jason, "~> 1.2"},
       {:stream_data, "~> 0.4"},
+      {:ex_doc, "~> 0.14", only: :dev, runtime: false},
     ]
   end
 end

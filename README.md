@@ -213,3 +213,13 @@ def intercept(src) do
 end
 ```
 There is also a Src.time_forward/2 function which is far safer. It just skips the next (n) interceptors in the list.
+
+
+## Roadmap
+This should be considered experimental. Use in production at your own peril. (Cue villanous cackling)
+
+Changes still to be made
+[ ] Create storage behaviour so third party adapters can be made like a Redis or Mnesia backend.
+[ ] Create update behaviour. By default we persist everything via Ecto and the user's App.Repo implementation. It would be great to have better flexibility. 
+[ ] Test and improve performance. I have no idea how it performs at scale currently. There is probably lots to be done.
+[ ] Test and fix bugs as they get reported.
