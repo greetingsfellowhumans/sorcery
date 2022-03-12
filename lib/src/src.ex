@@ -13,27 +13,25 @@ defmodule Sorcery.Src do
   The first thing to understand is the concept of a 'db'.
   Every DB is in the following format:
   db = %{
-    Users => %{
+    :user => %{
       1 => %{id: 1, name: "Aaron"},
       3 => %{id: 3, name: "Not Aaron"},
     },
-    Comments => %{
+    :comment => %{
       78 => %{id: 78, user_id: 1, body: "Hello"}
     }
   }
 
-  Note the the top level keys are module names related to an ecto schema.
-  There are a few reasons for this. The schema module is expected to implement the SrcSchema behaviour.
-
+  Note the the top level keys are atom names related to an ecto schema.
 
   For example
 
   src = Src.new(%{
-    User => %{id: 1, name: "..."},
-    User => %{id: 2, name: "..."},
+    :user => %{id: 1, name: "..."},
+    :user => %{id: 2, name: "..."},
   })
 
-  get_in(src, [User, 1]) => %User{id: 1, name: "..."}
+  get_in(src, [:user, 1]) => %{id: 1, name: "..."}
   get_in(src, [:something, 123]) => %{id: 123, foo: 123421}
   get_in(src, [:something, 123, :foo]) => 123421
 
@@ -52,8 +50,12 @@ defmodule Sorcery.Src do
     # When deleting an entity from the backend. For example: [{:person, 1}]
     deletes: [],
 
+    # Instead of integer ids, use strings starting with "$sorcery:"
+    inserts: %{},
+
     # List of functions that take a src and return a source.
     interceptors: [],
+    complete_interceptors: [],
 
     # If something needs to be displayed to the user, put it here
     # Useful for arbitrary error handling
@@ -77,6 +79,26 @@ defmodule Sorcery.Src do
     MapSet.new(o ++ c ++ d) |> MapSet.to_list()
   end
 
+  @doc """
+  Process a list of interceptor functions, each taking, and returning a Src.
+  """
+  def intercept(src, interceptors) do 
+    src
+    |> Map.put(:interceptors, interceptors)
+    |> Map.put(:complete_interceptors, [])
+    |> intercept()
+  end
+  def intercept(src), do: Sorcery.Src.Intercept.src_intercept(src)
+
+  @doc """
+  Send Src past n interceptors without being changed by them.
+  """
+  def time_forward(src, steps), do: Sorcery.Src.Intercept.time_forward(src, steps)
+
+  @doc """
+  Send Src back in time to its state from n interceptors ago.
+  """
+  def time_backward(src, steps), do: Sorcery.Src.Intercept.time_backward(src, steps)
 
   ###############################
   ###############################

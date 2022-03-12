@@ -58,5 +58,86 @@ defmodule SrcTest do
     assert id_sum == 3
   end
 
+  def int1(src) do
+    update_in(src, [:person, 1, :age], fn age -> age + 1 end)
+  end
+  def int2(src) do
+    update_in(src, [:person, 1, :age], fn age -> age * 2 end)
+  end
+  def int3(src) do
+    age = get_in(src, [:person, 1, :age])
+    if age > 200 do
+      put_in(src, [:person, 1, :age], 200)
+    else
+      src
+    end
+  end
 
+  def int4(src) do
+    age = get_in(src, [:person, 1, :age])
+    if age >= 200 do
+      put_in(src, [:person, 1, :age], 200)
+      |> Map.put(:interceptors, [])
+    else
+      src
+    end
+  end
+
+  test "Interceptors" do
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+          |> Map.put(:interceptors, [&int1/1, &int2/1])
+          |> Sorcery.Src.Intercept.src_intercept()
+    
+    assert get_in(src, [:person, 1, :age]) == 202
+    
+    
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+          |> Map.put(:interceptors, [&int1/1, &int2/1, &int3/1])
+          |> Sorcery.Src.intercept()
+    
+    assert get_in(src, [:person, 1, :age]) == 200
+
+    
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+          |> Map.put(:interceptors, [&int1/1, &int3/1, &int2/1, &int3/1, &int1/1])
+          |> Sorcery.Src.intercept()
+    
+    assert get_in(src, [:person, 1, :age]) == 201
+    
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+          |> Map.put(:interceptors, [
+            &int1/1, # 100 + 1 = 101 
+            &int1/1, # 101 + 1 = 102 
+            &int4/1, # pass
+            &int2/1, # 102 * 2 = 204
+            &int4/1, # 204 > 200, so = 200, and stop interceptions
+            &int1/1  # never gets reached.
+          ])
+          |> Sorcery.Src.intercept()
+    
+    assert get_in(src, [:person, 1, :age]) == 200
+    assert 4 == Enum.count(src.complete_interceptors)
+    assert 0 == Enum.count(src.interceptors)
+    
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+          |> Map.put(:interceptors, [&int1/1, &int1/1, &int1/1, &int1/1, &int1/1])
+          |> Sorcery.Src.intercept()
+    assert get_in(src, [:person, 1, :age]) == 105
+    
+    assert 0 == Enum.count(src.interceptors)
+    assert 5 == Enum.count(src.complete_interceptors)
+    
+    # Recalculate src up to the point 3 interceptors ago
+    src = Src.time_backward(src, 3)
+    assert get_in(src, [:person, 1, :age]) == 102
+    assert 3 == Enum.count(src.interceptors)
+    assert 2 == Enum.count(src.complete_interceptors)
+    
+    # Pass over the next 2 interceptors without calculating anything
+    src = Src.time_forward(src, 2)
+    assert get_in(src, [:person, 1, :age]) == 102
+    assert 1 == Enum.count(src.interceptors)
+    assert 4 == Enum.count(src.complete_interceptors)
+  end
+  
 end

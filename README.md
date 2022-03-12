@@ -145,9 +145,11 @@ def handle_event("inc_likes", %{comment_id: comment_id}, socket) do
   {:noreply, socket}
 end
 
-# As soon as those changes are finished, every portal that should care about that comment will get the update.
-
 ```
+As soon as those changes are finished, every portal that should care about that comment will get the update.
+
+By the way, we're using the built in Ecto adapter here, so it will actually send those changes to the database in a transaction.
+Eventually I would like to make it so you can either skip that, or implement your own adapter.
 
 ## Src
 Src is the original reason for the name Sorcery.
@@ -160,8 +162,76 @@ Src has two such maps, actually. :original_db, and :changes_db (which starts lif
 As you might have guessed, it implements Access, so you can simply use get_in, put_in, etc.
 Those functions will target the most up-to-date data possible, whether that means data from changes, or original.
 
+It also implements Enumerable which you can use like: Enum.map(src, fn {tk, id, entity} -> ...end)
+
+One of the interesting use cases might be if you are doing a transaction in which you insert some data, and need to refer to the new data.
+
+Behold the :inserts and :deletes fields!
+```elixir
+%Src{
+    deletes: [{:post, 1}],
+    inserts: %{
+        post: %{
+            "$sorcery:1" => %{title: "Hello"}
+        }
+    },
+    original_db: ...,
+    changes_db: %{
+        comment: %{
+            50 => %{post_id: "$sorcery:1"}
+        }
+    }
+}
+```
+In a single transaction, this Src will:
+- Delete Post with id: 1
+- Create a new post with title "Hello"
+- Change existing comment with id: 50, to have a post_id pointing at the post we just made.
+
+Note the string "$sorcery:1" is a placeholder. The "1" isn't important, you could just as easily have "$sorcery:magic! WHOAAAA "
+As long as it starts with "$sorcery:"
+
+
 ## Interceptors
 These are functions that take a Src and return a Src.
 They are meant to be piped together for a series of transformations when a normal pipeline won't cut it.
 
-Along the way, they may or may not alter some metadata, which could potentially stop the pipeline, change the list of interceptors on the fly, etc.
+Along the way, they may or may not stop the pipeline, change the list of interceptors on the fly, etc.
+You can even do TIME TRAVEL!
+
+Simple example of an interceptor that increments a like for the current comment
+```elixir
+def intercept(%{args: %{comment_id: comment_id}} = src) do
+  update_in(src, [:comment, comment_id, :likes], fn likes -> likes + 1 end)
+end
+```
+
+Here's one that will stop all future interceptors, if likes > 100, by setting the :interceptors list to empty.
+```elixir
+def intercept(%{args: %{comment_id: comment_id}} = src) do
+  likes = get_in(src, [:comment, comment_id, :likes])
+  if likes > 100 do
+    Map.put(src, :interceptors, []) 
+  else
+    src
+  end
+end
+```
+
+Here's one that will go back in time by 2 interceptors, and change the comment we're working on, if likes > 100.
+
+```elixir
+def intercept(src) do
+  %{comment_id: comment_id} = args
+  likes = get_in(src, [:comment, comment_id, :likes])
+  if likes > 100 do
+    new_args = Map.put(args, :comment_id, 25)
+    src
+    |> Src.time_backward(2)
+    |> Map.put(:args, new_args)
+  else
+    src
+  end
+end
+```
+
