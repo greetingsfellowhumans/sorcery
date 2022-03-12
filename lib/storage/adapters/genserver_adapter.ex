@@ -87,6 +87,12 @@ defmodule Sorcery.Storage.GenserverAdapter do
         name = opts[:name] || @name
         GenServer.cast(name, {:src_push, src, self(), opts})
       end
+
+
+      def unmount(pid, opts \\ %{}) do
+        name = opts[:name] || @name
+        GenServer.cast(name, {:unmount, pid, opts})
+      end
      
       ## Callbacks
 
@@ -165,6 +171,10 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
 
+      def handle_cast({:unmount, pid, opts}, state) do
+        new_state = Sorcery.Storage.GenserverAdapter.Unmount.unmount(pid, state)
+        {:noreply, new_state}
+      end
 
       def handle_call({:view_portal, ref, tk}, from, state) do
         %{metas: [portal]} = state.presence.get_by_key("portals:#{tk}", ref)
