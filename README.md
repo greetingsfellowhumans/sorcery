@@ -141,21 +141,21 @@ Those functions will target the most up-to-date data possible, whether that mean
 
 It also implements Enumerable which you can use like: Enum.map(src, fn {tk, id, entity} -> ...end)
 
-One of the interesting use cases might be if you are doing a transaction in which you insert some data, and need to refer to the new data.
+One of the interesting use cases might be if you are doing a transaction in which you insert some data, and need to refer to the new data. You can just insert a new entity, but passing in a special placeholder id.
 
-Behold the :inserts and :deletes fields!
+To delete something, add the [table: id] to the Src.deletes keyword list. Careful, this does in fact delete it from the database.
+
+Behold!
 ```elixir
+=> 
 %Src{
     deletes: [{:post, 1}],
-    inserts: %{
-        post: %{
-            "$sorcery:1" => %{title: "Hello"}
-        }
-    },
-    original_db: ...,
     changes_db: %{
+        post: %{
+            "$sorcery:post:1" => %{title: "Hello"}
+        }
         comment: %{
-            50 => %{post_id: "$sorcery:1"}
+            50 => %{post_id: "$sorcery:comment:1"}
         }
     }
 }
@@ -165,8 +165,8 @@ In a single transaction, this Src will:
 - Create a new post with title "Hello"
 - Change existing comment with id: 50, to have a post_id pointing at the post we just made.
 
-Note the string "$sorcery:1" is a placeholder. The "1" isn't important, you could just as easily have "$sorcery:magic! WHOAAAA =-D"
-As long as it starts with "$sorcery:"
+Note the string "$sorcery:<tablename>:<id>" is a placeholder. The id isn't important, you could just as easily have "$sorcery:post:9001"
+As long as it follows the same format, and every field that refers to that id uses the same thing.
 
 
 ## Interceptors

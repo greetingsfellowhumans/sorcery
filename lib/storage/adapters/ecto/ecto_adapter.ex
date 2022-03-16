@@ -40,7 +40,6 @@ defmodule Sorcery.Storage.EctoAdapter do
   end
 
 
-
   defp build_multi_inserts(multi, src, client) do
     Parsing.get_ordered_inserts(src)
     |> Enum.reduce(multi, fn {tk, id, entity}, multi ->
