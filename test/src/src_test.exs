@@ -23,6 +23,19 @@ defmodule SrcTest do
   }
 
 
+  test "Only updates what we need" do
+    src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+    assert src.changes_db == %{}
+    src = Src.put_in(src, [:person, 2, :age], 1)
+    expect_ch = %{person: %{2 => %{age: 1}}} 
+    assert expect_ch == src.changes_db #Src.Access.diff(src) 
+
+    src = Src.delete(src, :person, 1)
+    assert [person: 1] == src.deletes
+    assert %{person: %{2 => %{age: 1}}}  == src.changes_db
+  end
+
+
   test "All IDS" do
     src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
     assert Utils.all_ids(src, :person) == [1, 2]

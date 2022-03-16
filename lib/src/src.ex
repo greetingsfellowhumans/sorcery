@@ -1,9 +1,7 @@
 defmodule Sorcery.Src do
   use Norm
-  #alias Specs.Primative, as: T
   alias Sorcery.Msg
   alias Sorcery.Src
-  #1alias Sorcery.Src.Utils
 
 
   @moduledoc """
@@ -67,6 +65,22 @@ defmodule Sorcery.Src do
     %__MODULE__{original_db: db, args: args}
   end
 
+  def update_in(src, path, cb) do
+    ch = Kernel.update_in(src, path, cb) |> Sorcery.Src.Access.diff()
+    Map.put(src, :changes_db, ch)
+  end
+  def put_in(src, path, cb) do
+    ch = Kernel.put_in(src, path, cb) |> Sorcery.Src.Access.diff()
+    Map.put(src, :changes_db, ch)
+  end
+  def delete(%{original_db: og, changes_db: ch} = src, tk, id) do
+    ch_table = Map.get(ch, tk, %{}) |> Map.delete(id)
+    ch = Map.put(ch, tk, ch_table)
+    
+    src
+    |> Map.put(:changes_db, ch)
+    |> Map.update(:deletes, [], fn dels -> [{tk, id} | dels] end)
+  end
 
   @doc """
   Get all ids for a given table
