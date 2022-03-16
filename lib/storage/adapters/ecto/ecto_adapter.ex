@@ -2,20 +2,10 @@ defmodule Sorcery.Storage.EctoAdapter do
   use Norm
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  import Sorcery.Storage.Adapters.Ecto.Specs
+  alias Sorcery.Storage.Adapters.Ecto.Parsing
   #alias Sorcery.Utils.Maps
 
-  def int_id(), do: spec(is_integer())
-  def placeholder_id(), do: spec(is_binary() and fn id ->
-    "$sorcery:" <> str_int = id
-    String.to_integer(str_int)
-  end)
-  def multi_name(), do: spec(fn name ->
-    case name do
-      "$sorcery:" <> _ -> true
-      "tk:" <> _ -> true
-      _ -> false
-    end
-  end)
 
 
   @contract persist_src(T.src(), AdapterT.client_state()) :: T.db()
@@ -25,7 +15,6 @@ defmodule Sorcery.Storage.EctoAdapter do
   def persist_src(src, client) do
     %{repo: repo} = client
     multi = multi_mod(client).new()
-    src = separate_inserts(src)
 
     multi
     |> build_multi_inserts(src, client)
@@ -37,7 +26,7 @@ defmodule Sorcery.Storage.EctoAdapter do
         Enum.reduce(ops, %{}, fn {name, entity}, acc ->
             tk_str = case String.split(name, ":") do
               [tk_str, _id_str] -> tk_str
-              ["$sorcery", _id_str, tk_str] -> tk_str
+              ["$sorcery", tk_str, _id_str] -> tk_str
             end
             tk = String.to_existing_atom(tk_str)
             acc
@@ -53,12 +42,13 @@ defmodule Sorcery.Storage.EctoAdapter do
 
 
   defp build_multi_inserts(multi, src, client) do
-    Enum.reduce(src.inserts, multi, fn {tk, table}, multi ->
-      Enum.reduce(table, multi, fn {id, entity}, multi ->
-        # Every id here should be in the format of "$sorcery:int"
-        schema = client.tables[tk].schema
-        cs = schema.sorcery_insert(struct(schema), entity)
-        multi_mod(client).insert(multi, id <> ":#{tk}", cs)
+    Parsing.get_ordered_inserts(src)
+    |> Enum.reduce(multi, fn {tk, id, entity}, multi ->
+      schema = client.tables[tk].schema
+      #multi_mod(client).insert(multi, id <> ":#{tk}", fn ops ->
+      multi_mod(client).insert(multi, id, fn ops ->
+        new_entity = resolve_placeholder_ids(entity, ops)
+        schema.sorcery_insert(struct(schema), new_entity)
       end)
     end)
   end
@@ -66,7 +56,10 @@ defmodule Sorcery.Storage.EctoAdapter do
 
   defp build_multi_updates(multi, src, client) do
     Enum.reduce(src.changes_db, multi, fn {tk, table}, multi ->
-      Enum.reduce(table, multi, fn {id, entity}, multi ->
+      Enum.reduce(table, multi, fn 
+        {id_str, _}, multi when is_binary(id_str) -> multi
+
+        {id, entity}, multi ->
         # Every id here should be an integer
         schema = client.tables[tk].schema
         multi_mod(client).update(multi, "#{tk}:#{id}", fn prev_ops ->
@@ -108,41 +101,11 @@ defmodule Sorcery.Storage.EctoAdapter do
   end
 
 
-  # We must be careful to handle the placeholders first.
-  # They can go under :inserts
-  # And they can be removed from :changes_db
-  # While we're in there, we can also un-struct to avoid Access errors.
-  defp separate_inserts(src) do
-    empty_src =
-      src
-      |> Map.from_struct()
-      |> Map.put(:inserts, %{})
-      |> Map.put(:changes_db, %{})
-
-    Enum.reduce(src.changes_db, empty_src, fn {tk, table}, acc ->
-      {i, u} = Enum.reduce(table, {%{}, %{}}, fn {id, entity}, {i, u} ->
-        entity = if is_struct(entity), do: Map.from_struct(entity), else: entity
-
-        case id do
-          "$sorcery:" <> _ -> {Map.put(i, id, entity), u}
-          _ -> {i, Map.put(u, id, entity)}
-        end
-      end)
-
-      inserts = Map.merge(acc.inserts, i)
-      updates = Map.merge(acc.changes_db, u)
-
-      acc
-      |> put_in([:inserts, tk], inserts)
-      |> put_in([:changes_db, tk], updates)
-
-    end)
-
-  end
-
-  # Helpers
+  
+  # Returns an %Ecto.Multi{} struct
   defp multi_mod(%{ecto: ecto}) do
     Module.concat([ecto, "Multi"])
   end
+
 
 end

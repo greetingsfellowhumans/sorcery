@@ -1,6 +1,5 @@
 defmodule Sorcery.Utils.Maps do
 
-
   @doc """
   Like `mkdir -p`, but for elixir maps.
   Safely does put_in, assuming nothing but maps all the way down.
@@ -14,16 +13,28 @@ defmodule Sorcery.Utils.Maps do
     Map.put(m, hd, submap)
   end
 
+  
+  def delete_in(m, [hd]) do
+    Map.delete(m, hd)
+  end
+  def delete_in(m, [hd | tl]) do
+    submap = Map.get(m, hd, %{})
+             |> delete_in(tl)
+    Map.put(m, hd, submap)
+  end
 
+  
   def deep_merge(left, right) do
     Map.merge(left, right, &deep_resolve/3)
   end
 
+ 
   # Key exists in both maps, and both values are maps as well.
   # These can be merged recursively.
   defp deep_resolve(_key, left = %{}, right = %{}) do
     deep_merge(left, right)
   end
+  
 
   # Key exists in both maps, but at least one of the values is
   # NOT a map. We fall back to standard merge behavior, preferring
