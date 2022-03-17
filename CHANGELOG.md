@@ -1,3 +1,8 @@
+## [0.2.1] March 16, 2022
+### Fix
+- Spotted and fixed a potential memory leak. Sometimes during unmount, a race condition would cause the cleanup functionality to not happen, thus the db would theoretically grow forever without being trimmed as people leave.
+
+
 ## [0.2.0] March 16, 2022
 
 ### Breaking Changes
