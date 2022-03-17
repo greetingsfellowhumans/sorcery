@@ -22,7 +22,9 @@ defmodule Sorcery.PortalMonitor do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    state[pid].sorcery_unmount(pid)
+    if Process.alive?(pid) do
+      state[pid].sorcery_unmount(pid)
+    end
     new_state = Map.delete(state, pid)
     {:noreply, new_state}
   end
