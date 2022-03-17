@@ -29,9 +29,9 @@ defmodule Sorcery.Src do
     :user => %{id: 2, name: "..."},
   })
 
-  get_in(src, [:user, 1]) => %{id: 1, name: "..."}
-  get_in(src, [:something, 123]) => %{id: 123, foo: 123421}
-  get_in(src, [:something, 123, :foo]) => 123421
+  Src.get_in(src, [:user, 1]) => %{id: 1, name: "..."}
+  Src.get_in(src, [:something, 123]) => %{id: 123, foo: 123421}
+  Src.get_in(src, [:something, 123, :foo]) => 123421
 
   """
 
