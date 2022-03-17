@@ -113,7 +113,7 @@ def handle_event("inc_likes", %{comment_id: comment_id}, socket) do
   # We create a %Sorcery.Src{} struct to update the Source upon which all portals depend.
 
   src = Src.new(socket.assigns.portals, args)
-        |> update_in([:comment, comment_id, :likes], fn likes -> likes + 1 end)
+        |> Src.update_in([:comment, comment_id, :likes], fn likes -> likes + 1 end)
 
   # Now use the Src!
   # This was included with the live_helper.
@@ -136,7 +136,7 @@ You start by passing in a map of data, in exactly the format the portals come in
 
 Src has two such maps, actually. :original_db, and :changes_db (which starts its life as %{})
 
-As you might have guessed, Src implements Access, so you can simply use get_in, put_in, etc.
+As you might have guessed, Src implements Access internally, but you should instead use Src.get_in, Src.put_in, etc.
 Those functions will target the most up-to-date data possible, whether that means data from changes, or original, or even a combination.
 
 It also implements Enumerable which you can use like: Enum.map(src, fn {tk, id, entity} -> ...end)
@@ -180,14 +180,14 @@ Simple example of an interceptor that increments a like for the current comment
 (Now we're finally using Src :args passed as the second argument of Src.new/2)
 ```elixir
 def intercept(%{args: %{comment_id: comment_id}} = src) do
-  update_in(src, [:comment, comment_id, :likes], fn likes -> likes + 1 end)
+  Src.update_in(src, [:comment, comment_id, :likes], fn likes -> likes + 1 end)
 end
 ```
 
 Here's one that will stop all future interceptors, if likes > 100, by setting the :interceptors list to empty.
 ```elixir
 def intercept(%{args: %{comment_id: comment_id}} = src) do
-  likes = get_in(src, [:comment, comment_id, :likes])
+  likes = Src.get_in(src, [:comment, comment_id, :likes])
   if likes > 100 do
     Map.put(src, :interceptors, []) 
   else
@@ -202,11 +202,11 @@ Do be careful to change something so you don't end up in an infinite loop. Didn'
 ```elixir
 def intercept(src) do
   %{comment_id: comment_id} = src.args
-  likes = get_in(src, [:comment, comment_id, :likes])
+  likes = Src.get_in(src, [:comment, comment_id, :likes])
   if likes > 100 do
     src
     |> Src.time_backward(2)
-    |> put_in([:comment, 25, :likes], 0) # Just to be safe
+    |> Src.put_in([:comment, 25, :likes], 0) # Just to be safe
   else
     src
   end

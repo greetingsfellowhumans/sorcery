@@ -65,6 +65,8 @@ defmodule Sorcery.Src do
     %__MODULE__{original_db: db, args: args}
   end
 
+  def get_in(src, path), do: Kernel.get_in(src, path)
+  
   def update_in(src, path, cb) do
     ch = Kernel.update_in(src, path, cb) |> Sorcery.Src.Access.diff()
     Map.put(src, :changes_db, ch)
@@ -83,14 +85,11 @@ defmodule Sorcery.Src do
   end
 
   @doc """
-  Get all ids for a given table
-  @TODO This might need more work if you delete an entity and the id is still in original_db.
+  Returns all original and/or changed ids for a table.
+  Note, this will return an id even after applying Src.delete.
   """
-  def all_ids(%{original_db: og, changes_db: ch, deletes: del}, tk) do
-    o = Map.get(og, tk, %{}) |> Map.keys()
-    c = Map.get(ch, tk, %{}) |> Map.keys()
-    d = Enum.reduce(del, [], fn {t, id}, acc -> if t == tk, do: [id | acc], else: acc end)
-    MapSet.new(o ++ c ++ d) |> MapSet.to_list()
+  def all_ids(src, tk) do
+    Src.get_in(src, [tk]) |> Map.keys()
   end
 
   @doc """

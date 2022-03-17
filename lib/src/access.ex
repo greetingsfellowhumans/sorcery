@@ -6,7 +6,7 @@ defmodule Sorcery.Src.Access do
 
 
   def fetch(%{changes_db: ch, original_db: og, deletes: del}, k) do
-    db = Map.merge(og, ch) |> Utils.remove_dels_from_db(del)
+    db = Sorcery.Utils.Maps.deep_merge(og, ch) |> Utils.remove_dels_from_db(del)
     Map.fetch(db, k)
   end
 

@@ -25,14 +25,24 @@ defmodule SrcTest do
 
   test "Only updates what we need" do
     src = Src.new(%{person: %{1 => @p1, 2 => @p2}})
+    
     assert src.changes_db == %{}
     src = Src.put_in(src, [:person, 2, :age], 1)
+    
+    assert %{
+      1 => %{age: 100, id: 1, name: "Aaron"}, 
+      2 => %{age: 1, id: 2, name: "Not Aaron"}
+    } == get_in(src, [:person])
+    
     expect_ch = %{person: %{2 => %{age: 1}}} 
     assert expect_ch == src.changes_db #Src.Access.diff(src) 
+    assert 1 == get_in(src, [:person, 2, :age])
+    assert %{age: 1, id: 2, name: "Not Aaron"} == get_in(src, [:person, 2])
 
     src = Src.delete(src, :person, 1)
     assert [person: 1] == src.deletes
     assert %{person: %{2 => %{age: 1}}}  == src.changes_db
+    
   end
 
 
@@ -149,6 +159,7 @@ defmodule SrcTest do
     # Pass over the next 2 interceptors without calculating anything
     src = Src.time_forward(src, 2)
     assert get_in(src, [:person, 1, :age]) == 102
+    assert Src.get_in(src, [:person, 1, :age]) == 102
     assert 1 == Enum.count(src.interceptors)
     assert 4 == Enum.count(src.complete_interceptors)
   end
