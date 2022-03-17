@@ -89,9 +89,9 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
 
-      def unmount(pid, opts \\ %{}) do
+      def unmount(pids, opts \\ %{}) do
         name = opts[:name] || @name
-        GenServer.cast(name, {:unmount, pid, opts})
+        GenServer.cast(name, {:unmount, pids, opts})
       end
      
       ## Callbacks
@@ -171,8 +171,10 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
 
-      def handle_cast({:unmount, pid, opts}, state) do
-        new_state = Sorcery.Storage.GenserverAdapter.Unmount.unmount(pid, state)
+      def handle_cast({:unmount, pids, opts}, state) do
+        new_state = Enum.reduce(pids, state, fn pid, acc ->
+          Sorcery.Storage.GenserverAdapter.Unmount.unmount(pid, acc)
+        end)
         {:noreply, new_state}
       end
 
