@@ -32,8 +32,8 @@ defmodule Sorcery.LiveHelper do
       end
 
 
-      def sorcery_unmount(pid) do
-        unquote(client).unmount(pid)
+      def sorcery_unmount(pids) do
+        unquote(client).unmount(pids)
       end
 
 
