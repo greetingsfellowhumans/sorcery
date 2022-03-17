@@ -1,9 +1,7 @@
 defmodule Sorcery.Src do
   use Norm
-  #alias Specs.Primative, as: T
   alias Sorcery.Msg
   alias Sorcery.Src
-  #1alias Sorcery.Src.Utils
 
 
   @moduledoc """
@@ -31,9 +29,9 @@ defmodule Sorcery.Src do
     :user => %{id: 2, name: "..."},
   })
 
-  get_in(src, [:user, 1]) => %{id: 1, name: "..."}
-  get_in(src, [:something, 123]) => %{id: 123, foo: 123421}
-  get_in(src, [:something, 123, :foo]) => 123421
+  Src.get_in(src, [:user, 1]) => %{id: 1, name: "..."}
+  Src.get_in(src, [:something, 123]) => %{id: 123, foo: 123421}
+  Src.get_in(src, [:something, 123, :foo]) => 123421
 
   """
 
@@ -67,16 +65,31 @@ defmodule Sorcery.Src do
     %__MODULE__{original_db: db, args: args}
   end
 
+  def get_in(src, path), do: Kernel.get_in(src, path)
+  
+  def update_in(src, path, cb) do
+    ch = Kernel.update_in(src, path, cb) |> Sorcery.Src.Access.diff()
+    Map.put(src, :changes_db, ch)
+  end
+  def put_in(src, path, cb) do
+    ch = Kernel.put_in(src, path, cb) |> Sorcery.Src.Access.diff()
+    Map.put(src, :changes_db, ch)
+  end
+  def delete(%{original_db: og, changes_db: ch} = src, tk, id) do
+    ch_table = Map.get(ch, tk, %{}) |> Map.delete(id)
+    ch = Map.put(ch, tk, ch_table)
+    
+    src
+    |> Map.put(:changes_db, ch)
+    |> Map.update(:deletes, [], fn dels -> [{tk, id} | dels] end)
+  end
 
   @doc """
-  Get all ids for a given table
-  @TODO This might need more work if you delete an entity and the id is still in original_db.
+  Returns all original and/or changed ids for a table.
+  Note, this will return an id even after applying Src.delete.
   """
-  def all_ids(%{original_db: og, changes_db: ch, deletes: del}, tk) do
-    o = Map.get(og, tk, %{}) |> Map.keys()
-    c = Map.get(ch, tk, %{}) |> Map.keys()
-    d = Enum.reduce(del, [], fn {t, id}, acc -> if t == tk, do: [id | acc], else: acc end)
-    MapSet.new(o ++ c ++ d) |> MapSet.to_list()
+  def all_ids(src, tk) do
+    Src.get_in(src, [tk]) |> Map.keys()
   end
 
   @doc """
