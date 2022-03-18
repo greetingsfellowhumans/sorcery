@@ -28,8 +28,8 @@ defmodule Sorcery.Specs.Primative do
   }
   """
   def tablemap(), do: spec(is_map() and fn t ->
-    Enum.all?(t, fn {id, %{}} ->
-      is_integer(id)
+    Enum.all?(t, fn {idk, %{}} ->
+      conform!(idk, id())
     end)
   end)
 
