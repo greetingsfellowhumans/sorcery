@@ -163,5 +163,28 @@ defmodule SrcTest do
     assert 1 == Enum.count(src.interceptors)
     assert 4 == Enum.count(src.complete_interceptors)
   end
+
+
+  @dog_src %Sorcery.Src{
+    args: %{female_id: 1, male_id: 2},
+    changes_db: %{},
+    complete_interceptors: [],
+    deletes: [],
+    inserts: %{},
+    interceptors: [],
+    msg: %Sorcery.Msg{body: %{}, cb: &Sorcery.Msg.noop/0, flash: "", status: :ok},
+    original_db: %{
+      dog: %{
+        1 => %{id: 1, name: "D1", sex: "female"},
+        2 => %{id: 2, name: "D2", sex: "male"}
+      }
+    }
+  }
+  test "Inserting" do
+    new_dog = %{father_id: 2, mother_id: 1, name: "D3", sex: "male"}
+    expected = %{dog: %{"$sorcery:dog:1" => new_dog}}
+    src = Src.put_in(@dog_src, [:dog, "$sorcery:dog:1"], new_dog)
+    assert expected == src.changes_db
+  end
   
 end
