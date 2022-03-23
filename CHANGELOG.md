@@ -1,3 +1,8 @@
+## [0.2.3] March 22, 2022
+## Feature
+Added Src.put_args and Src.update_args
+
+
 ## [0.2.2] March 16, 2022
 ### Fix
 - Norm specs in some places expected ids to only be integers, which would break when using placeholders.

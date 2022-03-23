@@ -75,13 +75,28 @@ defmodule Sorcery.Src do
     ch = Kernel.put_in(src, path, cb) |> Sorcery.Src.Access.diff()
     Map.put(src, :changes_db, ch)
   end
-  def delete(%{original_db: og, changes_db: ch} = src, tk, id) do
+  def delete(%{changes_db: ch} = src, tk, id) do
     ch_table = Map.get(ch, tk, %{}) |> Map.delete(id)
     ch = Map.put(ch, tk, ch_table)
     
     src
     |> Map.put(:changes_db, ch)
     |> Map.update(:deletes, [], fn dels -> [{tk, id} | dels] end)
+  end
+
+
+  def update_args(%{args: args} = src, k, default, cb) do
+    new_args = case Map.get(args, k) do
+      nil -> Map.put(args, k, default)
+      old -> Map.put(args, k, cb.(old))
+    end
+    Map.put(src, :args, new_args)
+  end
+
+  def put_args(src, k, v) do
+    old_args = Map.get(src, :args)
+    new_args = Map.put(old_args, k, v)
+    Map.put(src, :args, new_args)
   end
 
   @doc """
