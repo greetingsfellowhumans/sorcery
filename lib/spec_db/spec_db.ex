@@ -42,7 +42,7 @@ defmodule Sorcery.SpecDb do
 
 
     test "build_schema macro" do
-      # Builds the struct via Ecto
+      # Builds the struct via Ecto.Schema
       assert Map.get(%Player{}, :name) == "Player"
 
       # Builds the Norm schema
@@ -64,7 +64,8 @@ defmodule Sorcery.SpecDb do
 
 
         # If we use numbers outside the min/max, using `bump: true` will set it the same min/max value.
-        # Remember our spec_table said age was min: 0, max: 200
+        # Remember our spec_table included:
+        # age: %{t: :integer, min: 0, max: 200, bump: true}
 
         player = Map.put(player, :age, 9999999)
         cs = Player.sorcery_update(%Player{id: player.id}, player)
@@ -113,15 +114,16 @@ defmodule Sorcery.SpecDb do
 
 
   @doc """
-  Will inject the following:
   ```
+  # Injects this
   use Ecto.Schema
 
   schema "name" do
     field :fieldname, :type
   end
+  
+  # While passing in all the data from @spec_table
   ```
-  passing in all the data from @spec_table
   """
   defmacro build_ecto_schema(name) do
     quote do
@@ -130,6 +132,9 @@ defmodule Sorcery.SpecDb do
     end
   end
 
+  @doc """
+  Adds the __MODULE__.t() function, for usage with Norm.
+  """
   defmacro build_norm_schema() do
     quote do
 
@@ -140,6 +145,9 @@ defmodule Sorcery.SpecDb do
     end
   end
 
+  @doc """
+  Adds the __MODULE__.gen() function, for generating data in property based testing with StreamData
+  """
   defmacro build_streamdata_generator() do
     quote do
 
@@ -151,6 +159,9 @@ defmodule Sorcery.SpecDb do
   end
 
 
+  @doc """
+  Adds `sorcery_insert/2` and `sorcery_update/2`, based on the @spec_table
+  """
   defmacro build_changesets() do
     quote do
       import Ecto.Changeset
@@ -174,6 +185,16 @@ defmodule Sorcery.SpecDb do
   end
 
 
+  @doc """
+  ```elixir
+  # Macro which automatically adds to your module:
+  def spec_table, do: @spec_table
+  Sorcery.SpecDb.build_ecto_schema(name)
+  Sorcery.SpecDb.build_norm_schema()
+  Sorcery.SpecDb.build_streamdata_generator()
+  Sorcery.SpecDb.build_changesets()
+  ```
+  """
   defmacro build_schema_module(name) do
     quote do
       def spec_table, do: @spec_table
@@ -184,11 +205,5 @@ defmodule Sorcery.SpecDb do
     end
   end
 
- # @doc """
- # When used, dispatch to the appropriate controller/view/etc.
- # """
- # defmacro __using__(which) when is_atom(which) do
- #   apply(__MODULE__, which, [])
- # end
 
 end
