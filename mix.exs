@@ -43,6 +43,7 @@ defmodule Sorcery.MixProject do
       {:jason, "~> 1.2"},
       {:stream_data, "~> 0.4"},
       {:ex_doc, "~> 0.14", only: :dev, runtime: false},
+      {:ecto, "~> 3.7.2", only: [:dev, :test], runtime: false},
     ]
   end
 end
