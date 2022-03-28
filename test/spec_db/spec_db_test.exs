@@ -3,8 +3,6 @@ defmodule Player do
 
   require Sorcery.SpecDb
 
-  #use Norm
-
   @spec_table %{
     user_id: %{t: :id, require_update: true},
     name: %{t: :string, default: "Player", min: 3, max: 45},
