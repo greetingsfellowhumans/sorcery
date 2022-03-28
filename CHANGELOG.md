@@ -1,3 +1,10 @@
+## [0.2.4] March 27, 2022
+## Feature
+Added SpecDb system
+- SchemaModule.t() can be passed into Norm contract.
+- SchemaModule.gen(%{}) can be passed into property tests.
+- Virtually all Ecto.Changeset stuff can be automated away.
+
 ## [0.2.3] March 22, 2022
 ## Feature
 Added Src.put_args and Src.update_args
