@@ -1,10 +1,7 @@
 defmodule Sorcery.Storage.GenserverAdapter.QueryMeta do
   alias Sorcery.Utils.Maps
 
-  @moduledoc """
-  Can be used with the entire state.db under :old_db.
-  OR if changes are being made, with the p
-  """
+  @moduledoc false
 
   defstruct [
     all_table_keys: MapSet.new(),

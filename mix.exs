@@ -5,7 +5,7 @@ defmodule Sorcery.MixProject do
     [
       app: :sorcery,
       name: "Sorcery",
-      version: "0.2.3",
+      version: "0.2.4",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -43,6 +43,7 @@ defmodule Sorcery.MixProject do
       {:jason, "~> 1.2"},
       {:stream_data, "~> 0.4"},
       {:ex_doc, "~> 0.14", only: :dev, runtime: false},
+      {:ecto, "~> 3.7.2", only: [:dev, :test], runtime: false},
     ]
   end
 end

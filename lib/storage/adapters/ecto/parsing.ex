@@ -3,6 +3,8 @@ defmodule Sorcery.Storage.Adapters.Ecto.Parsing do
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Utils.Maps
 
+  @moduledoc false
+
   # This is probably the entrypoint you are looking for
   @contract get_ordered_inserts(T.src()) :: coll_of({T.tk(), T.id(), T.entity()})
   def get_ordered_inserts(src) do

@@ -1,13 +1,6 @@
 defmodule Sorcery.Storage.GenserverAdapter.GetPresence do
-  @moduledoc """
-  Pure functions for pulling a list of entities out of a portal.
-  """
-  use Norm
-  alias Sorcery.Specs.Primative, as: T
-  alias Sorcery.Specs.Portals, as: PT
-  alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  @moduledoc false
 
-  #@contract my_portals(AdapterT.client(), T.any(), spec(is_map())) :: coll_of(PT.portal)
   @doc """
   List all portals matching the current pid.
   """

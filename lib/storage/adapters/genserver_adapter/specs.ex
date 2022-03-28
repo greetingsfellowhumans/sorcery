@@ -1,4 +1,6 @@
 defmodule Sorcery.Storage.GenserverAdapter.Specs do
+  @moduledoc false
+
   use Norm
   alias Sorcery.Specs.Primative, as: T
 

@@ -1,4 +1,6 @@
 defmodule Sorcery.Storage.Adapters.Ecto.Specs do
+  @moduledoc false
+
   use Norm
   
   def int_id(), do: spec(is_integer())

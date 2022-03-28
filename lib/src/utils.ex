@@ -1,7 +1,8 @@
 defmodule Sorcery.Src.Utils do
+  @moduledoc false
+
   use Norm
   alias Sorcery.Specs.Primative, as: T
-
 
   @contract remove_dels_from_db(T.db(), coll_of({T.tk(), T.id()})) :: T.db()
   def remove_dels_from_db(db, dels) do
