@@ -1,8 +1,6 @@
 defmodule Sorcery.Src.Enumerable do
   alias Sorcery.Src
-  @moduledoc """
-  Functions to help implement Enumerable for the Src struct.
-  """
+  @moduledoc false
 
   defimpl Enumerable, for: Src do
 

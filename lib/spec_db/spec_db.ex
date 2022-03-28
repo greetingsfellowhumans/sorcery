@@ -1,8 +1,9 @@
 defmodule Sorcery.SpecDb do
   @moduledoc """
-  ## SpecDb
+  ## Introduction
   In Sorcery, we keep data sync'd across nodes. So it naturally follows that we should keep the metadata sync'd across codes.
 
+  ## Schema module
   In a typical phoenix app, you might have a Player schema for a game.
   You can replace part, or all of that module with Sorcery. Observe:
 
@@ -30,6 +31,7 @@ defmodule Sorcery.SpecDb do
   end
   ```
 
+  ## Exploring the results
   What does this achieve? Well, I think the test module actually speaks for itself.
   Read the comments carefully
 
@@ -79,6 +81,9 @@ defmodule Sorcery.SpecDb do
 
   end
   ```
+
+  ## The table_spec
+  To see more about the options to pass into each field, see the types section.
   """
 
   @typedoc "Required. The type of this field"
@@ -111,7 +116,14 @@ defmodule Sorcery.SpecDb do
   @typedoc "Whether this field should be in validate_required inside sorcery_insert/2"
   @type require_insert :: boolean
   
+  @typedoc "A list of possible options"
+  @type one_of :: [any]
 
+  @typedoc "If t: :list, then every item must be of this type"
+  @type coll_of :: atom
+
+  @typedoc "Sets the length of a list type."
+  @type length :: integer
 
   @doc """
   ```

@@ -2,10 +2,18 @@ defmodule Sorcery.SpecDb.CsHelpers do
   @moduledoc false
 
 
-  defp builder(table, f, o) do
+  defp builder(table, f, false) do
     Enum.reduce(table, [], fn {k, attr}, acc ->
       case attr do
-        %{^f => ^o} -> acc
+        %{^f => true} -> [k | acc]
+        _ -> acc
+      end
+    end)
+  end
+  defp builder(table, f, true) do
+    Enum.reduce(table, [], fn {k, attr}, acc ->
+      case attr do
+        %{^f => false} -> acc
         _ -> [k | acc]
       end
     end)
@@ -13,16 +21,20 @@ defmodule Sorcery.SpecDb.CsHelpers do
 
   # These just build lists of atoms for Ecto.Changeset cast and validate_required
   def get_cast_update(table) do
-    builder(table, :cast_update, false)
+    default = true
+    builder(table, :cast_update, default)
   end
   def get_cast_insert(table) do
-    builder(table, :cast_insert, false)
+    default = true
+    builder(table, :cast_insert, default)
   end
   def get_require_update(table) do
-    builder(table, :require_update, false)
+    default = false
+    builder(table, :require_update, default)
   end
   def get_require_insert(table) do
-    builder(table, :require_insert, false)
+    default = true
+    builder(table, :require_insert, default)
   end
 
   defp bump_string_max(string, %{max: max}), do: String.slice(string, 0..max)

@@ -1,7 +1,5 @@
 defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
-  @moduledoc """
-  Pure functions for pulling a list of entities out of a portal.
-  """
+  @moduledoc false
   use Norm
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Specs.Portals, as: PT
@@ -9,7 +7,6 @@ defmodule Sorcery.Storage.GenserverAdapter.ViewPortal do
 
 
 
-  #@contract view_portal(PT.portal(), AdapterT.client_state()) :: T.tablemap() 
   @doc """
   Given a portal, and the state, return a map of all the entities which satisfy all guards.
   """

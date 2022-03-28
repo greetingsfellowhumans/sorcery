@@ -1,8 +1,6 @@
 defmodule Sorcery.Src.Access do
   alias Sorcery.Src.Utils
-  @moduledoc """
-  Functions to help implement Access for the Src struct.
-  """
+  @moduledoc false
 
 
   def fetch(%{changes_db: ch, original_db: og, deletes: del}, k) do

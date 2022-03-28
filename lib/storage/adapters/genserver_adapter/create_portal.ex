@@ -1,11 +1,6 @@
 defmodule Sorcery.Storage.GenserverAdapter.CreatePortal do
-  @moduledoc """
-  Pure functions for pulling a list of entities out of a portal.
-  """
+  @moduledoc false
   use Norm
-  alias Sorcery.Specs.Primative, as: T
-  alias Sorcery.Specs.Portals, as: PT
-  alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
   alias Sorcery.Storage.GenserverAdapter.ViewPortal
 
 

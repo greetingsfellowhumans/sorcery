@@ -6,9 +6,11 @@ defmodule Player do
   #use Norm
 
   @spec_table %{
-    user_id: %{t: :id, require_update: false},
+    user_id: %{t: :id, require_update: true},
     name: %{t: :string, default: "Player", min: 3, max: 45},
-    age: %{t: :integer, min: 0, max: 200, bump: true}
+    age: %{t: :integer, min: 0, max: 200, bump: true},
+    gender: %{t: :string, one_of: ["male", "female"]},
+    permissions: %{t: :list, coll_of: :string}
   }
 
   Sorcery.SpecDb.build_schema_module("player")
@@ -34,8 +36,8 @@ defmodule Sorcery.SpecDb.SpecDbTest do
 
     # Builds the Norm schema
     assert !valid?(%{name: "hello"}, Player.t())
-    assert valid?(%Player{user_id: 1, age: 23, name: "hello"}, Player.t())
-    assert valid?(%{user_id: 1, age: 23, name: "hello"}, Player.t())
+    assert valid?(%Player{user_id: 1, permissions: ["admin"], gender: "male", age: 23, name: "hello"}, Player.t())
+    assert valid?(%{user_id: 1, permissions: ["admin"], gender: "male", age: 23, name: "hello"}, Player.t())
   end
 
   property "Generates Players" do
@@ -43,10 +45,17 @@ defmodule Sorcery.SpecDb.SpecDbTest do
       assert valid?(player, Player.t())
 
       # Valid changesets exist?
-      assert [:user_id, :name, :age] == Sorcery.SpecDb.CsHelpers.get_cast_update(Player.spec_table())
-      assert [:user_id, :name, :age] == Sorcery.SpecDb.CsHelpers.get_cast_insert(Player.spec_table())
-      assert [:name, :age]           == Sorcery.SpecDb.CsHelpers.get_require_update(Player.spec_table())
-      assert [:user_id, :name, :age] == Sorcery.SpecDb.CsHelpers.get_require_insert(Player.spec_table())
+      assert [:user_id, :permissions, :name, :gender, :age] 
+        == Sorcery.SpecDb.CsHelpers.get_cast_update(Player.spec_table())
+
+      assert [:user_id, :permissions, :name, :gender, :age] 
+        == Sorcery.SpecDb.CsHelpers.get_cast_insert(Player.spec_table())
+
+      assert [:user_id]           
+        == Sorcery.SpecDb.CsHelpers.get_require_update(Player.spec_table())
+
+      assert [:user_id, :permissions, :name, :gender, :age] 
+        == Sorcery.SpecDb.CsHelpers.get_require_insert(Player.spec_table())
 
       cs = Player.sorcery_update(%Player{id: player.id}, player)
       assert cs.valid?
@@ -56,6 +65,9 @@ defmodule Sorcery.SpecDb.SpecDbTest do
       cs = Player.sorcery_update(%Player{id: player.id}, player)
       assert cs.valid?
       assert cs.changes.age == 200
+
+      assert cs.changes.gender in ["male", "female"]
+      assert cs.changes.user_id == 24
     end
   end
 

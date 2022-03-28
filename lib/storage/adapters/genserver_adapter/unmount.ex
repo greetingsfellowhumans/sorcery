@@ -1,4 +1,6 @@
 defmodule Sorcery.Storage.GenserverAdapter.Unmount do
+  @moduledoc false
+
   alias Sorcery.Utils.Maps
 
 

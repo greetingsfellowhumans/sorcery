@@ -1,8 +1,9 @@
 defmodule Sorcery.Storage.EctoAdapter do
+  @moduledoc false
+
   use Norm
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
-  import Sorcery.Storage.Adapters.Ecto.Specs
   alias Sorcery.Storage.Adapters.Ecto.Parsing
   #alias Sorcery.Utils.Maps
 

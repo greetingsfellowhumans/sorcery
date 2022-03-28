@@ -1,10 +1,11 @@
 defmodule Sorcery.Src.Intercept do
+  @moduledoc false
   
   def src_intercept(%{interceptors: []} = src), do: src
   def src_intercept(%{interceptors: [hd | _]} = src) do
-    new_src = hd.(src)
-              |> time_forward()
-              |> src_intercept()
+    hd.(src)
+    |> time_forward()
+    |> src_intercept()
   end
   
   
