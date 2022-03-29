@@ -11,7 +11,12 @@ defmodule Sorcery.SpecDb.EctoHelpers do
           unless Map.get(d, :ignore) do
             kwli = Map.to_list(d)
             case t do
-              :list -> field k, {:array, d.coll_of}
+              :list -> 
+                inner_t = case d.coll_of do
+                  :trinary -> :boolean
+                  other -> other
+                end
+                field k, {:array, inner_t}
               _ -> field k, t, kwli
             end
           end

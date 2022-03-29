@@ -50,6 +50,11 @@ defmodule Sorcery.SpecDb.SdHelperTest do
       assert Enum.all?(s.foo, &(is_binary(&1)))
     end
 
+    check all s <- SdHelpers.gen(%{foo: %{t: :list, coll_of: :trinary, length: 5}}) do
+      assert Enum.count(s.foo) == 5
+      assert Enum.all?(s.foo, &(&1 in [true, false, nil]))
+    end
+
   end
 
 
