@@ -25,6 +25,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
         %{one_of: li} -> one_of(Enum.map(li, fn i ->
           spec(fn value -> i == value end)
         end))
+        %{t: :list, coll_of: t, length: l} -> coll_of(get_t_spec(t), min_count: l, max_count: l)
         %{t: :list, coll_of: t} -> coll_of(get_t_spec(t))
         %{t: :id} -> spec(is_integer())
         %{t: :integer} -> spec(is_integer())
@@ -48,6 +49,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
   defp get_t_spec(:float), do: spec(is_float())
   defp get_t_spec(:bool), do: spec(is_boolean())
   defp get_t_spec(:boolean), do: spec(is_boolean())
+  defp get_t_spec(:trinary), do: one_of([true, false, nil])
   defp get_t_spec(:atom), do: spec(is_atom())
 
 

@@ -87,7 +87,7 @@ defmodule Sorcery.SpecDb do
   """
 
   @typedoc "Required. The type of this field"
-  @type t :: :integer | :float | :boolean | :string
+  @type t :: :integer | :float | :boolean | :string | :trinary
 
   @typedoc "Default: true. Whether Norm should treat this as a required field. Does nothing if :default field is set."
   @type required :: boolean
@@ -124,6 +124,7 @@ defmodule Sorcery.SpecDb do
 
   @typedoc "Sets the length of a list type."
   @type length :: integer
+
 
   @doc """
   ```

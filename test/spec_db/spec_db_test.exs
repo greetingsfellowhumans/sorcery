@@ -8,7 +8,8 @@ defmodule Player do
     name: %{t: :string, default: "Player", min: 3, max: 45},
     age: %{t: :integer, min: 0, max: 200, bump: true},
     gender: %{t: :string, one_of: ["male", "female"]},
-    permissions: %{t: :list, coll_of: :string}
+    permissions: %{t: :list, coll_of: :string},
+    gene: %{t: :list, coll_of: :trinary, length: 5},
   }
 
   Sorcery.SpecDb.build_schema_module("player")
@@ -34,8 +35,8 @@ defmodule Sorcery.SpecDb.SpecDbTest do
 
     # Builds the Norm schema
     assert !valid?(%{name: "hello"}, Player.t())
-    assert valid?(%Player{user_id: 1, permissions: ["admin"], gender: "male", age: 23, name: "hello"}, Player.t())
-    assert valid?(%{user_id: 1, permissions: ["admin"], gender: "male", age: 23, name: "hello"}, Player.t())
+    assert valid?(%Player{user_id: 1, permissions: ["admin"], gene: [true, false, nil, nil, nil], gender: "male", age: 23, name: "hello"}, Player.t())
+    assert valid?(%{user_id: 1, permissions: ["admin"], gene: [true, false, nil, nil, nil], gender: "male", age: 23, name: "hello"}, Player.t())
   end
 
   property "Generates Players" do
@@ -43,16 +44,16 @@ defmodule Sorcery.SpecDb.SpecDbTest do
       assert valid?(player, Player.t())
 
       # Valid changesets exist?
-      assert [:user_id, :permissions, :name, :gender, :age] 
+      assert [:user_id, :permissions, :name, :gene, :gender, :age] 
         == Sorcery.SpecDb.CsHelpers.get_cast_update(Player.spec_table())
 
-      assert [:user_id, :permissions, :name, :gender, :age] 
+      assert [:user_id, :permissions, :name, :gene, :gender, :age] 
         == Sorcery.SpecDb.CsHelpers.get_cast_insert(Player.spec_table())
 
       assert [:user_id]           
         == Sorcery.SpecDb.CsHelpers.get_require_update(Player.spec_table())
 
-      assert [:user_id, :permissions, :name, :gender, :age] 
+      assert [:user_id, :permissions, :name, :gene, :gender, :age] 
         == Sorcery.SpecDb.CsHelpers.get_require_insert(Player.spec_table())
 
       cs = Player.sorcery_update(%Player{id: player.id}, player)

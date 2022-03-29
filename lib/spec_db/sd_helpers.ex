@@ -38,7 +38,7 @@ defmodule Sorcery.SpecDb.SdHelpers do
     Enum.reduce(args, fixed, fn {k, v}, acc ->
       Map.put(acc, k, StreamData.constant(v))
     end)
-    |> Map.put(:id, StreamData.integer())
+    |> Map.put(:id, StreamData.integer(0..99999))
   end
 
 
@@ -82,6 +82,11 @@ defmodule Sorcery.SpecDb.SdHelpers do
   end
   defp get_t_spec(:float, opts), do: StreamData.float(opts)
   defp get_t_spec(:boolean, _opts), do: StreamData.boolean()
+  defp get_t_spec(:trinary, _opts), do: StreamData.one_of([
+    StreamData.constant(true),
+    StreamData.constant(false),
+    StreamData.constant(nil),
+  ])
   defp get_t_spec(:atom, _opts),    do: StreamData.atom(:alphanumeric)
   defp get_t_spec(:list, opts) do 
     t = Keyword.get(opts, :coll_of)
