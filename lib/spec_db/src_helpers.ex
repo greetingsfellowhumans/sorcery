@@ -35,7 +35,7 @@ defmodule Sorcery.SpecDb.SrcHelpers do
   """
 
   use Norm
-  alias Sorcery.SpecDb.{NormHelpers}
+  alias Sorcery.SpecDb.{NormHelpers, SdHelpers}
 
   def any?(), do: spec(fn _ -> true end)
 
@@ -139,6 +139,9 @@ defmodule Sorcery.SpecDb.SrcHelpers do
       {k, %{t: :id, placeholder: "$sorcery:" <> _ = phid}}, acc ->
         id = Map.get(placeholders, phid).real
         Map.put(acc, k, StreamData.constant(id))
+
+      {k, %{t: _t} = attr}, acc ->
+        Map.put(acc, k, SdHelpers.gen_column(attr))
 
       {k, v}, acc ->
         Map.put(acc, k, StreamData.constant(v))
