@@ -37,6 +37,20 @@ defmodule Sorcery.SpecDb.NormHelperTest do
 
     m = %{foo: %{t: :integer, max: 0 }}
     assert  valid?(%{foo: -125}, Sorcery.SpecDb.NormHelpers.build_schema(m))
+
+
+    m = %{foo: %{t: :id }}
+    assert  valid?(%{foo: 125}, Sorcery.SpecDb.NormHelpers.build_schema(m))
+
+    m = %{foo: %{t: :id }}
+    assert !valid?(%{foo: -125}, Sorcery.SpecDb.NormHelpers.build_schema(m))
+
+    m = %{foo: %{t: :id }}
+    assert valid?(%{foo: "$sorcery:foo:1"}, Sorcery.SpecDb.NormHelpers.build_schema(m))
+
+    m = %{foo: %{t: :id }}
+    assert !valid?(%{foo: "Hello"}, Sorcery.SpecDb.NormHelpers.build_schema(m))
+
   end
 
 
