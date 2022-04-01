@@ -5,7 +5,7 @@ defmodule Sorcery.MixProject do
     [
       app: :sorcery,
       name: "Sorcery",
-      version: "0.2.4",
+      version: "0.2.5",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
