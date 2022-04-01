@@ -17,7 +17,9 @@ defmodule Sorcery.SpecDb.SdHelpers do
         end))
         %{t: :string}  -> get_t_spec(:string, opts)
         %{t: :integer} -> get_t_spec(:integer, opts)
-        %{t: :id} -> get_t_spec(:integer, opts)
+        %{t: :id} -> 
+          opts = Keyword.put_new(opts, :min, 1)
+          get_t_spec(:integer, opts)
         %{t: :float} -> get_t_spec(:float, opts)
         %{t: :boolean} -> get_t_spec(:boolean, opts)
         %{t: :atom} -> get_t_spec(:atom, opts)
@@ -38,7 +40,7 @@ defmodule Sorcery.SpecDb.SdHelpers do
     Enum.reduce(args, fixed, fn {k, v}, acc ->
       Map.put(acc, k, StreamData.constant(v))
     end)
-    |> Map.put(:id, StreamData.integer(0..99999))
+    |> Map.put_new(:id, StreamData.integer(1..99999))
   end
 
 
@@ -77,6 +79,8 @@ defmodule Sorcery.SpecDb.SdHelpers do
     min = Keyword.get(opts, :min, 0)
     cond do
       !!min and !!max -> StreamData.integer(min..max)
+      !!min -> StreamData.integer(min..(min + 99999))
+      !!max -> StreamData.integer((max - 99999)..max)
       true -> StreamData.integer()
     end
   end

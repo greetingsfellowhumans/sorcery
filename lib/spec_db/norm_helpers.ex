@@ -28,7 +28,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
         %{t: :list, coll_of: t, length: l} -> coll_of(get_t_spec(t, attr), min_count: l, max_count: l)
         %{t: :list, coll_of: t} -> coll_of(get_t_spec(t, attr))
         %{t: :integer} -> get_t_spec(:integer, attr)
-        %{t: :id} -> get_t_spec(:integer, attr)
+        %{t: :id} -> get_t_spec(:id, attr)
         %{t: :boolean} -> get_t_spec(:boolean, attr)
         %{t: :string} -> get_t_spec(:string, attr)
         %{t: :float} -> get_t_spec(:float, attr)
@@ -38,6 +38,13 @@ defmodule Sorcery.SpecDb.NormHelpers do
     |> selection(required_keys(m))
   end
 
+  defp get_t_spec(:id, _), do: one_of([
+    spec(is_integer() and fn i -> i >= 1 end),
+    spec(is_binary() and fn
+      "$sorcery:" <> _ -> true
+      _s -> false
+    end)
+  ])
 
   defp get_t_spec(:integer, %{min: min, max: max}), do: spec(is_integer() and fn i -> i in min..max end)
   defp get_t_spec(:integer, %{min: min}), do: spec(is_integer() and fn i -> i >= min end)
