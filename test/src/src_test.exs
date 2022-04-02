@@ -42,6 +42,10 @@ defmodule SrcTest do
     src = Src.delete(src, :person, 1)
     assert [person: 1] == src.deletes
     assert %{person: %{2 => %{age: 1}}}  == src.changes_db
+
+    # Update entities that don't yet exist
+    src = Src.put_in(src, [:foo, 8, :bar], "Baz")
+    assert %{bar: "Baz"} == Src.get_in(src, [:foo, 8])
     
   end
 

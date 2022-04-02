@@ -35,7 +35,7 @@ end
 
 defmodule Interceptor do
   alias Sorcery.Src
-  require Sorcery.SpecDb.SrcHelpers
+  #require Sorcery.SpecDb.SrcHelpers
   use Norm
 
   @moduledoc """
@@ -62,7 +62,8 @@ defmodule Interceptor do
     }
   }
 
-  Sorcery.SpecDb.SrcHelpers.build_interceptor()
+  use Sorcery.SpecDb.SrcHelpers
+  #Sorcery.SpecDb.SrcHelpers.build_interceptor()
 
 
   def intercept(src) do

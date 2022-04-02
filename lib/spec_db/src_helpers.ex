@@ -91,45 +91,6 @@ defmodule Sorcery.SpecDb.SrcHelpers do
     end)
   end
 
-  defmacro build_interceptor() do
-    quote do
-
-      def src_table, do: @src_table
-
-      def gen() do
-        placeholders = Sorcery.SpecDb.SrcHelpers.get_placeholder_data(@src_table)
-                       |> Sorcery.SpecDb.SrcHelpers.realize_placeholders()
-        args_map = Sorcery.SpecDb.SrcHelpers.gen_args(@src_table, placeholders) |> StreamData.fixed_map()
-        db_map = Sorcery.SpecDb.SrcHelpers.gen_db(@src_table, placeholders) |> StreamData.fixed_map()
-        StreamData.fixed_map(%{args: args_map, original_db: db_map})
-        |> StreamData.map(fn m -> struct(Sorcery.Src, m) end)
-      end
-
-      def t() do
-        # Dear Future, I am so sorry.
-        arg_schema = NormHelpers.build_schema(Map.get(@src_table, :args, %{}))
-        db_schema = Map.get(@src_table, :db, %{})
-                    |> Enum.reduce(%{}, fn {tk, table}, acc ->
-                      table_schema = spec(is_map() and fn entities ->
-                        Enum.all?(table, fn {_id, {mod, _args}} ->
-                          Enum.any?(entities, fn {_, entity} ->
-                            Norm.valid?(entity, mod.t())
-                          end)
-                        end)
-                      end)
-
-                      Map.put(acc, tk, table_schema)
-                    end)
-                    |> Norm.schema()
-                    |> selection(Map.keys(Map.get(@src_table, :db, %{})))
-
-        schema(%{
-          args: arg_schema,
-          original_db: db_schema
-        })
-      end
-    end
-  end
 
 
 
@@ -180,6 +141,48 @@ defmodule Sorcery.SpecDb.SrcHelpers do
       {k, v}, acc -> Map.put(acc, k, v)
     end)
   end
+
+
+  defmacro __using__(_) do
+    quote do
+
+      def src_table, do: @src_table
+
+      def gen() do
+        placeholders = Sorcery.SpecDb.SrcHelpers.get_placeholder_data(@src_table)
+                       |> Sorcery.SpecDb.SrcHelpers.realize_placeholders()
+        args_map = Sorcery.SpecDb.SrcHelpers.gen_args(@src_table, placeholders) |> StreamData.fixed_map()
+        db_map = Sorcery.SpecDb.SrcHelpers.gen_db(@src_table, placeholders) |> StreamData.fixed_map()
+        StreamData.fixed_map(%{args: args_map, original_db: db_map})
+        |> StreamData.map(fn m -> struct(Sorcery.Src, m) end)
+      end
+
+      def t() do
+        # Dear Future, I am so sorry.
+        arg_schema = NormHelpers.build_schema(Map.get(@src_table, :args, %{}))
+        db_schema = Map.get(@src_table, :db, %{})
+                    |> Enum.reduce(%{}, fn {tk, table}, acc ->
+                      table_schema = spec(is_map() and fn entities ->
+                        Enum.all?(table, fn {_id, {mod, _args}} ->
+                          Enum.any?(entities, fn {_, entity} ->
+                            Norm.valid?(entity, mod.t())
+                          end)
+                        end)
+                      end)
+
+                      Map.put(acc, tk, table_schema)
+                    end)
+                    |> Norm.schema()
+                    |> selection(Map.keys(Map.get(@src_table, :db, %{})))
+
+        schema(%{
+          args: arg_schema,
+          original_db: db_schema
+        })
+      end
+    end
+  end
+
 
 end
 

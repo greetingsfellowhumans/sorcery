@@ -2,6 +2,7 @@ defmodule Sorcery.Src do
   use Norm
   alias Sorcery.Msg
   alias Sorcery.Src
+  alias Sorcery.Utils.Maps
 
 
   @moduledoc """
@@ -60,18 +61,35 @@ defmodule Sorcery.Src do
     msg: %Msg{},
   ]
 
+  defp ensure_path(src, path), do: ensure_path(src, path, 0, Enum.count(path))
+  defp ensure_path(src, _path, safe_steps, total_steps) when safe_steps == total_steps, do: src
+  defp ensure_path(src, path, safe_steps, total_steps) do
+    next_steps = safe_steps + 1
+    p = Enum.slice(path, 0..safe_steps)
+    src = case Kernel.get_in(src, p) do
+      nil when next_steps == total_steps -> src
+      nil -> Kernel.put_in(src, p, %{})
+      _other -> src
+    end
+    ensure_path(src, path, next_steps, total_steps)
+  end
 
   def new(db \\ %{}, args \\ %{}) do
     %__MODULE__{original_db: db, args: args}
   end
 
-  def get_in(src, path), do: Kernel.get_in(src, path)
+  def get_in(src, path) do
+    src = ensure_path(src, path)
+    Kernel.get_in(src, path)
+  end
   
   def update_in(src, path, cb) do
+    src = ensure_path(src, path)
     ch = Kernel.update_in(src, path, cb) |> Sorcery.Src.Access.diff()
     Map.put(src, :changes_db, ch)
   end
   def put_in(src, path, cb) do
+    src = ensure_path(src, path)
     ch = Kernel.put_in(src, path, cb) |> Sorcery.Src.Access.diff()
     Map.put(src, :changes_db, ch)
   end
