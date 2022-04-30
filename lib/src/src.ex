@@ -146,6 +146,13 @@ defmodule Sorcery.Src do
   """
   def time_backward(src, steps), do: Sorcery.Src.Intercept.time_backward(src, steps)
 
+  def put_msg(src, :error, body, message) do
+    Map.put(src, :msg, Sorcery.Msg.error(body, message))
+  end
+  def put_msg(src, :success, message), do: put_msg(src, :ok, message)
+  def put_msg(src, :ok, message) do
+    Map.put(src, :msg, Sorcery.Msg.success(message))
+  end
   ###############################
   ###############################
 

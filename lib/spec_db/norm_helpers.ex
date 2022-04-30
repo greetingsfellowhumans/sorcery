@@ -10,10 +10,25 @@ defmodule Sorcery.SpecDb.NormHelpers do
 
   use Norm
 
+  @doc """
+  Replaces Norm.spec. Expects a map that might contain (required: false)
+  Defaults to required.
+  If not required, then allow spec(is_nil)
+  """
+  defmacro opt(attrs, clause) do
+      quote do
+        if Map.get(unquote(attrs), :required) == false do
+          spec(is_nil() or unquote(clause))
+        else
+          spec(unquote(clause))
+        end
+      end
+  end
+
   def required_keys(m) do
     Enum.reduce(m, [], fn {k, attrs}, acc ->
       case attrs do
-        required: false -> acc
+        %{required: false} -> acc
         _ -> [k | acc]
       end
     end)
@@ -23,7 +38,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
     schema(Enum.reduce(m, %{}, fn {k, attr}, acc ->
       v = case attr do
         %{one_of: li} -> one_of(Enum.map(li, fn i ->
-          spec(fn value -> i == value end)
+          opt(attr, fn value -> i == value end)
         end))
         %{t: :list, coll_of: t, length: l} -> coll_of(get_t_spec(t, attr), min_count: l, max_count: l)
         %{t: :list, coll_of: t} -> coll_of(get_t_spec(t, attr))
@@ -39,34 +54,42 @@ defmodule Sorcery.SpecDb.NormHelpers do
     |> selection(required_keys(m))
   end
 
-  def get_t_spec(:id, _), do: one_of([
-    spec(is_integer() and fn i -> i >= 1 end),
-    spec(is_binary() and fn
+
+  def get_t_spec(:id, attrs), do: one_of([
+    opt(attrs, is_integer() and fn i -> i >= 1 end),
+    opt(attrs, is_binary() and fn
       "$sorcery:" <> _ -> true
       _s -> false
     end)
   ])
 
+  
+  #if Map.get(attrs, :required, false) do
+  #end
 
-  def get_t_spec(:integer, %{min: min, max: max}), do: spec(is_integer() and fn i -> i in min..max end)
-  def get_t_spec(:integer, %{min: min}), do: spec(is_integer() and fn i -> i >= min end)
-  def get_t_spec(:integer, %{max: max}), do: spec(is_integer() and fn i -> i <= max end)
-  def get_t_spec(:integer, _), do: spec(is_integer())
+  def get_t_spec(:integer, %{min: min, max: max} = attr), do: opt(attr, is_integer() and fn i -> i in min..max end)
+  def get_t_spec(:integer, %{min: min} = attr), do: opt(attr, is_integer() and fn i -> i >= min end)
+  def get_t_spec(:integer, %{max: max} = attr), do: opt(attr, is_integer() and fn i -> i <= max end)
+  def get_t_spec(:integer, attr), do: opt(attr, is_integer())
 
-  def get_t_spec(:float, %{min: min, max: max}), do: spec(is_float() and fn i -> i >= min and i <= max end)
-  def get_t_spec(:float, %{min: min}), do: spec(is_float() and fn i -> i >= min end)
-  def get_t_spec(:float, %{max: max}), do: spec(is_float() and fn i -> i <= max end)
-  def get_t_spec(:float, _), do: spec(is_float())
+  def get_t_spec(:float, %{min: min, max: max} = attr), do: opt(attr, is_float() and fn i -> i >= min and i <= max end)
+  def get_t_spec(:float, %{min: min} = attr), do: opt(attr, is_float() and fn i -> i >= min end)
+  def get_t_spec(:float, %{max: max} = attr), do: opt(attr, is_float() and fn i -> i <= max end)
+  def get_t_spec(:float, attr), do: opt(attr, is_float())
 
-  def get_t_spec(:string, %{min: min, max: max}), do: spec(is_binary() and fn i -> String.length(i) in min..max end)
-  def get_t_spec(:string, %{min: min}), do: spec(is_binary() and fn i -> String.length(i) >= min end)
-  def get_t_spec(:string, %{max: max}), do: spec(is_binary() and fn i -> String.length(i) <= max end)
-  def get_t_spec(:string, _), do: spec(is_binary())
+  def get_t_spec(:string, %{min: min, max: max} = attr), do: opt(attr, is_binary() and fn i -> String.length(i) in min..max end)
+  def get_t_spec(:string, %{min: min} = attr), do: opt(attr, is_binary() and fn i -> String.length(i) >= min end)
+  def get_t_spec(:string, %{max: max} = attr), do: opt(attr, is_binary() and fn i -> String.length(i) <= max end)
+  def get_t_spec(:string, attr), do: opt(attr, is_binary())
 
 
-  def get_t_spec(:boolean, _), do: spec(is_boolean())
-  def get_t_spec(:trinary, _), do: one_of([true, false, nil])
-  def get_t_spec(:atom, _), do: spec(is_atom())
+  def get_t_spec(:boolean, attr), do: opt(attr, is_boolean())
+  def get_t_spec(:trinary, _attr), do: one_of([true, false, nil])
+  def get_t_spec(:atom, attr), do: opt(attr, is_atom())
+
+  def get_t_spec(li, attr) when is_list(li) do
+    opt(attr, fn item -> item in li end)
+  end
 
 
 end
