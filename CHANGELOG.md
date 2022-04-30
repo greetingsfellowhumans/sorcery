@@ -1,3 +1,22 @@
+# Upcoming
+
+## [0.2.6] April 1, 2022
+Improved SrcHelpers
+- General code cleanup
+- Expand testing
+- Allow all argument column types instead of just :id
+
+Tweaked the Src Access functions.
+- Src.put_in and Src.update_in will now work even when the path doesn't exist. like `mkdir -p`
+
+===================================================================================
+===================================================================================
+
+# Changes
+
+## [0.2.5] March 31, 2022
+Started work on Sorcery.SpecDb.SrcHelpers.build_interceptor()
+
 ## [0.2.4] March 27, 2022
 ## Feature
 Added SpecDb system

@@ -35,7 +35,7 @@ end
 
 defmodule Interceptor do
   alias Sorcery.Src
-  require Sorcery.SpecDb.SrcHelpers
+  #require Sorcery.SpecDb.SrcHelpers
   use Norm
 
   @moduledoc """
@@ -50,6 +50,7 @@ defmodule Interceptor do
     args: %{
       dog_id: %{t: :id, placeholder: "$sorcery:dog:1"},
       kennel_id: %{t: :id, placeholder: "$sorcery:kennel:1"},
+      sex: %{t: :string, one_of: ["male", "female"]}
     },
     db: %{
       dog: %{
@@ -61,7 +62,8 @@ defmodule Interceptor do
     }
   }
 
-  Sorcery.SpecDb.SrcHelpers.build_interceptor()
+  use Sorcery.SpecDb.SrcHelpers
+  #Sorcery.SpecDb.SrcHelpers.build_interceptor()
 
 
   def intercept(src) do
@@ -77,7 +79,7 @@ defmodule Sorcery.SpecDb.SrcHelperTest do
   use Norm
 
   @valid_arg %Sorcery.Src{
-    args: %{dog_id: 25, kennel_id: 1002},
+    args: %{dog_id: 25, kennel_id: 1002, sex: "male"},
     original_db: %{
       dog: %{
         25 => %{id: 25, name: "asdf", age: 100, walk_id: 1002}, # This is the target
@@ -106,7 +108,7 @@ defmodule Sorcery.SpecDb.SrcHelperTest do
     }
   }
   @invalid_arg %Sorcery.Src{
-    args: %{dog_id: 25, kennel_id: 1002},
+    args: %{dog_id: 25, kennel_id: 1002, sex: :male},
     original_db: %{}
   }
 

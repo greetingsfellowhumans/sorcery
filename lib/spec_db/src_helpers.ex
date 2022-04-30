@@ -35,7 +35,7 @@ defmodule Sorcery.SpecDb.SrcHelpers do
   """
 
   use Norm
-  alias Sorcery.SpecDb.{NormHelpers}
+  alias Sorcery.SpecDb.{NormHelpers, SdHelpers}
 
   def any?(), do: spec(fn _ -> true end)
 
@@ -91,7 +91,59 @@ defmodule Sorcery.SpecDb.SrcHelpers do
     end)
   end
 
-  defmacro build_interceptor() do
+
+
+
+  def gen_args(src_table, placeholders) do
+    arg_spec = Map.get(src_table, :args, %{})
+    Enum.reduce(arg_spec, %{}, fn 
+      {k, %{t: :id, placeholder: "$sorcery:" <> _ = phid}}, acc ->
+        id = Map.get(placeholders, phid).real
+        Map.put(acc, k, StreamData.constant(id))
+
+      {k, %{t: _t} = attr}, acc ->
+        Map.put(acc, k, SdHelpers.gen_column(attr))
+
+      {k, v}, acc ->
+        Map.put(acc, k, StreamData.constant(v))
+    end)
+  end
+
+  def gen_db(src_table, placeholders) do
+    db_spec = Map.get(src_table, :db, %{})
+    Enum.reduce(db_spec, %{}, fn {tk, table}, acc -> 
+      new_table = gen_table(table, placeholders)
+      Map.put(acc, tk, new_table)
+    end)
+  end
+
+  def gen_table(table, placeholders) do
+    Enum.reduce(table, %{}, fn 
+      {"$sorcery:" <> _ = phid, {mod, args}}, acc ->
+        id = Map.get(placeholders, phid).real
+        args = Map.put(args, :id, id)
+               |> realize_args(placeholders)
+        entity = mod.gen(args)
+        Map.put(acc, id, entity)
+      {id, {mod, args}}, acc ->
+        args = realize_args(args, placeholders)
+        entity = mod.gen(args)
+        Map.put(acc, id, entity)
+    end)
+    |> StreamData.fixed_map()
+  end
+
+  def realize_args(args, placeholders) do
+    Enum.reduce(args, %{}, fn
+      {k, "$sorcery:" <> _ = phid}, acc ->
+        id = Map.get(placeholders, phid).real
+        Map.put(acc, k, id)
+      {k, v}, acc -> Map.put(acc, k, v)
+    end)
+  end
+
+
+  defmacro __using__(_) do
     quote do
 
       def src_table, do: @src_table
@@ -131,52 +183,6 @@ defmodule Sorcery.SpecDb.SrcHelpers do
     end
   end
 
-
-
-  def gen_args(src_table, placeholders) do
-    arg_spec = Map.get(src_table, :args, %{})
-    Enum.reduce(arg_spec, %{}, fn 
-      {k, %{t: :id, placeholder: "$sorcery:" <> _ = phid}}, acc ->
-        id = Map.get(placeholders, phid).real
-        Map.put(acc, k, StreamData.constant(id))
-
-      {k, v}, acc ->
-        Map.put(acc, k, StreamData.constant(v))
-    end)
-  end
-
-  def gen_db(src_table, placeholders) do
-    db_spec = Map.get(src_table, :db, %{})
-    Enum.reduce(db_spec, %{}, fn {tk, table}, acc -> 
-      new_table = gen_table(table, placeholders)
-      Map.put(acc, tk, new_table)
-    end)
-  end
-
-  def gen_table(table, placeholders) do
-    Enum.reduce(table, %{}, fn 
-      {"$sorcery:" <> _ = phid, {mod, args}}, acc ->
-        id = Map.get(placeholders, phid).real
-        args = Map.put(args, :id, id)
-               |> realize_args(placeholders)
-        entity = mod.gen(args)
-        Map.put(acc, id, entity)
-      {id, {mod, args}}, acc ->
-        args = realize_args(args, placeholders)
-        entity = mod.gen(args)
-        Map.put(acc, id, entity)
-    end)
-    |> StreamData.fixed_map()
-  end
-
-  def realize_args(args, placeholders) do
-    Enum.reduce(args, %{}, fn
-      {k, "$sorcery:" <> _ = phid}, acc ->
-        id = Map.get(placeholders, phid).real
-        Map.put(acc, k, id)
-      {k, v}, acc -> Map.put(acc, k, v)
-    end)
-  end
 
 end
 

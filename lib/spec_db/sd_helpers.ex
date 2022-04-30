@@ -6,27 +6,28 @@ defmodule Sorcery.SpecDb.SdHelpers do
   """
   def fix_map(m, args \\ %{}) do
     fixed = Enum.reduce(m, %{}, fn {k, attr}, acc ->
+      v = gen_column(attr)
 
-      opts = Enum.reduce(attr, [], fn {k, v}, acc ->
-        [{k, v} | acc]
-      end)
+      #opts = Enum.reduce(attr, [], fn {k, v}, acc ->
+      #  [{k, v} | acc]
+      #end)
 
-      v = case attr do
-        %{one_of: li} -> StreamData.one_of(Enum.map(li, fn i -> 
-            StreamData.constant(i)
-        end))
-        %{t: :string}  -> get_t_spec(:string, opts)
-        %{t: :integer} -> get_t_spec(:integer, opts)
-        %{t: :id} -> 
-          opts = Keyword.put_new(opts, :min, 1)
-          get_t_spec(:integer, opts)
-        %{t: :float} -> get_t_spec(:float, opts)
-        %{t: :boolean} -> get_t_spec(:boolean, opts)
-        %{t: :atom} -> get_t_spec(:atom, opts)
+      #v = case attr do
+      #  %{one_of: li} -> StreamData.one_of(Enum.map(li, fn i -> 
+      #      StreamData.constant(i)
+      #  end))
+      #  %{t: :string}  -> get_t_spec(:string, opts)
+      #  %{t: :integer} -> get_t_spec(:integer, opts)
+      #  %{t: :id} -> 
+      #    opts = Keyword.put_new(opts, :min, 1)
+      #    get_t_spec(:integer, opts)
+      #  %{t: :float} -> get_t_spec(:float, opts)
+      #  %{t: :boolean} -> get_t_spec(:boolean, opts)
+      #  %{t: :atom} -> get_t_spec(:atom, opts)
 
 
-        %{t: :list} -> get_t_spec(:list, opts)
-      end
+      #  %{t: :list} -> get_t_spec(:list, opts)
+      #end
 
       if Map.get(attr, :ignore) do
         acc
@@ -41,6 +42,29 @@ defmodule Sorcery.SpecDb.SdHelpers do
       Map.put(acc, k, StreamData.constant(v))
     end)
     |> Map.put_new(:id, StreamData.integer(1..99999))
+  end
+
+  def gen_column(attr) do
+    opts = Enum.reduce(attr, [], fn {k, v}, acc ->
+      [{k, v} | acc]
+    end)
+
+    case attr do
+      %{one_of: li} -> StreamData.one_of(Enum.map(li, fn i -> 
+          StreamData.constant(i)
+      end))
+      %{t: :string}  -> get_t_spec(:string, opts)
+      %{t: :integer} -> get_t_spec(:integer, opts)
+      %{t: :id} -> 
+        opts = Keyword.put_new(opts, :min, 1)
+        get_t_spec(:integer, opts)
+      %{t: :float} -> get_t_spec(:float, opts)
+      %{t: :boolean} -> get_t_spec(:boolean, opts)
+      %{t: :atom} -> get_t_spec(:atom, opts)
+
+
+      %{t: :list} -> get_t_spec(:list, opts)
+    end
   end
 
 
@@ -93,8 +117,16 @@ defmodule Sorcery.SpecDb.SdHelpers do
   ])
   defp get_t_spec(:atom, _opts),    do: StreamData.atom(:alphanumeric)
   defp get_t_spec(:list, opts) do 
+    max = Keyword.get(opts, :max)
+    min = Keyword.get(opts, :min, 0)
+    opts = if max, do: Keyword.put(opts, :max_length, max), else: opts
+    opts = if min, do: Keyword.put(opts, :min_length, min), else: opts
     t = Keyword.get(opts, :coll_of)
     data = get_t_spec(t, opts)
+
     StreamData.list_of(data, opts)
   end
+
+  defp get_t_spec(li, _opts) when is_list(li), do: StreamData.one_of(Enum.map(li, fn i -> StreamData.constant(i) end))
+
 end
