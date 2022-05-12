@@ -37,6 +37,8 @@ defmodule Sorcery.SpecDb.NormHelpers do
   def build_schema(m) do
     schema(Enum.reduce(m, %{}, fn {k, attr}, acc ->
       v = case attr do
+        #%{put: p} -> spec(fn s -> s == p end)
+        %{put: p} -> opt(attr, fn s -> s == p end)
         %{one_of: li} -> one_of(Enum.map(li, fn i ->
           opt(attr, fn value -> i == value end)
         end))
@@ -48,6 +50,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
         %{t: :string} -> get_t_spec(:string, attr)
         %{t: :float} -> get_t_spec(:float, attr)
         %{t: :atom} -> get_t_spec(:atom, attr)
+        %{t: :portals} -> get_t_spec(:portals, attr)
       end
       Map.put(acc, k, v)
     end))
@@ -64,8 +67,16 @@ defmodule Sorcery.SpecDb.NormHelpers do
   ])
 
   
-  #if Map.get(attrs, :required, false) do
-  #end
+  def get_t_spec(:portals, %{tables: tables}) do
+    Enum.reduce(tables, %{}, fn {tk, %{mod: mod, bodies: bodies}}, portals_acc ->
+      table_schema = Enum.reduce(bodies, %{}, fn args, table_acc ->
+        Map.put(table_acc, args[:id], mod.t())
+      end) |> schema() |> selection()
+      Map.put(portals_acc, tk, table_schema)
+    end)
+    |> schema() 
+    |> selection()
+  end
 
   def get_t_spec(:integer, %{min: min, max: max} = attr), do: opt(attr, is_integer() and fn i -> i in min..max end)
   def get_t_spec(:integer, %{min: min} = attr), do: opt(attr, is_integer() and fn i -> i >= min end)

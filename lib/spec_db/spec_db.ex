@@ -157,6 +157,15 @@ defmodule Sorcery.SpecDb do
 
     end
   end
+  defmacro build_norm_schema(name) do
+    quote do
+
+      def unquote(:"#{name}_t")() do
+        Sorcery.SpecDb.NormHelpers.build_schema(@spec_table[unquote(name)].assigns)
+      end
+
+    end
+  end
 
   @doc """
   Adds the __MODULE__.gen() function, for generating data in property based testing with StreamData
@@ -166,6 +175,15 @@ defmodule Sorcery.SpecDb do
 
       def gen(attrs \\ %{}) do
         Sorcery.SpecDb.SdHelpers.gen(@spec_table, attrs)
+      end
+
+    end
+  end
+  defmacro build_streamdata_generator(name) do
+    quote do
+
+      def unquote(:"#{name}_gen")(attrs \\ %{}) do
+        Sorcery.SpecDb.SdHelpers.gen(@spec_table[unquote(name)].assigns, attrs)
       end
 
     end
@@ -218,5 +236,51 @@ defmodule Sorcery.SpecDb do
     end
   end
 
+
+  @doc """
+  In any live_view, component, or live_component module, call:
+  ```elixir
+  # Start with @spec_table
+  @spec_table %{
+
+    # Each key is the name of a function that renders heex
+    render: %{ ... },
+
+
+    different_render: %{
+      # Must include an assigns map. This is needed for generating and validating
+      assigns: %{
+        # And now it works like any other @spec_table. For example if the component only takes a user_id:
+        user_id: %{t: :id, ...},
+      }
+    }
+  }
+  require Sorcery.SpecDb
+  Sorcery.SpecDb.build_live_specs(:render)
+  Sorcery.SpecDb.build_live_specs(:different_render)
+  ```
+
+
+  This will generate some useful functions in the module.
+
+  ```elixir
+    __MODULE__.gen(:render) 
+  ```
+  Will return a StreamData struct for generating a map of assigns.
+
+
+  ```elixir
+    __MODULE__.t(:render) 
+  ```
+  Will return a norm spec for validating the assigns
+  """
+  defmacro build_live_specs(name) do
+    quote do
+      def spec_table, do: @spec_table
+      IO.inspect(unquote(name), label: "UNQYO")
+      Sorcery.SpecDb.build_norm_schema(unquote(name))
+      Sorcery.SpecDb.build_streamdata_generator(unquote(name))
+    end
+  end
 
 end
