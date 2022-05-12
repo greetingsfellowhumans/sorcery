@@ -277,7 +277,6 @@ defmodule Sorcery.SpecDb do
   defmacro build_live_specs(name) do
     quote do
       def spec_table, do: @spec_table
-      IO.inspect(unquote(name), label: "UNQYO")
       Sorcery.SpecDb.build_norm_schema(unquote(name))
       Sorcery.SpecDb.build_streamdata_generator(unquote(name))
     end
