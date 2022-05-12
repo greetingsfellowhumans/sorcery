@@ -20,7 +20,31 @@ defmodule Player do
   # Sorcery.SpecDb.build_ecto_schema("player")
   # Sorcery.SpecDb.build_norm_schema()
   # Sorcery.SpecDb.build_streamdata_generator("player")
+end
 
+defmodule Lively do
+  @moduledoc false
+
+
+  @spec_table %{
+    render: %{
+      assigns: %{
+        user_id: %{t: :id, put: 23},
+        portals: %{
+          t: :portals,
+          tables: %{
+            player: %{mod: Player, bodies: [%{id: 23}, %{id: 42}]}
+          },
+          
+        }
+      }
+    }
+  }
+  require Sorcery.SpecDb
+  Sorcery.SpecDb.build_live_specs(:render)
+
+  def render(assigns) do
+  end
 
 end
 
@@ -29,6 +53,17 @@ defmodule Sorcery.SpecDb.SpecDbTest do
   use ExUnit.Case
   use ExUnitProperties
   use Norm
+
+
+  property "Generate Portals" do
+    check all assigns <- Lively.render_gen() do
+      assert assigns.user_id == 23
+      assert valid?(assigns, Lively.render_t())
+      age = assigns.portals.player[assigns.user_id].age 
+      assert age >= 0 and age <= 200
+      #assert valid?(Lively.render_t(), assigns)
+    end
+  end
 
 
   test "build_schema macro" do

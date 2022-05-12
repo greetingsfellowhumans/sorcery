@@ -183,7 +183,7 @@ defmodule Sorcery.SpecDb do
     quote do
 
       def unquote(:"#{name}_gen")(attrs \\ %{}) do
-        Sorcery.SpecDb.SdHelpers.gen(@spec_table, attrs)
+        Sorcery.SpecDb.SdHelpers.gen(@spec_table[unquote(name)].assigns, attrs)
       end
 
     end
@@ -240,9 +240,20 @@ defmodule Sorcery.SpecDb do
   @doc """
   In any live_view, component, or live_component module, call:
   ```elixir
+  # Start with @spec_table
   @spec_table %{
-    render: %{...assigns spec...},
-    different_render: %{...assigns spec}
+
+    # Each key is the name of a function that renders heex
+    render: %{ ... },
+
+
+    different_render: %{
+      # Must include an assigns map. This is needed for generating and validating
+      assigns: %{
+        # And now it works like any other @spec_table. For example if the component only takes a user_id:
+        user_id: %{t: :id, ...},
+      }
+    }
   }
   require Sorcery.SpecDb
   Sorcery.SpecDb.build_live_specs(:render)
@@ -266,6 +277,7 @@ defmodule Sorcery.SpecDb do
   defmacro build_live_specs(name) do
     quote do
       def spec_table, do: @spec_table
+      IO.inspect(unquote(name), label: "UNQYO")
       Sorcery.SpecDb.build_norm_schema(unquote(name))
       Sorcery.SpecDb.build_streamdata_generator(unquote(name))
     end

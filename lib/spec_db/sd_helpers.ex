@@ -50,9 +50,11 @@ defmodule Sorcery.SpecDb.SdHelpers do
     end)
 
     case attr do
+      %{put: x} -> StreamData.constant(x)
       %{one_of: li} -> StreamData.one_of(Enum.map(li, fn i -> 
           StreamData.constant(i)
       end))
+      %{t: :portals} -> gen_portals(opts[:tables])
       %{t: :string}  -> get_t_spec(:string, opts)
       %{t: :integer} -> get_t_spec(:integer, opts)
       %{t: :id} -> 
@@ -75,6 +77,29 @@ defmodule Sorcery.SpecDb.SdHelpers do
     fix_map(m, args)
     |> StreamData.fixed_map()
   end
+
+
+  @doc """
+  i.e. %{
+    player: %{mod: Player, bodies: [%{id: 23}]}
+    } |> gen_portals()
+
+  will generate one Player (of id 23) in a portal.
+  """
+  def gen_portals(tables) do
+    Enum.reduce(tables, %{}, fn {tk, %{mod: mod, bodies: bodies}}, acc ->
+
+      table = Enum.reduce(bodies, %{}, fn args, table_acc ->
+        id = Map.get(args, :id)
+        Map.put(table_acc, id, mod.gen(args))
+      end) |> StreamData.fixed_map()
+
+      Map.put_new(acc, tk, table)
+
+    end)
+    |> StreamData.fixed_map()
+  end
+
 
   defp get_t_spec(:string, opts)  do 
     max = Keyword.get(opts, :max)
