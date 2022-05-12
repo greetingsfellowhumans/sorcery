@@ -190,5 +190,16 @@ defmodule SrcTest do
     src = Src.put_in(@dog_src, [:dog, "$sorcery:dog:1"], new_dog)
     assert expected == src.changes_db
   end
+
+  test "Src CRUD" do
+    src = Src.new(%{player: %{1 => @p1}}, %{player_id: 1})
+    assert Src.get_in(src, [:player, 1, :age]) == 100
+    assert Src.get_in(src, [:player, 1, :name]) == "Aaron"
+    src = Src.put_in(src, [:player, 1, :age], 101)
+    assert Src.get_in(src, [:player, 1, :age]) == 101
+    player = Src.get_in(src, [:player, 1])
+    assert player.age == 101 
+    assert player.name == "Aaron" 
+  end
   
 end
