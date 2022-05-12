@@ -110,16 +110,16 @@ defmodule Sorcery.SpecDb.SdHelpers do
 
     cond do
       !!min and !!max ->
-        StreamData.binary(opts)
+        StreamData.string(:ascii, opts)
         |> StreamData.filter(&(String.length(&1) >= min))
         |> StreamData.filter(&(String.length(&1) <= max))
       !!min ->
-        StreamData.binary(opts)
+        StreamData.string(:ascii, opts)
         |> StreamData.filter(&(String.length(&1) >= min))
       !!max ->
-        StreamData.binary(opts)
+        StreamData.string(:ascii, opts)
         |> StreamData.filter(&(String.length(&1) <= max))
-      true -> StreamData.binary(opts)
+      true -> StreamData.string(:ascii, opts)
 
     end
   end
