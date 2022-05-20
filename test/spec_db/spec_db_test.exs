@@ -29,6 +29,7 @@ defmodule Lively do
   @spec_table %{
     render: %{
       assigns: %{
+        player1: %{t: :instance, mod: Player, args: %{id: 1}},
         user_id: %{t: :id, put: 23},
         portals: %{
           t: :portals,
@@ -62,6 +63,8 @@ defmodule Sorcery.SpecDb.SpecDbTest do
       age = assigns.portals.player[assigns.user_id].age 
       assert age >= 0 and age <= 200
       #assert valid?(Lively.render_t(), assigns)
+      assert assigns.player1.id == 1
+      assert valid?(assigns.player1, Player.t()) 
     end
   end
 
