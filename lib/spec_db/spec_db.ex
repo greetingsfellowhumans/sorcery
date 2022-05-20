@@ -279,6 +279,7 @@ defmodule Sorcery.SpecDb do
       def spec_table, do: @spec_table
       Sorcery.SpecDb.build_norm_schema(unquote(name))
       Sorcery.SpecDb.build_streamdata_generator(unquote(name))
+
     end
   end
 

@@ -42,6 +42,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
         %{one_of: li} -> one_of(Enum.map(li, fn i ->
           opt(attr, fn value -> i == value end)
         end))
+        %{t: :instance, mod: mod} -> mod.t()
         %{t: :list, coll_of: t, length: l} -> coll_of(get_t_spec(t, attr), min_count: l, max_count: l)
         %{t: :list, coll_of: t} -> coll_of(get_t_spec(t, attr))
         %{t: :integer} -> get_t_spec(:integer, attr)

@@ -54,6 +54,8 @@ defmodule Sorcery.SpecDb.SdHelpers do
       %{one_of: li} -> StreamData.one_of(Enum.map(li, fn i -> 
           StreamData.constant(i)
       end))
+      %{t: :instance, mod: mod, args: args} -> mod.gen(args)
+      %{t: :instance, mod: mod} -> mod.gen()
       %{t: :portals} -> gen_portals(opts[:tables])
       %{t: :string}  -> get_t_spec(:string, opts)
       %{t: :integer} -> get_t_spec(:integer, opts)
