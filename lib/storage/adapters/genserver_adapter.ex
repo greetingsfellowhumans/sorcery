@@ -85,7 +85,8 @@ defmodule Sorcery.Storage.GenserverAdapter do
       def src_push!(src, opts \\ %{}) do
         opts = Map.merge(opts, @opts)
         name = opts[:name] || @name
-        GenServer.cast(name, {:src_push, src, self(), opts})
+        #GenServer.cast(name, {:src_push, src, self(), opts})
+        GenServer.call(name, {:src_push, src, self(), opts})
       end
 
 
@@ -177,6 +178,34 @@ defmodule Sorcery.Storage.GenserverAdapter do
         end)
         {:noreply, new_state}
       end
+
+
+      def handle_call({:src_push, src, from, opts}, _, state) do
+        new_db = Sorcery.Storage.EctoAdapter.persist_src(src, state)
+        db = Maps.deep_merge(state.db, new_db)
+        state = Map.put(state, :db, db)
+
+        Task.start(fn ->
+          # The caller gets priority. Tell them to recalculate immediately.
+          send(from, "assign_portals")
+        end)
+
+        Task.start(fn ->
+          # Now we find all other presences that might care about these changes
+          portals = Sorcery.Portal.all_portals(state)
+          qmeta = Sorcery.Storage.GenserverAdapter.QueryMeta.new(state)
+          pids = Sorcery.Storage.GenserverAdapter.Query.affected_pids(portals, qmeta)
+                 |> List.delete(from)
+
+          for pid <- pids do
+            send(pid, "assign_portals")
+          end
+
+        end)
+
+        {:reply, new_db, state}
+      end
+
 
       def handle_call({:view_portal, ref, tk}, from, state) do
         %{metas: [portal]} = state.presence.get_by_key("portals:#{tk}", ref)
