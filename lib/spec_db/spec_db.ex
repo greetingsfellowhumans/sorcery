@@ -138,10 +138,10 @@ defmodule Sorcery.SpecDb do
   # While passing in all the data from @spec_table
   ```
   """
-  defmacro build_ecto_schema(name) do
+  defmacro build_ecto_schema(name, opts \\ []) do
     quote do
       require Sorcery.SpecDb.EctoHelpers
-      Sorcery.SpecDb.EctoHelpers.build_ecto_schema(unquote(name), @spec_table)
+      Sorcery.SpecDb.EctoHelpers.build_ecto_schema(unquote(name), @spec_table, unquote(opts))
     end
   end
 
@@ -226,10 +226,10 @@ defmodule Sorcery.SpecDb do
   Sorcery.SpecDb.build_changesets()
   ```
   """
-  defmacro build_schema_module(name) do
+  defmacro build_schema_module(name, opts \\ []) do
     quote do
       def spec_table, do: @spec_table
-      Sorcery.SpecDb.build_ecto_schema(unquote(name))
+      Sorcery.SpecDb.build_ecto_schema(unquote(name), unquote(opts))
       Sorcery.SpecDb.build_norm_schema()
       Sorcery.SpecDb.build_streamdata_generator()
       Sorcery.SpecDb.build_changesets()

@@ -57,7 +57,11 @@ defmodule Sorcery.Storage.GenserverAdapter do
       end
 
 
-      def create_portal(socket, portal, opts) do
+      @doc ~S"""
+      Legacy, socket no longer needed.
+      """
+      def create_portal(_socket, portal, opts), do: create_portal(portal, opts)
+      def create_portal(portal, opts) do
         opts = Map.merge(opts, @opts)
         name = opts[:name] || @name
         portal = GenServer.call(name, {:create_portal, portal, opts})
