@@ -19,7 +19,7 @@ defmodule Sorcery.LiveHelper do
           db = Sorcery.Storage.GenserverAdapter.Query.solve_portal(portal, qm)
           {
             [{assigns_key, portal} | portal_meta],
-            Map.put(portals, assigns_key, Map.get(db, tk, %{}))
+            Map.merge(portals, db)
           }
 
         end)

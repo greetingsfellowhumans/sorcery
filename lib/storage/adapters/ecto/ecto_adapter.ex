@@ -44,6 +44,8 @@ defmodule Sorcery.Storage.EctoAdapter do
   defp build_multi_inserts(multi, src, client) do
     Parsing.get_ordered_inserts(src)
     |> Enum.reduce(multi, fn {tk, id, entity}, multi ->
+      table = client.tables[tk]
+      if is_nil(table), do: raise "Invalid table #{tk}. Check your App.Sorcery module, or the Src your are pushing."
       schema = client.tables[tk].schema
       #multi_mod(client).insert(multi, id <> ":#{tk}", fn ops ->
       multi_mod(client).insert(multi, id, fn ops ->

@@ -58,7 +58,7 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
             end)
 
     if Enum.empty?(table) do
-      %{}
+      %{tk => %{}}
     else
       %{tk => table}
     end
