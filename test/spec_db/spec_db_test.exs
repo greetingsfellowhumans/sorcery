@@ -44,7 +44,7 @@ defmodule Lively do
   require Sorcery.SpecDb
   Sorcery.SpecDb.build_live_specs(:render)
 
-  def render(assigns) do
+  def render(_assigns) do
   end
 
 end
@@ -96,7 +96,7 @@ defmodule Sorcery.SpecDb.SpecDbTest do
       assert [:user_id]           
         == Sorcery.SpecDb.CsHelpers.get_require_update(Player.spec_table())
 
-      assert [:user_id, :permissions, :opt, :name, :gene, :gender, :colors, :age] 
+      assert [:user_id, :permissions, :name, :gene, :gender, :colors, :age] 
         == Sorcery.SpecDb.CsHelpers.get_require_insert(Player.spec_table())
 
       cs = Player.sorcery_update(%Player{id: player.id}, player)

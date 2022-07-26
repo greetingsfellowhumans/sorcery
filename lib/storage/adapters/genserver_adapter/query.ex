@@ -38,6 +38,7 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
   alias Sorcery.Specs.Portals, as: PT
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  alias Sorcery.Utils.Maps
 
 
   @contract solve_portal(PT.portal(), AdapterT.qmeta()) :: T.db()
@@ -58,11 +59,12 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
             end)
 
     if Enum.empty?(table) do
-      %{}
+      %{tk => %{}}
     else
       %{tk => table}
     end
   end
+
 
 
   @contract solve_portals(coll_of(PT.portal()), AdapterT.qmeta()) :: T.db()
@@ -71,7 +73,7 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
   """
   def solve_portals(portals, qmeta) do
     Enum.reduce(portals, %{}, fn portal, acc -> 
-      Map.merge(acc, solve_portal(portal, qmeta))
+      Maps.deep_merge(acc, solve_portal(portal, qmeta))
     end)
   end
 

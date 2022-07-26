@@ -19,6 +19,9 @@ defmodule Sorcery.SpecDb.CsHelpers do
     end)
   end
 
+
+
+
   # These just build lists of atoms for Ecto.Changeset cast and validate_required
   def get_cast_update(table) do
     default = true
@@ -34,7 +37,12 @@ defmodule Sorcery.SpecDb.CsHelpers do
   end
   def get_require_insert(table) do
     default = true
+    disrequired = Enum.reduce(table, [], fn 
+      {k, %{required: false}}, acc -> [k | acc]
+      _, acc -> acc
+    end)
     builder(table, :require_insert, default)
+    |> Enum.filter(&(&1 not in disrequired))
   end
 
   defp bump_string_max(string, %{max: max}), do: String.slice(string, 0..max)

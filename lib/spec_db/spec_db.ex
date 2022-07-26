@@ -203,14 +203,40 @@ defmodule Sorcery.SpecDb do
         strct
         |> cast(attrs, get_cast_insert(@spec_table))
         |> validate_required(get_require_insert(@spec_table))
+        |> validate_min_max(@spec_table)
       end
 
       def sorcery_update(strct, attrs \\ %{}) do
         attrs = bump(@spec_table, attrs)
-        strct
-        |> cast(attrs, get_cast_update(@spec_table))
-        |> validate_required(get_require_update(@spec_table))
+        cs =
+          strct
+          |> cast(attrs, get_cast_update(@spec_table))
+          |> validate_required(get_require_update(@spec_table))
+          |> validate_min_max(@spec_table)
       end
+
+
+      defp validate_min_max(cs, table) do
+        Enum.reduce(table, cs, fn {k, v}, acc ->
+          t = case v.t do
+            t when t in [:string, :binary, :list] -> :string
+            t when t in [:integer, :int, :float] -> :number
+            _ -> :ignore
+          end
+
+          acc
+          |> validate_min(k, t, v)
+          |> validate_max(k, t, v)
+        end)
+      end
+
+      defp validate_min(cs, k, :number, %{min: min}), do: validate_number(cs, k, greater_than_or_equal_to: min)
+      defp validate_min(cs, k, :string, %{min: min}), do: validate_length(cs, k, min: min)
+      defp validate_min(cs, _, _, _), do: cs 
+      defp validate_max(cs, k, :number, %{max: max}), do: validate_number(cs, k, less_than_or_equal_to: max)
+      defp validate_max(cs, k, :string, %{max: max}), do: validate_length(cs, k, max: max)
+      defp validate_max(cs, _, _, _), do: cs 
+
 
     end
   end
