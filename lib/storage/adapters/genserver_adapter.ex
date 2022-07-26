@@ -129,6 +129,9 @@ defmodule Sorcery.Storage.GenserverAdapter do
       def handle_call({:create_portal, portal, opts}, {from, _}, state) do
         portal = CreatePortal.create_portal_map(Map.merge(portal, opts), from)
                  |> CreatePortal.parse_portal(state)
+        tk = portal.tk
+        table = state.tables[tk]
+        if is_nil(table), do: raise "Invalid table #{tk}. Check your App.Sorcery module, or the Src your are pushing."
         #Task.start_link(fn ->
         state.presence.track(from, "portals:#{portal.tk}", portal.id, portal)
         #end)

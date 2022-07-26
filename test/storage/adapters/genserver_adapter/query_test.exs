@@ -141,12 +141,13 @@ defmodule Sorcery.Storage.GenserverAdapter.QueryTest do
   test "Solve Portal" do
     qm = QueryMeta.new(@src, @state)
     [loc_portal, unit_portal, post_portal] = @portals
-    assert %{} == Query.solve_portal(loc_portal, qm)
+    assert %{location: %{}} == Query.solve_portal(loc_portal, qm)
 
     unit_table = %{unit: %{10 => %{id: 10, location_number: 108492, unit_number: "201"}}}
 
     assert unit_table == Query.solve_portal(unit_portal, qm)
-    assert %{} == Query.solve_portal(post_portal, qm)
+    assert %{post: %{}} == Query.solve_portal(post_portal, qm)
+    unit_table = %{unit: %{10 => %{id: 10, location_number: 108492, unit_number: "201"}}, location: %{}, post: %{}}
     assert unit_table == Query.solve_portals(@portals, qm)
 
 

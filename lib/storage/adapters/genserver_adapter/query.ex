@@ -38,6 +38,7 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
   alias Sorcery.Specs.Portals, as: PT
   alias Sorcery.Specs.Primative, as: T
   alias Sorcery.Storage.GenserverAdapter.Specs, as: AdapterT
+  alias Sorcery.Utils.Maps
 
 
   @contract solve_portal(PT.portal(), AdapterT.qmeta()) :: T.db()
@@ -65,13 +66,14 @@ defmodule Sorcery.Storage.GenserverAdapter.Query do
   end
 
 
+
   @contract solve_portals(coll_of(PT.portal()), AdapterT.qmeta()) :: T.db()
   @doc """
   Given a list of portals, return a db of entities satisfying it.
   """
   def solve_portals(portals, qmeta) do
     Enum.reduce(portals, %{}, fn portal, acc -> 
-      Map.merge(acc, solve_portal(portal, qmeta))
+      Maps.deep_merge(acc, solve_portal(portal, qmeta))
     end)
   end
 

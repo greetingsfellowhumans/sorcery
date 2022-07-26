@@ -38,9 +38,11 @@ defmodule Sorcery.SpecDb.CsHelperTest do
 
     table = %{foo: %{t: :string, require_insert: true}}
     assert [:foo] == CsHelpers.get_require_insert(table)
+
+    table = %{foo: %{t: :string, required: false}}
+    assert [] == CsHelpers.get_require_insert(table)
   end
 
-  # This is where things get weird. By default you want to update anything.
   test "Changeset get require update" do
     table = %{foo: %{t: :string}}
     assert [] == CsHelpers.get_require_update(table)
