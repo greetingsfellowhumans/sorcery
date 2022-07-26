@@ -28,6 +28,7 @@ defmodule Sorcery.Storage.GenserverAdapter.CreatePortal do
     values = Enum.map(guards, fn g -> resolve_guard(g, state) end)
     {:or, values}
   end
+  defp resolve_guard({:==, attr, {ref, ref_attr}}, state), do: resolve_guard({:in, attr, {ref, ref_attr}}, state)
   defp resolve_guard({:in, attr, {ref, ref_attr}}, state) do
     ref_values = ViewPortal.view_portal(ref, state)
                 |> Enum.map(fn {_, e} -> Map.get(e, ref_attr) end)
