@@ -169,5 +169,4 @@ defmodule Sorcery.Storage.GenserverAdapter.QueryTest do
   end
 
 
-
 end
