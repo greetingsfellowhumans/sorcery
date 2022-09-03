@@ -197,8 +197,10 @@ defmodule SrcTest do
     assert Src.get_in(src, [:player, 1, :name]) == "Aaron"
     src = Src.put_in(src, [:player, 1, :age], 101)
     assert Src.get_in(src, [:player, 1, :age]) == 101
+    src = Src.put_in(src, [:player, 1, :age], 111)
+    assert Src.get_in(src, [:player, 1, :age]) == 111
     player = Src.get_in(src, [:player, 1])
-    assert player.age == 101 
+    assert player.age == 111
     assert player.name == "Aaron" 
   end
   

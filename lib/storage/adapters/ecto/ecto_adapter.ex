@@ -17,6 +17,7 @@ defmodule Sorcery.Storage.EctoAdapter do
     %{repo: repo} = client
     multi = multi_mod(client).new()
 
+
     multi
     |> build_multi_inserts(src, client)
     |> build_multi_updates(src, client)

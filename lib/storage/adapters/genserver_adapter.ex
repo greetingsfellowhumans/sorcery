@@ -74,6 +74,11 @@ defmodule Sorcery.Storage.GenserverAdapter do
         pid = self()
         GenServer.call(@name, {:my_portals, tk})
       end
+
+
+      def kill_portals(portal_refs) when is_list(portal_refs) do
+        GenServer.call(@name, {:kill_portals, portal_refs})
+      end
       
       def get_presence(presence, tks, pid) do
         Enum.map(tks, fn tk ->
@@ -138,6 +143,15 @@ defmodule Sorcery.Storage.GenserverAdapter do
         {:reply, portal, state}
       end
 
+      def handle_call({:kill_portals, portal_refs}, {from, _}, state) do
+        for ref <- portal_refs do
+          [tkstr, _] = String.split(ref, ":")
+          state.presence.untrack(from, "portals:#{tkstr}", ref)
+        end
+        {:reply, :ok, state}
+      end
+
+
       @impl true
       def handle_cast({:add_entities, tk, entities}, state) do
         db = Map.get(state, :db)
@@ -160,6 +174,7 @@ defmodule Sorcery.Storage.GenserverAdapter do
         Task.start(fn ->
           # The caller gets priority. Tell them to recalculate immediately.
           send(from, "assign_portals")
+          send(from, {"src_flash", src.msg})
         end)
 
         Task.start(fn ->
@@ -195,6 +210,7 @@ defmodule Sorcery.Storage.GenserverAdapter do
         Task.start(fn ->
           # The caller gets priority. Tell them to recalculate immediately.
           send(from, "assign_portals")
+          send(from, {"src_flash", src.msg})
         end)
 
         Task.start(fn ->

@@ -43,6 +43,14 @@ defmodule Sorcery.LiveHelper do
         {:noreply, assign_portals(socket, portals, state)}
       end
 
+      def handle_info({"src_flash", msg}, socket) do
+        case msg do
+          %{flash: ""} -> {:noreply, socket}
+          _ ->
+            socket = Phoenix.LiveView.put_flash(socket, msg.status, msg.flash)
+            {:noreply, socket}
+        end
+      end
 
       def src_push!(src) do
         unquote(client).src_push!(src, %{})
