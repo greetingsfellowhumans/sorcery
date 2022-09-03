@@ -52,6 +52,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
         %{t: :float} -> get_t_spec(:float, attr)
         %{t: :atom} -> get_t_spec(:atom, attr)
         %{t: :portals} -> get_t_spec(:portals, attr)
+        %{t: :map} -> get_t_spec(:map, attr)
       end
       Map.put(acc, k, v)
     end))
@@ -99,6 +100,7 @@ defmodule Sorcery.SpecDb.NormHelpers do
   def get_t_spec(:trinary, _attr), do: one_of([true, false, nil])
   def get_t_spec(:atom, attr), do: opt(attr, is_atom())
 
+  def get_t_spec(:map, attr), do: opt(attr, is_map())
   def get_t_spec(li, attr) when is_list(li) do
     opt(attr, fn item -> item in li end)
   end

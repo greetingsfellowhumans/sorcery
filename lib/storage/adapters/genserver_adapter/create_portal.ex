@@ -35,6 +35,10 @@ defmodule Sorcery.Storage.GenserverAdapter.CreatePortal do
                 |> MapSet.new()
     {:in, attr, ref_values}
   end
+  defp resolve_guard({:in, attr, single}, state) when not is_list(single) do
+    resolve_guard({:==, attr, single}, state)
+  end
+
   defp resolve_guard(guard, _state), do: guard
   defp resolve_guards(portal, state) do
     resolved_guards = Enum.map(portal.guards, fn guard -> resolve_guard(guard, state) end)

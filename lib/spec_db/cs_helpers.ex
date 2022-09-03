@@ -20,8 +20,6 @@ defmodule Sorcery.SpecDb.CsHelpers do
   end
 
 
-
-
   # These just build lists of atoms for Ecto.Changeset cast and validate_required
   def get_cast_update(table) do
     default = true

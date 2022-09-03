@@ -94,4 +94,25 @@ defmodule Sorcery.Src.Access do
     end)
   end
 
+  # Returns list of {id, old_value, new_value}
+  # E.g. diff(src, :dog, :pregnant)
+  # => [{42, true, false}]
+  def diff(%{original_db: og, changes_db: ch}, tk, col) do
+    changed_table = Map.get(ch, tk, %{})
+    changed_tups = Enum.reduce(changed_table, %{}, fn {id, row}, acc ->
+      if Map.has_key?(row, col), do: Map.put(acc, id, row[col]), else: acc
+    end)
+    original_table = Map.get(og, tk, %{})
+    original_tups = Enum.reduce(original_table, %{}, fn {id, row}, acc ->
+      if Map.has_key?(row, col), do: Map.put(acc, id, row[col]), else: acc
+    end)
+    Enum.reduce(changed_tups, [], fn {id, new_value}, acc ->
+      old_value = Map.get(original_tups, id)
+      cond do
+        old_value == new_value -> acc
+        true -> [{id, old_value, new_value} | acc]
+      end
+    end)
+  end
+
 end

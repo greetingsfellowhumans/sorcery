@@ -68,6 +68,7 @@ defmodule Sorcery.SpecDb.SdHelpers do
 
 
       %{t: :list} -> get_t_spec(:list, opts)
+      %{t: :map} -> get_t_spec(:map, opts)
     end
   end
 
@@ -143,6 +144,12 @@ defmodule Sorcery.SpecDb.SdHelpers do
     StreamData.constant(nil),
   ])
   defp get_t_spec(:atom, _opts),    do: StreamData.atom(:alphanumeric)
+
+  defp get_t_spec(:map, opts) do 
+    # Don't even try randomizing jsonb maps.
+    default = Keyword.get(opts, :default, %{})
+    StreamData.constant(default)
+  end
   defp get_t_spec(:list, opts) do 
     max = Keyword.get(opts, :max)
     min = Keyword.get(opts, :min, 0)
