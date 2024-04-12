@@ -1,0 +1,28 @@
+# Configuration
+
+The cheatsheet for building a PortalServer
+
+```elixir
+defmodule Src.PortalServers.Demo do
+  use GenServer
+
+  @config %{
+    store_args: %{repo: MyApp.Repo},
+    store_plugin: Sorcery.Plugins.Ecto
+  }
+
+  def init() do
+  end
+
+
+end
+```
+
+
+| t: :string    | types           | Optional? | Default                    | Description      |
+| ---           | ---             | ---       | ---                        | ---              |
+| :prune_dead   | integer         | false     | 60_000                     | How often (ms) do we remove queries from dead pids. |
+| :store_plugin | module          | false     | Sorcery.Plugins.GenServer  | Module for reading and writing to storage           |
+| :store_args   | map             | false     | %{}                        | Any extra data needed by the store_plugin goes here |
+
+

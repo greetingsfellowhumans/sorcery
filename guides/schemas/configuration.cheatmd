@@ -1,0 +1,112 @@
+# Configuration
+
+Herein lies the key to writing a schema. Here is how we would rewrite the Example given by Ecto.Schema:
+
+```elixir
+defmodule App.User do
+  use Sorcery.Schema, %{
+    opts: %{},
+    fields: %{
+        name:      %{t: :string},
+        age:       %{t: :integer, default: 0},
+        password:  %{t: :string,  redact: true},
+        # No need for a has_many. In Sorcery, it is always the child that references the parent.
+    }
+  }
+
+
+  #######
+  # We don't need this anymore
+  #######
+  #
+  #use Ecto.Schema
+  #
+  #schema "users" do
+  #  field :name, :string
+  #  field :age, :integer, default: 0
+  #  field :password, :string, redact: true
+  #  has_many :posts, Post
+  #end
+end
+```
+
+
+## String fields
+| t: :string    | types           | Optional? | Default | Description      |
+| ---           | ---             | ---       | ---     | ---              |
+| :min          | integer, nil    | true      | nil     | field must have at least this many characters.     |
+| :max          | integer, nil    | true      | nil     | field must have no more than this many characters. |
+| :default      | string, nil     | true      | ""      | If no string is given, this will be used.          |
+| :optional?    | boolean         | true      | true    | Whether field is allowed to be nil      |
+
+## String Examples
+```elixir
+iex> alias Sorcery.Schema.Field.String, as: S
+
+# This fails because "hi" is not long enough
+iex> S.new(%{min: 5}, "hi")
+%S{valid?: false, value: "hi", fails: [ {:min, :value} ], ...}
+
+# This passes
+iex> S.new(%{min: 5}, "Hello world, how are you?")
+%S{valid?: true, value: "Hello world, how are you?", fails: [], ...}
+
+# This failse because the schema itself is invalid. :min must be an integer, not a float!
+iex> S.new(%{min: 5.6}, "Hello world, how are you?")
+%S{valid?: false, value: "Hello world, how are you?", fails: [ {:min, :type} ], ...}
+
+# Now we check :max
+iex> S.new(%{max: 5}, "Hello world, how are you?")
+%S{valid?: false, value: "Hello world, how are you?", fails: [ {:max, :value} ], ...}
+
+# By default, strings are optional, with a default of an empty string.
+iex> S.new(%{}, nil)
+%S{valid?: true, value: "", fails: [], ...}
+
+# ... but you can change that
+iex> S.new(%{default: "Elixir is fun"}, nil)
+%S{valid?: true, value: "Elixir is fun", ...}
+
+iex> S.new(%{optional?: false}, nil)
+%S{valid?: false, value: nil, fails: [ {:optional?, :value} ] }
+
+# Note that optional?: false does nothing if a default is set.
+iex> S.new(%{optional?: false, default: "Elixir is fun"}, nil)
+%S{valid?: true, value: "Elixir is fun", ...}
+
+```
+
+## Integer fields
+|               | types           | Optional? | Default | Description                     |
+| ---           | ---             | ---       | ---     | ---                             |
+| :min          | integer, nil    | true      | nil     | field be at least this big.     |
+| :max          | integer, nil    | true      | nil     | field be no more than this big. |
+| :default      | integer, nil    | true      | nil     | If no value is given, this will be used.          |
+| :optional?    | boolean         | true      | true    | If no value is given, this field is invalid.      |
+
+## Integer Examples
+```elixir
+iex> alias Sorcery.Schema.Field.I, as: I
+
+# This fails because 2 is not big enough
+iex> I.new(%{min: 5}, 2)
+%S{valid?: false, value: 2, fails: [ {:min, :value} ], ...}
+
+iex> I.new(%{min: 5}, 1337)
+%S{valid?: true, value: 1337, fails: [], ...}
+
+iex> I.new(%{max: 5}, 2)
+%S{valid?: true, value: 2, fails: [], ...}
+
+iex> I.new(%{}, nil)
+%S{valid?: true, value: nil, fails: [], ...}
+
+iex> I.new(%{default: 5}, nil)
+%S{valid?: true, value: 5, fails: [], ...}
+
+iex> I.new(%{optional?: false}, nil)
+%S{valid?: false, value: nil, fails: [ {:optional?, :value} ], ...}
+
+iex> I.new(%{optional?: false, default: 5}, nil)
+%S{valid?: true, value: 5, fails: [], ...}
+```
