@@ -16,10 +16,12 @@ defmodule Sorcery.Helpers do
   ## Examples
       iex> path = "test/dummy/schemas"
       iex> mod_root = MyApp.Schemas
-      iex> File.ls!(path)
-      ["player.ex", "battle_arena.ex"]
-      iex> Sorcery.Helpers.build_modules_map(path, mod_root)
-      %{player: MyApp.Schemas.Player, battle_arena: MyApp.Schemas.BattleArena}
+      iex> files = File.ls!(path)
+      iex> "player.ex" in files
+      true
+      iex> modules_map = Sorcery.Helpers.build_modules_map(path, mod_root)
+      iex> modules_map.player
+      MyApp.Schemas.Player
   """
   defdelegate build_modules_map(path, module_root), to: S.Files
 

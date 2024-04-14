@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Sorcery.Init do
   use Mix.Task
   
 
-  def run(args) do
+  def run(_args) do
     src_path = "lib/src/"
 
     Mix.Generator.create_directory(src_path)

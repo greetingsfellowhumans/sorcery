@@ -6,22 +6,33 @@ defmodule Sorcery do
 
   """
 
+
   defmacro __using__(opts) do
-    quote bind_quoted: [opts: opts] do
+    quote do
+#      @config %{
+#        debug: Keyword.get(opts, :debug, false),
+#        paths: Keyword.get(opts, :path, %{})
+#      }
 
-      @config %{
-        debug: Keyword.get(opts, :debug, false),
-        paths: %{
-          schemas:        Keyword.get(opts, :schemas, %{}),
-          queries:        Keyword.get(opts, :queries, %{}),
-          mutations:      Keyword.get(opts, :mutations, %{}),
-          modifications:  Keyword.get(opts, :modifications, %{}),
-          portal_servers: Keyword.get(opts, :portal_servers, %{}),
-          plugins:        Keyword.get(opts, :plugins, %{}),
+      def config() do
+        %{
+          schemas: get_mod_map(:schemas, unquote(opts)),
+          queries: get_mod_map(:queries, unquote(opts)),
+          mutations: get_mod_map(:mutations, unquote(opts)),
+          modifications: get_mod_map(:modifications, unquote(opts)),
         }
-      }
+      end
 
-      def config(), do: @config
+
+      defp get_mod_map(k, opts) do 
+        paths = Keyword.get(opts, :paths, %{})
+        if Map.has_key?(paths, k) do
+          Sorcery.Helpers.Files.build_modules_map(paths[k], MyApp.Schemas)
+        else
+          %{}
+        end
+      end
+
 
     end
   end

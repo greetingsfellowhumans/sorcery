@@ -56,13 +56,13 @@ defmodule Sorcery.Schema do
       @doc ~s"""
       A generator that returns a lazy stream of entities matching the schema.
       """
-      def gen(), do: Sorcery.Schema.Generation.gen(@full_fields)
+      def gen(body \\ %{}), do: Sorcery.Schema.Generation.gen(@full_fields, body)
 
 
       @doc ~s"""
       A generator that returns a single entity matching the schema.
       """
-      def gen_one(), do: gen() |> Enum.take(1) |> List.first()
+      def gen_one(body \\ %{}), do: gen(body) |> Enum.take(1) |> List.first()
 
       @doc ~s"""
       Generate a ReturnedEntities with n entities. If they have foreign keys, it will generate dummy data for those as well.
@@ -70,16 +70,7 @@ defmodule Sorcery.Schema do
       def gen_re(count), do: Sorcery.Schema.Generation.gen_re(@full_fields, count)
 
 
-      ## And now for Ecto
-      #if Code.ensure_loaded(Ecto.Schema) do
-      #  use Ecto.Schema
-      #  schema "foops" do
-      #    field :name, :string
-      #    field :age, :integer, default: 0
-      #  end
-      #end
       use Sorcery.Schema.EctoSchema, opts
-
 
     end
   end

@@ -1,4 +1,5 @@
 defmodule Sorcery.Schema.EctoSchema do
+  import Sorcery.Schema.EctoSchema.CastableFields
 
   defmacro __using__([meta: %{ecto: false}]), do: nil
 
@@ -19,14 +20,19 @@ defmodule Sorcery.Schema.EctoSchema do
       end
 
       def sorcery_insert_cs(body) do
+        body = gen_one(body)
         %__MODULE__{}
-        |> cast(body, Map.keys(@schema))
+        #|> cast(body, Map.keys(@schema))
+        |> cast(body, castable_fields(:insert, @full_fields))
+
       end
 
       def sorcery_update_cs(entity, body) do
         entity
-        |> cast(body, Map.keys(@schema))
+        #|> cast(body, Map.keys(@schema))
+        |> cast(body, castable_fields(:update, @full_fields))
       end
+
 
       tk = nil
       time = nil

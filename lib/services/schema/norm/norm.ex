@@ -1,17 +1,7 @@
 defmodule Sorcery.Schema.Norm do
   @moduledoc false
-  @comment """
-  This module is for converting a Sorcery.Schema fields map into a Norm spec.
-  
-  Words to keep in mind:
-  Schema = The entity type. Has many Fields inside it.
-  Field = This is a struct like FieldType.Integer or FieldType.String
-  attr = The keys inside a field struct
-  val = Whatever the entity is trying to use for a given field
-  """
   use Norm
   import Sorcery.Specs
-  alias Sorcery.Schema.FieldType, as: FT
   
   def build_spec(full_fields) do
     spec_map = Enum.reduce(full_fields, %{}, fn {k, field_struct}, acc ->
@@ -25,7 +15,7 @@ defmodule Sorcery.Schema.Norm do
   defp find_required(full_fields) do
     full_fields
     |> Enum.filter(fn
-      {k, %{optional?: false}} -> true
+      {_k, %{optional?: false}} -> true
       _ -> false
     end)
     |> Enum.map(fn {k, _} -> k end)

@@ -31,4 +31,6 @@ defmodule Sorcery.Schema.FieldType do
   But there is also the is_valid? function, with a different head for each one.
   """
   @callback is_valid?(attr_k :: atom(), attr_v :: any(), value :: any()) :: boolean()
+
+  @callback get_sd_field(struct()) :: %StreamData{}
 end

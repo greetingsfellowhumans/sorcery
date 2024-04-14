@@ -1,6 +1,6 @@
 defmodule Sorcery.Schema.FieldType.Fk do
   use Norm
-  import Sorcery.Specs
+  #import Sorcery.Specs
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
 
@@ -24,7 +24,7 @@ defmodule Sorcery.Schema.FieldType.Fk do
   @moduledoc """
   Everything below this line is @TODO
   """
-  def ecto_attrs(field_struct) do
+  def ecto_attrs(_field_struct) do
     []
   end
 

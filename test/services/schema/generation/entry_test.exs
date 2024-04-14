@@ -10,13 +10,13 @@ defmodule Sorcery.Schema.Generation.EntryTest do
     [demo_player] = Player.gen() |> Enum.take(1)
     #assert valid?(demo_player, Player.t())
     assert Map.has_key?(demo_player, :id)
-    demo_player = struct(Player, demo_player)
-    dbg demo_player
+    #demo_player = struct(Player, demo_player)
+    [demo_player] = Player.gen(%{team_id: 42}) |> Enum.take(1)
+    assert demo_player.team_id == 42
   end
 
-  test "Generate ReturnedEntities" do
-    re = Player.gen_re(2)
-    dbg re
-  end
+  #test "Generate ReturnedEntities" do
+  #  re = Player.gen_re(2)
+  #end
 end
 

@@ -1,6 +1,6 @@
 defmodule Sorcery.Schema.FieldType.Integer do
   use Norm
-  import Sorcery.Specs
+  #import Sorcery.Specs
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
   @default_min -10_000
@@ -21,7 +21,7 @@ defmodule Sorcery.Schema.FieldType.Integer do
 
   def ecto_attrs(field_struct) do
     li = []
-    li = if field_struct.min, do: [{:min, field_struct.min} | li], else: li
+    if field_struct.min, do: [{:min, field_struct.min} | li], else: li
   end
 
   @impl true

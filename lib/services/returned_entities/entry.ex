@@ -16,6 +16,8 @@ defmodule Sorcery.ReturnedEntities do
     primary_entities: [], # i.e. player: 1, post: 24
     data: %{}
   ]
+
+  defp re_key?(), do: one_of([tk?(), string?()])
    
   # {{{ new() :: struct?(__MODULE__)
   @contract new() :: struct?(__MODULE__)
@@ -33,7 +35,7 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ put_entities(re, tk, li) :: struct?(__MODULE__)
-  @contract put_entities(re :: re?(), tk :: tk?(), li :: list?()) :: re?()
+  @contract put_entities(re :: re?(), tk :: re_key?(), li :: list?()) :: re?()
   @doc ~S"""
 
   ## Examples
@@ -46,14 +48,21 @@ defmodule Sorcery.ReturnedEntities do
       %{1 => %{id: 1, name: "C"}, 23 => %{id: 23, name: "B"}, 42 => %{id: 42, name: "B"}}
   """
   def put_entities(re, tk, li) do
-    m = Enum.reduce(li, %{}, fn entity, acc -> Map.put(acc, entity.id, entity) end)
+    m = Enum.reduce(li, %{}, fn 
+      strct, acc when is_struct(strct) ->
+        entity = Map.from_struct(strct) |> Map.delete(:__meta__)
+        Map.put(acc, entity.id, entity)
+
+      entity, acc -> 
+        Map.put(acc, entity.id, entity)
+    end)
     update_in_p(re, [:data, tk], m, &(Map.merge(&1, m)))
   end
   # }}}
 
 
   # {{{ delete_entities(re, tk, li) :: re?()
-  @contract delete_entities(re?(), tk?(), list?()) :: re?()
+  @contract delete_entities(re?(), re_key?(), list?()) :: re?()
   @doc ~S"""
 
   Removes all the listed ids of a given tk.
@@ -78,7 +87,7 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ get_entities(re, tk) :: list
-  @contract get_entities(re?(), tk?()) :: list?()
+  @contract get_entities(re?(), re_key?()) :: list?()
   @doc ~S"""
 
   ## Examples
@@ -95,7 +104,7 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ get_primary(re, tk) :: map()
-  @contract get_primary(re?(), tk?()) :: map?()
+  @contract get_primary(re?(), re_key?()) :: map?()
   @doc ~S"""
 
   ## Examples
@@ -115,7 +124,7 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ put_primary(re, tk, id) :: re()
-  @contract put_primary(re?(), tk?(), id?()) :: re?()
+  @contract put_primary(re?(), re_key?(), id?()) :: re?()
   @doc ~S"""
 
   ## Examples
