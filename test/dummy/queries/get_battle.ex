@@ -1,11 +1,12 @@
 defmodule MyApp.Queries.GetBattle do
-  # This is my new favourite example query. It is its own stress test, and covers most use cases.
+  # This is my new favourite example query. It is its own stress test, and elegantly covers most use cases.
+
   use Sorcery.Query, %{
     find: %{
       #"?player" => :*,
       #"?team" => :*,
       "?arena" => :*,
-      "?all_teams" => :*,
+      "?all_teams" => [:name],
       "?all_players" => :*,
       "?spells" => :*,
       "?spell_types" => :*,

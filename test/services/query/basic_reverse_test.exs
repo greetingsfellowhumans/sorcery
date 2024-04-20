@@ -7,7 +7,7 @@ defmodule Sorcery.Query.BasicReverseTest do
   #import SrcQL
   #doctest SrcQL
   #alias Sorcery.ReturnedEntities, as: RE
-  #alias Sorcery.Query.ReverseQuery, as: RQ
+  alias Sorcery.Query.ReverseQuery, as: RQ
   #alias Sorcery.Query.ResultsLog, as: RLog
 
 
@@ -22,6 +22,12 @@ defmodule Sorcery.Query.BasicReverseTest do
     send(pid, {:sorcery, msg})
     assert_receive portal
     dbg portal
+
+    fwd_find = RQ.generate_find(portal.fwd_find_set)
+    |> dbg
+
+    rev_find = RQ.generate_find(portal.rev_find_set)
+    |> dbg
   end
 
   #  diff_row1 = %Sorcery.Mutation.DiffRow{
