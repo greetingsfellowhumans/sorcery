@@ -9,12 +9,14 @@ defmodule Sorcery.PortalServer.Portal do
   alias Sorcery.PortalServer
   defstruct [
     :query_module,
-    :child_pid,
+    :child_pids,
     :parent_pid,
-    :reverse_query,
     :ref,
-    args: %{},
-    known_lvar_values: %{},
+    :reverse_query,
+    args: %{}, # Is this even necessary? Might be useable for optimizing?
+    known_matches: %{},
+    fwd_find_set: MapSet.new([]),
+    rev_find_set: MapSet.new([]),
   ]
 
   def new(body \\ %{}) do

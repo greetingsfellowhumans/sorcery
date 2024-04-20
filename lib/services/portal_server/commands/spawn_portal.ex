@@ -8,10 +8,10 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
     results = store_adapter.run_query(state.sorcery, module, args)
     portal = Portal.new(%{
       query_module: module,
-      child_pid: from,
+      child_pids: [from],
       parent_pid: self(), 
       args: args,
-      known_lvar_values: module.known_lvars(results),
+      known_matches: module.known_lvars(results),
       reverse_query: module.reverse_query(state.sorcery.config_module, args),
     })
     send(from, portal)
