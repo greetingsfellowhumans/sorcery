@@ -3,14 +3,10 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
   alias Sorcery.ReturnedEntities, as: RE
 
 
-  def run_query(portal_server_state, query_module, args) do
+  def run_query(portal_server_state, wheres, finds) do
     repo = portal_server_state.args.repo_module
     config = portal_server_state.config_module.config()
     tk_map = config.schemas
-
-    wheres = query_module.clauses(args)
-    finds = query_module.finds()
-    #dbg(finds)
 
     q = initial_from(wheres, tk_map)
     Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)

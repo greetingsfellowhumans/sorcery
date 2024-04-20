@@ -20,8 +20,8 @@ defmodule Sorcery.Query.BasicReverseTest do
       query: MyApp.Queries.GetBattle,
     }
     send(pid, {:sorcery, msg})
-    assert_receive portal
-    dbg portal
+    assert_receive {portal, results}
+    dbg results
 
     fwd_find = RQ.generate_find(portal.fwd_find_set)
     rev_find = RQ.generate_find(portal.rev_find_set)

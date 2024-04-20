@@ -87,6 +87,32 @@ defmodule Sorcery.ReturnedEntities do
   # }}}
 
 
+  # {{{ delete_attrs(re, tk, li) :: re?()
+  @contract delete_attrs(re?(), re_key?(), list?()) :: re?()
+  @doc ~S"""
+
+  Deletes attribute keys from every entity of the given tk
+
+  ## Examples
+      iex> re = Sorcery.ReturnedEntities.new()
+      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"}])
+      iex> re.data.player
+      %{1 => %{id: 1, name: "A"}, 23 => %{id: 23, name: "B"}}
+      iex> re = delete_attrs(re, :player, [ :name ])
+      iex> re.data.player
+      %{1 => %{id: 1}, 23 => %{id: 23}}
+  """
+  def delete_attrs(re, tk, li) do
+    update_in_p(re, [:data, tk], re.data[tk], fn table ->
+      Enum.reduce(table, table, fn {id, entity}, acc ->
+        entity = Map.reject(entity, fn {k, _} -> k in li end)
+        Map.put(acc, id, entity)
+      end)
+    end)
+  end
+  # }}}
+
+
   # {{{ get_entities(re, tk) :: list
   @contract get_entities(re?(), re_key?()) :: list?()
   @doc ~S"""
@@ -104,44 +130,46 @@ defmodule Sorcery.ReturnedEntities do
   # }}}
 
 
-  # {{{ get_primary(re, tk) :: map()
-  @contract get_primary(re?(), re_key?()) :: map?()
-  @doc ~S"""
+#  # {{{ get_primary(re, tk) :: map()
+#  @contract get_primary(re?(), re_key?()) :: map?()
+#  @doc ~S"""
+#
+#  ## Examples
+#      iex> re = Sorcery.ReturnedEntities.new()
+#      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
+#      iex> re = put_primary(re, :player, 23)
+#      iex> get_primary(re, :player)
+#      %{id: 23, name: "B"}
+#  """
+#  def get_primary(re, tk) do
+#    case Keyword.get(re.primary_entities, tk) do
+#      nil -> nil
+#      id -> re.data[tk][id]
+#    end
+#  end
+#  # }}}
+#
 
-  ## Examples
-      iex> re = Sorcery.ReturnedEntities.new()
-      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
-      iex> re = put_primary(re, :player, 23)
-      iex> get_primary(re, :player)
-      %{id: 23, name: "B"}
-  """
-  def get_primary(re, tk) do
-    case Keyword.get(re.primary_entities, tk) do
-      nil -> nil
-      id -> re.data[tk][id]
-    end
-  end
-  # }}}
 
-
-  # {{{ put_primary(re, tk, id) :: re()
-  @contract put_primary(re?(), re_key?(), id?()) :: re?()
-  @doc ~S"""
-
-  ## Examples
-      iex> re = Sorcery.ReturnedEntities.new()
-      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
-      iex> re = put_primary(re, :player, 23)
-      iex> get_primary(re, :player)
-      %{id: 23, name: "B"}
-  """
-  def put_primary(%{primary_entities: pe} = re, tk, id) do
-    pe = Keyword.put(pe, tk, id)
-    Map.put(re, :primary_entities, pe)
-  end
-  # }}}
+#  # {{{ put_primary(re, tk, id) :: re()
+#  @contract put_primary(re?(), re_key?(), id?()) :: re?()
+#  @doc ~S"""
+#
+#  ## Examples
+#      iex> re = Sorcery.ReturnedEntities.new()
+#      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
+#      iex> re = put_primary(re, :player, 23)
+#      iex> get_primary(re, :player)
+#      %{id: 23, name: "B"}
+#  """
+#  def put_primary(%{primary_entities: pe} = re, tk, id) do
+#    pe = Keyword.put(pe, tk, id)
+#    Map.put(re, :primary_entities, pe)
+#  end
+#  # }}}
 
 
   def assign_lvar_tk(re, lvar, tk), do: put_in_p(re, [:lvar_tks, lvar], tk)
+
 
 end

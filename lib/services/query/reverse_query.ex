@@ -2,6 +2,8 @@ defmodule Sorcery.Query.ReverseQuery do
   @moduledoc false
 
   #import Sorcery.Helpers.Maps
+  alias Sorcery.ReturnedEntities, as: RE
+
   def build_lvar_attr_set(config_module, query_module, :forward) do
     strct = query_module.raw_struct()
     find = Map.get(strct, :find, %{})
@@ -46,7 +48,27 @@ defmodule Sorcery.Query.ReverseQuery do
     |> generate_find()
   end
   def generate_find(set) do
-    Enum.group_by(set, fn {lvar, _attr} -> "#{lvar}" end, fn {_, attr} -> attr end)
+    Enum.group_by(set, fn {lvar, _attr} -> lvar end, fn {_, attr} -> attr end)
+  end
+
+  def get_known_matches(returned_entities, set) do
+    finds = generate_find(set)
+    Enum.reduce(finds, %{}, fn {lvar, li}, acc ->
+      entities = RE.get_entities(returned_entities, "#{lvar}")
+                |> Enum.map(&Map.take(&1, li))
+                |> MapSet.new()
+      Map.put(acc, lvar, entities)
+    end)
+  end
+
+  def prune_results(returned_entities, set) do
+    finds = generate_find(set)
+    Enum.reduce(finds, RE.new(), fn {lvar, attrs}, re ->
+      lvar_str = "#{lvar}"
+      old = RE.get_entities(returned_entities, lvar_str)
+      new = Enum.map(old, &Map.take(&1, attrs))
+      RE.put_entities(re, lvar_str, new)
+    end)
   end
 
 end
