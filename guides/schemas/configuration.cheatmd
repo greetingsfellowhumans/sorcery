@@ -5,7 +5,7 @@ Herein lies the key to writing a schema. Here is how we would rewrite the Exampl
 ```elixir
 defmodule App.User do
   use Sorcery.Schema, %{
-    opts: %{},
+    meta: %{},
     fields: %{
         name:      %{t: :string},
         age:       %{t: :integer, default: 0},
@@ -29,6 +29,15 @@ defmodule App.User do
   #end
 end
 ```
+
+## Meta Map
+
+Before getting into the meat of it, notice the empty map called :meta up there? We can use it to set some schema-wide configuration.
+
+| :meta         | types           | Default       | Description      |
+| ---           | ---             | ---           | ---              |
+| :optional?    | boolean         | true          | Whether every field allows nil. Individual fields can override |
+| :tk           | atom            | :module_name  | The snake case, atom form, of this schemas name. Used in queries etc. |
 
 
 ## String fields

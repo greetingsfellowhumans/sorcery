@@ -36,10 +36,11 @@ defmodule Sorcery.PortalServer do
   def add_portal_server_state(state, %{config_module: mod} = opts) do
     state
     |> Map.put(:sorcery, opts)
-    |> put_in([:sorcery, :config_module], mod.config())
+    #|> put_in([:sorcery, :config_module], mod.config())
   end
    
 
   def handle_info(%{command: :run_query} = msg, state), do: Cmd.RunQuery.entry(msg, state)
+  def handle_info(%{command: :spawn_portal} = msg, state), do: Cmd.SpawnPortal.entry(msg, state)
 
 end

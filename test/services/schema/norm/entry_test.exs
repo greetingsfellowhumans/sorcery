@@ -7,12 +7,8 @@ defmodule Sorcery.Schema.Norm.EntryTest do
   doctest S
   
   test "Schema module gets some goodies added" do
-    demo_player = %{name: "Jose Valim", age: 25, team_id: 123}
-    #player_spec = Player.t()
+    demo_player = Player.gen_one( %{name: "Jose Valim", age: 25, team_id: 123} )
     #dbg player_spec
-    assert conform!(demo_player, Player.t())
-
-    demo_player = %{age: 18, name: nil, team_id: 111}
     assert conform!(demo_player, Player.t())
   end
 

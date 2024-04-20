@@ -27,7 +27,7 @@ defmodule Sorcery.Schema do
         Keyword.get(opts, :meta, %{})
       )
       @full_fields Enum.reduce(@fields, %{}, fn {k, f}, acc ->
-        full = Sorcery.Schema.FieldType.new(f)
+        full = Sorcery.Schema.FieldType.new(f, @meta)
         Map.put(acc, k, full)
       end)
 
@@ -64,6 +64,12 @@ defmodule Sorcery.Schema do
       """
       def gen_one(body \\ %{}), do: gen(body) |> Enum.take(1) |> List.first()
 
+
+      def gen_cs(body \\ %{}) do
+        gen_one(body)
+        |> __MODULE__.sorcery_insert_cs()
+      end
+
       @doc ~s"""
       Generate a ReturnedEntities with n entities. If they have foreign keys, it will generate dummy data for those as well.
       """
@@ -76,6 +82,7 @@ defmodule Sorcery.Schema do
   end
 
   def meta_defaults(module), do: %{
+    optional?: true,
     tk: Macro.underscore(module) |> String.split("/") |> List.last() |> String.to_atom()
   }
 end

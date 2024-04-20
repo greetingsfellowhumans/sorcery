@@ -14,6 +14,7 @@ defmodule Sorcery.ReturnedEntities do
 
   defstruct [
     primary_entities: [], # i.e. player: 1, post: 24
+    lvar_tks: %{},
     data: %{}
   ]
 
@@ -141,5 +142,6 @@ defmodule Sorcery.ReturnedEntities do
   # }}}
 
 
+  def assign_lvar_tk(re, lvar, tk), do: put_in_p(re, [:lvar_tks, lvar], tk)
 
 end

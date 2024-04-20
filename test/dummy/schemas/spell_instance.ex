@@ -1,7 +1,8 @@
 defmodule MyApp.Schemas.SpellInstance do
   use Sorcery.Schema, 
+    meta: %{ optional?: false },
     fields: %{
-      type_id: %{t: :fk, module: MyApp.Schemas.SpellType, optional?: false},
-      player_id: %{t: :fk, module: MyApp.Schemas.Player, optional?: false},
+      type_id: %{t: :fk, module: MyApp.Schemas.SpellType},
+      player_id: %{t: :fk, module: MyApp.Schemas.Player},
     }
 end

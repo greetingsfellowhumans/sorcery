@@ -3,12 +3,13 @@ defmodule Sorcery.Schema.FieldType do
   
   @callback new(map()) :: struct()
 
-  def new(%{t: t} = args) do
+  def new(%{t: t} = args, meta) do
     mod = case t do
       :integer -> FT.Integer
       :string -> FT.String
       :fk -> FT.Fk
     end
+    args = Map.put_new(args, :optional?, meta.optional?)
     mod.new(args)
   end
   def new(_) do

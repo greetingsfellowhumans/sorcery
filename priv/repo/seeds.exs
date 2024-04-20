@@ -9,19 +9,19 @@ if Mix.env() == :test do
     %{name: "Pew Pew", power: 15, cost: 10},
   ]
   for spell <- spells do
-    Repo.insert!(SpellType.sorcery_insert_cs(spell))
+    Repo.insert!(SpellType.gen_cs(spell))
   end
 
   for name <- arena_names do
-    arena = Repo.insert!(BattleArena.sorcery_insert_cs(%{name: name}))
+    arena = Repo.insert!(BattleArena.gen_cs(%{name: name}))
 
     # 5 teams are in each arena
     for _n <- 1..5 do
-      team = Repo.insert!(Team.sorcery_insert_cs(%{location_id: arena.id}))
+      team = Repo.insert!(Team.gen_cs(%{location_id: arena.id}))
 
       # 4 players on each team
       for _n <- 1..4 do
-        Repo.insert!(Player.sorcery_insert_cs(%{team_id: team.id, health: 100, money: 250}))
+        Repo.insert!(Player.gen_cs(%{team_id: team.id}))
       end
     end
   end
@@ -29,7 +29,7 @@ if Mix.env() == :test do
   all_spells = Repo.all(SpellType)
   all_players = Repo.all(Player)
   for spell <- all_spells, player <- all_players do
-    Repo.insert!(SpellInstance.sorcery_insert_cs(%{type_id: spell.id, player_id: player.id}))
+    Repo.insert!(SpellInstance.gen_cs(%{type_id: spell.id, player_id: player.id}))
   end
 
 end

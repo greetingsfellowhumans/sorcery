@@ -16,6 +16,7 @@ defmodule Sorcery.Repo.Migrations.Demo do
         add :name,      :string
         add :team_id,   references("team")
         add :health,    :integer
+        add :mana,      :integer
         add :age,       :integer
         add :money,     :integer
       end

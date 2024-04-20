@@ -5,17 +5,19 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
 
   def run_query(portal_server_state, query_module, args) do
     repo = portal_server_state.args.repo_module
-    config = portal_server_state.config_module
+    config = portal_server_state.config_module.config()
     tk_map = config.schemas
 
     wheres = query_module.clauses(args)
     finds = query_module.finds()
+    dbg(finds)
 
     q = initial_from(wheres, tk_map)
     Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)
     |> add_select(finds)
     |> repo.all()
     |> convert_to_returned_entities()
+    |> assign_tks(wheres)
   end
 
   def initial_from([wc | _], tk_map) do
@@ -88,6 +90,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
       :* -> select_merge(q, [{^lvar, x}], %{^lvarstr => x})
       find -> select_merge(q, [{^lvar, x}], %{^lvarstr => map(x, ^find)})
     end
+    |> add_next_select(finds, lvars)
     
   end
   # }}}
@@ -102,6 +105,13 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
       RE.put_entities(re, lvarstr, [entity])
     end)
     convert_to_returned_entities(li, re)
+  end
+
+  def assign_tks(re, clauses) do
+    Enum.reduce(clauses, re, fn %{lvar: lvar, tk: tk}, acc ->
+      lvar_str = "#{lvar}"
+      RE.assign_lvar_tk(acc, lvar_str, tk)
+    end)
   end
   # }}}
 

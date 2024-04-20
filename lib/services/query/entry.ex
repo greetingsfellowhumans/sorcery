@@ -76,8 +76,9 @@ defmodule Sorcery.Query do
 
   defstruct [
     :refstr,
+    args: %{},
     where: [],
-    find: %{}
+    find: %{},
   ] 
   @type t :: %__MODULE__{refstr: String.t(), where: list(Sorcery.Query.WhereClause), find: map()}
 
@@ -120,6 +121,31 @@ defmodule Sorcery.Query do
           clause -> clause
         end)
       end
+
+      @doc ~s"""
+      When a Portal Server runs a Query, it must not only select the fields as described in :find, but it must also log some data for future Reverse Queries.
+      The reverse_find is basically :find, but for reverse queries.
+
+      Returns a list of %Sorcery.QueryResultLogPair{} structs.
+      """
+      def reverse_finds(), do: Sorcery.Query.ResultsLog.scan_for_pairs(clauses())
+
+      def known_lvars(results) do
+        reverse_finds()
+        |> Enum.reduce(%{}, fn %{attr: attr, lvar: lvar}, acc ->
+          values = results.data["#{lvar}"]
+                   |> Enum.map(fn {_, entity} -> Map.get(entity, attr) end)
+                   |> MapSet.new()
+          acc = Map.put_new(acc, lvar, %{})
+          put_in(acc, [lvar, attr], values)
+        end)
+      end
+
+      def reverse_query(config_module, args) do
+        Sorcery.Query.ReverseQuery.new(config_module, @raw_struct, args, clauses(args))
+      end
+
+
     end
   end
 
