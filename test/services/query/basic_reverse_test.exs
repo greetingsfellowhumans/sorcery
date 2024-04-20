@@ -1,9 +1,9 @@
 defmodule Sorcery.Query.BasicReverseTest do
   use ExUnit.Case
   #alias Sorcery.Query, as: SrcQL
-  ##alias MyApp.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
   #alias MyApp.Schemas.{BattleArena}
-  #alias MyApp.Queries.{GetArena}
+  #alias MyApp.Schemas.{BattleArena}
+  alias MyApp.Queries.{GetBattle}
   #import SrcQL
   #doctest SrcQL
   #alias Sorcery.ReturnedEntities, as: RE
@@ -11,16 +11,18 @@ defmodule Sorcery.Query.BasicReverseTest do
   #alias Sorcery.Query.ResultsLog, as: RLog
 
 
-  #test "A demo module gets some query goodies" do
-  #  {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
-  #  msg = %{
-  #    command: :spawn_portal,
-  #    from: self(),
-  #    args: %{arena_id: 1},
-  #    query: MyApp.Queries.GetArena,
-  #  }
-  #  send(pid, {:sorcery, msg})
-  #  assert_receive portal
+  test "Build the :find sets" do
+    {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
+    msg = %{
+      command: :spawn_portal,
+      from: self(),
+      args: %{player_id: 1},
+      query: MyApp.Queries.GetBattle,
+    }
+    send(pid, {:sorcery, msg})
+    assert_receive portal
+    dbg portal
+  end
 
   #  diff_row1 = %Sorcery.Mutation.DiffRow{
   #    tk: :battle_arena,

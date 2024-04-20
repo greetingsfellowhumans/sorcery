@@ -1,5 +1,6 @@
 defmodule Sorcery.PortalServer.Commands.SpawnPortal do
   alias Sorcery.PortalServer.Portal
+  alias Sorcery.Query.ReverseQuery, as: RQ
 
 
   def entry(%{query: module, from: from} = msg, state) do
@@ -11,8 +12,10 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
       child_pids: [from],
       parent_pid: self(), 
       args: args,
-      known_matches: module.known_lvars(results),
-      reverse_query: module.reverse_query(state.sorcery.config_module, args),
+      fwd_find_set: RQ.build_lvar_attr_set(state.sorcery.config_module, module, :forward),
+      rev_find_set: RQ.build_lvar_attr_set(state.sorcery.config_module, module, :reverse)
+      #known_matches: module.known_lvars(results),
+      #reverse_query: module.reverse_query(state.sorcery.config_module, args),
     })
     send(from, portal)
   end

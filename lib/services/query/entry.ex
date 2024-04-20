@@ -83,6 +83,8 @@ defmodule Sorcery.Query do
   @type t :: %__MODULE__{refstr: String.t(), where: list(Sorcery.Query.WhereClause), find: map()}
 
   def new(opts) do
+    ref = "#{inspect(make_ref())}"
+    opts = Map.put_new(opts, :refstr, ref)
     struct(__MODULE__, opts)
   end
 
