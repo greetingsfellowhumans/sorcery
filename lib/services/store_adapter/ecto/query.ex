@@ -10,7 +10,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
 
     wheres = query_module.clauses(args)
     finds = query_module.finds()
-    dbg(finds)
+    #dbg(finds)
 
     q = initial_from(wheres, tk_map)
     Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)

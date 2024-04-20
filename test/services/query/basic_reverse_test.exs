@@ -24,10 +24,10 @@ defmodule Sorcery.Query.BasicReverseTest do
     dbg portal
 
     fwd_find = RQ.generate_find(portal.fwd_find_set)
-    |> dbg
-
     rev_find = RQ.generate_find(portal.rev_find_set)
-    |> dbg
+    refute fwd_find == rev_find
+    all_find = RQ.generate_find([portal.fwd_find_set, portal.rev_find_set])
+    refute fwd_find == all_find
   end
 
   #  diff_row1 = %Sorcery.Mutation.DiffRow{

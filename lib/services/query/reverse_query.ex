@@ -41,6 +41,10 @@ defmodule Sorcery.Query.ReverseQuery do
     MapSet.new(second_pass)
   end
 
+  def generate_find([set1 | sets]) do
+    Enum.reduce(sets, set1, &MapSet.union/2)
+    |> generate_find()
+  end
   def generate_find(set) do
     Enum.group_by(set, fn {lvar, _attr} -> "#{lvar}" end, fn {_, attr} -> attr end)
   end
