@@ -12,7 +12,7 @@ defmodule Sorcery.PortalServer.Portal do
     :child_pids,
     :parent_pid,
     :ref,
-    :reverse_query,
+    #:reverse_query,
     args: %{}, # Is this even necessary? Might be useable for optimizing?
     known_matches: %{},
     fwd_find_set: MapSet.new([]),

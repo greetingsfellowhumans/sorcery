@@ -1,9 +1,10 @@
 defmodule Sorcery.Query.ReverseQuery do
   @moduledoc false
 
-  #import Sorcery.Helpers.Maps
   alias Sorcery.ReturnedEntities, as: RE
+  alias Sorcery.Query.WhereClause
 
+  # {{{ Build the query
   def build_lvar_attr_set(config_module, query_module, :forward) do
     strct = query_module.raw_struct()
     find = Map.get(strct, :find, %{})
@@ -53,6 +54,7 @@ defmodule Sorcery.Query.ReverseQuery do
 
   def get_known_matches(returned_entities, set) do
     finds = generate_find(set)
+    dbg finds
     Enum.reduce(finds, %{}, fn {lvar, li}, acc ->
       entities = RE.get_entities(returned_entities, "#{lvar}")
                 |> Enum.map(&Map.take(&1, li))
@@ -70,5 +72,69 @@ defmodule Sorcery.Query.ReverseQuery do
       RE.put_entities(re, lvar_str, new)
     end)
   end
+  # }}}
+
+  # {{{ Run the query
+  def diff_matches_portal?(diff, portal) do
+    lvar_tks = portal.query_module.raw_struct().lvar_tks
+    clauses = portal.query_module.clauses(portal.args)
+    Enum.any?(diff.rows, fn row ->
+      lvars = get_possible_lvars(lvar_tks, row)
+      diff_row_matches_portal?(row, portal, lvars, clauses)
+    end)
+  end
+
+  def diff_row_matches_portal?(%{tk: tk} = row, portal, lvars, clauses) do
+    Enum.any?(lvars, fn lvar ->
+      clauses = Enum.filter(clauses, &("#{&1.lvar}" == "#{lvar}"))
+      Enum.all?(clauses, fn clause ->
+        clause = Map.from_struct(clause)
+        row_matches_clause?(row, clause, portal)
+      end)
+    end)
+  end
+
+
+  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :lvar, other_lvar: lvar, other_lvar_attr: lvar_attr}, portal) do
+    left_values = get_diff_row_values(row, attr)
+    right_values = RE.get_entities( portal.known_matches, "#{lvar}") |> Enum.map(&(&1[lvar_attr]))
+    Enum.any?(right_values, fn r ->
+      Enum.any?(left_values, fn l ->
+        apply(Kernel, op, [l, r])
+      end)
+    end)
+  end
+  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :literal, right: right}, portal) do
+    left_values = get_diff_row_values(row, attr)
+    Enum.any?(left_values, fn l ->
+      apply(Kernel, op, [l, right])
+    end)
+  end
+
+  defp get_diff_row_values(row, attr) do
+    li = []
+    li = case row.old_entity do
+      nil -> li
+      %{^attr => v} -> [v | li]
+    end
+    case row.new_entity do
+      nil -> li
+      %{^attr => v} -> [v | li]
+    end
+  end
+
+
+  defp get_possible_lvars(lvar_tks, %{tk: tk} = _row) do
+    Enum.reduce(lvar_tks, [], fn {lvar, k}, acc -> 
+      if k == tk do
+        [String.to_existing_atom(lvar) | acc]
+      else
+        acc
+      end
+    end)
+    |> Enum.uniq()
+  end
+  # }}}
+
 
 end

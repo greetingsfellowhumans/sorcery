@@ -2,13 +2,13 @@
 defmodule Sorcery.Query.WhereClause do
   defstruct [:lvar, :tk, :attr, :left, :right, :op, :other_lvar, :other_lvar_attr, :arg_name, :right_type]
   @type t :: %__MODULE__{
-    lvar: atom(),
+    lvar: binary(),
     tk: atom(),
     attr: atom(),
     left: any(),
     right: any(),
     op: atom(),
-    other_lvar: nil | atom(),
+    other_lvar: nil | binary(),
     other_lvar_attr: nil | atom(),
     arg_name: nil | atom(),
     right_type: :literal | :lvar | :arg
@@ -79,12 +79,19 @@ defmodule Sorcery.Query do
     args: %{},
     where: [],
     find: %{},
+    lvar_tks: []
   ] 
   @type t :: %__MODULE__{refstr: String.t(), where: list(Sorcery.Query.WhereClause), find: map()}
 
   def new(opts) do
     ref = "#{inspect(make_ref())}"
-    opts = Map.put_new(opts, :refstr, ref)
+    lvar_tks = Enum.map(opts[:where], fn [lvar, tk | _] -> {lvar, tk} end) |> Enum.uniq()
+
+    opts =
+      opts
+      |> Map.put_new(:refstr, ref)
+      |> Map.put_new(:lvar_tks, lvar_tks)
+
     struct(__MODULE__, opts)
   end
 
@@ -93,7 +100,6 @@ defmodule Sorcery.Query do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @raw_struct Sorcery.Query.new(opts)
-
 
       def raw_struct(), do: @raw_struct
 
@@ -124,28 +130,6 @@ defmodule Sorcery.Query do
         end)
       end
 
-      @doc ~s"""
-      When a Portal Server runs a Query, it must not only select the fields as described in :find, but it must also log some data for future Reverse Queries.
-      The reverse_find is basically :find, but for reverse queries.
-
-      Returns a list of %Sorcery.QueryResultLogPair{} structs.
-      """
-      def reverse_finds(), do: Sorcery.Query.ResultsLog.scan_for_pairs(clauses())
-
-      def known_lvars(results) do
-        reverse_finds()
-        |> Enum.reduce(%{}, fn %{attr: attr, lvar: lvar}, acc ->
-          values = results.data["#{lvar}"]
-                   |> Enum.map(fn {_, entity} -> Map.get(entity, attr) end)
-                   |> MapSet.new()
-          acc = Map.put_new(acc, lvar, %{})
-          put_in(acc, [lvar, attr], values)
-        end)
-      end
-
-      def reverse_query(config_module, args) do
-        Sorcery.Query.ReverseQuery.new(config_module, @raw_struct, args, clauses(args))
-      end
 
 
     end

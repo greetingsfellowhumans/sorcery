@@ -8,6 +8,8 @@ defmodule Sorcery.PortalServer.Commands.RunQuery do
     finds = module.finds()
     results = store_adapter.run_query(state.sorcery, clauses, finds)
     send(from, results)
+
+    state
   end
 
 end

@@ -172,4 +172,47 @@ defmodule Sorcery.ReturnedEntities do
   def assign_lvar_tk(re, lvar, tk), do: put_in_p(re, [:lvar_tks, lvar], tk)
 
 
+  # {{{ apply_find_map(re, find) :: re
+  @doc """
+  Prunes all the entities by applying Map.take(li) to each.
+  ## Examples
+      iex> re = Sorcery.ReturnedEntities.new()
+      iex> re = put_entities(re, :bird, [ %{id: 1, name: "A"}, %{id: 23, name: "B"}])
+      iex> re = put_entities(re, :spell, [ %{id: 1, name: "A"}, %{id: 23, name: "B"}])
+      iex> get_entities(re, :bird)
+      [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ]
+      iex> re = apply_find_map(re, %{bird: [:id]})
+      iex> get_entities(re, :bird)
+      [ %{id: 1}, %{id: 23} ]
+  """
+  def apply_find_map(re, find) do
+    find = convert_find_type(re, find)
+    re = Enum.reduce(find, re, fn {tk, attrs}, re ->
+      table = 
+        re.data[tk]
+        |> Enum.reduce(%{}, fn {id, entity}, acc ->
+          entity = Map.take(entity, attrs)
+          Map.put(acc, id, entity)
+        end)
+      put_in_p(re, [:data, tk], table)
+    end)
+
+    keys_in_re = Map.keys(re.data) |> MapSet.new()
+    keys_in_find = Map.keys(find)  |> MapSet.new()
+    difference = MapSet.difference(keys_in_re, keys_in_find)
+    Enum.reduce(difference, re, fn k, re -> delete_in(re, [:data, k]) end)
+  end
+  defp convert_find_type(re, find) do
+    re_atom? = re.data |> Map.keys() |> List.first() |> is_atom()
+    find_atom? = find |> Map.keys() |> List.first() |> is_atom()
+    case {re_atom?, find_atom?} do
+      {false, false} -> find
+      {true,  true} -> find
+      {true,  false} -> to_atom_keys(find)
+      {false,  true} -> to_string_keys(find)
+    end
+  end
+  # }}}
+
+
 end

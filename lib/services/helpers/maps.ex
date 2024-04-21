@@ -51,6 +51,33 @@ defmodule Sorcery.Helpers.Maps do
   # }}}
 
 
+  # {{{ to_string_keys/1
+  @contract to_string_keys(map?()) :: map?()
+  @doc ~S"""
+  Given a map, converts all string keys into atoms
+
+  ## Examples
+      iex> to_string_keys(%{a: 1, b: 2, c: %{foo: "bar"}})
+      %{"a" => 1, "b" => 2, "c" => %{"foo" => "bar"}}
+  """
+  def to_string_keys(map) do
+    Enum.reduce(map, %{}, fn 
+      {ak, v}, acc when is_atom(ak) -> 
+        sk = "#{ak}"
+
+        v = case v do
+          m when is_map(m) -> to_string_keys(m)
+          v -> v
+        end
+
+        Map.put(acc, sk, v)
+      {k, m}, acc when is_map(m) -> Map.put(acc, k, to_string_keys(m))
+      {k, v}, acc -> Map.put(acc, k, v)
+    end)
+  end
+  # }}}
+
+
   # {{{ get_in_p/2
   @contract get_in_p(m :: any?(), li :: list?()) :: any?()
   @doc ~S"""

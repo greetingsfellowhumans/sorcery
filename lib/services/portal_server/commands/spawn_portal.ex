@@ -1,31 +1,52 @@
 defmodule Sorcery.PortalServer.Commands.SpawnPortal do
   alias Sorcery.PortalServer.Portal
   alias Sorcery.Query.ReverseQuery, as: RQ
+  alias Sorcery.ReturnedEntities, as: RE
+  import Sorcery.Helpers.Maps
 
 
   def entry(%{query: module, from: from} = msg, state) do
     %{store_adapter: store_adapter} = state.sorcery
-    fwd_find_set = RQ.build_lvar_attr_set(state.sorcery.config_module, module, :forward)
-    rev_find_set = RQ.build_lvar_attr_set(state.sorcery.config_module, module, :reverse)
-
     args = msg[:args] || %{}
     clauses = module.clauses(args)
 
+
+    fwd_find_set = RQ.build_lvar_attr_set(state.sorcery.config_module, module, :forward)
+    rev_find_set = RQ.build_lvar_attr_set(state.sorcery.config_module, module, :reverse)
     finds = RQ.generate_find([fwd_find_set, rev_find_set])
 
     results = store_adapter.run_query(state.sorcery, clauses, finds)
+    fwd_results = RE.apply_find_map(results, RQ.generate_find(fwd_find_set))
+    rev_results = RE.apply_find_map(results, RQ.generate_find(rev_find_set))
+
     portal = Portal.new(%{
       query_module: module,
       child_pids: [from],
       parent_pid: self(), 
       args: args,
-      fwd_find_set: fwd_find_set,
-      rev_find_set: rev_find_set,
-      known_matches: RQ.get_known_matches(results, rev_find_set),
-      #reverse_query: module.reverse_query(state.sorcery.config_module, args),
+      #fwd_find_set: fwd_find_set,
+      #rev_find_set: rev_find_set,
+      #known_matches: RQ.get_known_matches(results, rev_find_set),
     })
-    results = RQ.prune_results(results, fwd_find_set)
-    send(from, {portal, results})
+    child_portal =
+      portal
+      |> Map.put(:known_matches, fwd_results)
+      |> Map.put(:fwd_find_set, fwd_find_set)
+
+    parent_portal =
+      portal
+      |> Map.put(:known_matches, rev_results)
+      |> Map.put(:rev_find_set, rev_find_set)
+    #results = RQ.prune_results(results, fwd_find_set)
+    msg = %{
+      command: :spawn_portal_response,
+      from: self(),
+      args: %{portal: child_portal}
+    }
+    send(from, {:sorcery, msg})
+
+    state
+    |> update_in_p([:sorcery, :portals_to_child], [parent_portal], &([parent_portal | &1]))
   end
 
 
