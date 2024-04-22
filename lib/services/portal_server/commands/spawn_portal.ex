@@ -24,9 +24,6 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
       child_pids: [from],
       parent_pid: self(), 
       args: args,
-      #fwd_find_set: fwd_find_set,
-      #rev_find_set: rev_find_set,
-      #known_matches: RQ.get_known_matches(results, rev_find_set),
     })
     child_portal =
       portal
@@ -41,18 +38,13 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
     msg = %{
       command: :spawn_portal_response,
       from: self(),
-      args: %{portal: child_portal}
+      args: Map.merge(args, %{portal: child_portal})
     }
     send(from, {:sorcery, msg})
 
     state
-    |> update_in_p([:sorcery, :portals_to_child], [parent_portal], &([parent_portal | &1]))
+    |> put_in_p([:sorcery, :portals_to_child, args.portal_name], parent_portal)
   end
 
-
-  @doc """
-  In order to have robust reverse queries, we must make sure all lvar/attr pairs are included in the query.find.
-  After we store the results in the known_lvar_values, we then remove those attributes that did not exist in the user defined Query.find.
-  """
 
 end

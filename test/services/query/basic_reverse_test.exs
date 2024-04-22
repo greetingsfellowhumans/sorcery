@@ -11,12 +11,13 @@ defmodule Sorcery.Query.BasicReverseTest do
     msg = %{
       command: :spawn_portal,
       from: self(),
-      args: %{player_id: 1},
+      args: %{player_id: 1, portal_name: :battle_portal},
       query: MyApp.Queries.GetBattle,
     }
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{portal: portal}}}
     results = portal.known_matches
+    dbg results
 
 
     spell = RE.get_entities(portal.known_matches, "?spells") |> Enum.at(5)
