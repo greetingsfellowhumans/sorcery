@@ -16,8 +16,6 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
     finds = RQ.generate_find([fwd_find_set, rev_find_set])
 
     results = store_adapter.run_query(state.sorcery, clauses, finds)
-    fwd_results = RE.apply_find_map(results, RQ.generate_find(fwd_find_set))
-    rev_results = RE.apply_find_map(results, RQ.generate_find(rev_find_set))
 
     portal = Portal.new(%{
       query_module: module,
@@ -27,14 +25,13 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
     })
     child_portal =
       portal
-      |> Map.put(:known_matches, fwd_results)
+      |> Map.put(:known_matches, results)
       |> Map.put(:fwd_find_set, fwd_find_set)
 
     parent_portal =
       portal
-      |> Map.put(:known_matches, rev_results)
+      |> Map.put(:known_matches, results)
       |> Map.put(:rev_find_set, rev_find_set)
-    #results = RQ.prune_results(results, fwd_find_set)
     msg = %{
       command: :spawn_portal_response,
       from: self(),

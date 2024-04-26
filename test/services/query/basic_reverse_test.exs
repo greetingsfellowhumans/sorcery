@@ -17,7 +17,6 @@ defmodule Sorcery.Query.BasicReverseTest do
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{portal: portal}}}
     results = portal.known_matches
-    dbg results
 
 
     spell = RE.get_entities(portal.known_matches, "?spells") |> Enum.at(5)
