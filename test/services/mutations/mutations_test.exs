@@ -1,21 +1,35 @@
 defmodule Sorcery.Mutations.MutationsTest do
   use ExUnit.Case
-  alias Sorcery.Mutation
-  #alias MyApp.Queries.{GetBattle}
-  #alias Sorcery.Query.ReverseQuery, as: RQ
-  alias Sorcery.ReturnedEntities, as: RE
-  #alias Sorcery.Mutation.{Diff, DiffRow}
+  alias Sorcery.Mutation, as: M
+  import Sorcery.Setups
 
-  test "Freeze Portal" do
+  setup [:spawn_portal]
+
+
+  test "PreMutation operations", %{portal: portal} do
+    m = M.init(portal)
+    m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
+    new_player = M.get(m, [:player, 1])
+    old_player = M.get_original(m, [:player, 1])
+    assert new_player.age == 1 + old_player.age
+
+    m = M.put(m, [:player, 1, :age], 10)
+    new_player2 = M.get(m, [:player, 1])
+    old_player2 = M.get_original(m, [:player, 1])
+    assert new_player2.age == 10
+    assert old_player2.age == old_player.age
+    m = M.update(m, [:player, 1, :age], fn _, age -> age * 2 end)
+    new_player3 = M.get(m, [:player, 1])
+    assert new_player3.age == 20
+
+    m = M.create_entity(m, :team, "?my_new_team", %{name: "My New Team"})
+    new_team = M.get(m, [:team, "?my_new_team"])
+    assert new_team.name == "My New Team"
+    m = M.delete_entity(m, :player, 1)
+    refute Map.has_key?(m.new_data.player, 1)
   end
 
-  test "Mutation API" do
-    # init(portal)
-    # update_in(mutation, [tk, id, attr])
-    # put_in(mutation, [tk, id, attr])
-    # create_entity(tk, "?lvar", body)
-    # delete_entity(tk, id)
-  end
+
 
   test "Mutation CMD" do
     # Can send to Portal Server. 

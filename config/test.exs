@@ -12,3 +12,5 @@ config :sorcery, Sorcery.Repo,
 config :sorcery,
   ecto_repos: [Sorcery.Repo]
 
+config :logger,
+  level: :warn

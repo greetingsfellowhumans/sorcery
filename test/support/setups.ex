@@ -13,7 +13,7 @@ defmodule Sorcery.Setups do
       query: MyApp.Queries.GetBattle,
     }
     send(pid, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{portal: portal}}}
+    assert_receive {:sorcery, %{args: %{portal: portal}} }
     {:ok, %{portal: portal}}
   end
   # }}}
