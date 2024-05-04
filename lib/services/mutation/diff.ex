@@ -1,4 +1,5 @@
 defmodule Sorcery.Mutation.Diff do
+  @moduledoc false
   defstruct [
     tks_affected: MapSet.new([]),
     rows: [],
@@ -12,6 +13,7 @@ defmodule Sorcery.Mutation.Diff do
 end
 
 defmodule Sorcery.Mutation.DiffRow do
+  @moduledoc false
   defstruct [
     tk: nil,
     id: nil,

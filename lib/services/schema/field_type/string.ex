@@ -1,8 +1,5 @@
 defmodule Sorcery.Schema.FieldType.String do
-  @moduledoc """
-  For data generation, if you do not give a :min or :max, we will use 0 and 100.
-  That doesn't apply to Ecto/Norm.
-  """
+  @moduledoc false
   use Norm
   #import Sorcery.Specs
   alias StreamData, as: SD

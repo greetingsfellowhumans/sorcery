@@ -1,4 +1,10 @@
 defmodule Sorcery.Schema.FieldType.Fk do
+  @moduledoc false
+
+  ##
+  ## @TODO All of this
+  ##
+
   use Norm
   #import Sorcery.Specs
   alias StreamData, as: SD
@@ -21,9 +27,6 @@ defmodule Sorcery.Schema.FieldType.Fk do
   @impl true
   def new(args), do: struct(__MODULE__, args)
 
-  @moduledoc """
-  Everything below this line is @TODO
-  """
   def ecto_attrs(_field_struct) do
     []
   end

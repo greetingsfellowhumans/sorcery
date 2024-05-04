@@ -1,4 +1,8 @@
 defmodule Sorcery.Schema.FieldType do
+  @moduledoc """
+  WIP
+  currently it is not possible to add your own custom field types. But in the future it should be possible since they all follow this behaviour
+  """
   alias Sorcery.Schema.FieldType, as: FT
   
   @callback new(map()) :: struct()

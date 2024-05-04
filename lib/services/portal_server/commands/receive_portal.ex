@@ -1,4 +1,5 @@
 defmodule Sorcery.PortalServer.Commands.ReceivePortal do
+  @moduledoc false
   import Sorcery.Helpers.Maps
 
 

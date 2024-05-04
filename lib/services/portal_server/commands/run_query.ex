@@ -1,4 +1,5 @@
 defmodule Sorcery.PortalServer.Commands.RunQuery do
+  @moduledoc false
 
 
   def entry(%{query: module, from: from} = msg, state) do

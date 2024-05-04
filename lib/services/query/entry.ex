@@ -1,5 +1,6 @@
 # {{{ WhereClause module
 defmodule Sorcery.Query.WhereClause do
+  @moduledoc false
   defstruct [:lvar, :tk, :attr, :left, :right, :op, :other_lvar, :other_lvar_attr, :arg_name, :right_type]
   @type t :: %__MODULE__{
     lvar: binary(),

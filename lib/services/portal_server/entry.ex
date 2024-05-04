@@ -1,4 +1,13 @@
 defmodule Sorcery.PortalServer do
+  @moduledoc """
+  A PortalServer is a special type of GenServer. Portals are created between different PortalServers, always in a hierarchical parent <--> child relationship.
+
+  Every PortalServer must have access to some kind of data store. That might be Postgres via Ecto.Repo... or it could be a LiveView storing data in socket.assigns. (Remember, LiveViews *are* GenServers!)
+  You can even create your own adapter and use ANY backend as the data store, as long as you can query and mutate the data.
+
+  ## Setup
+  A PortalServer is any GenServer that holds a special :sorcery key somewhere in its state, and also handles messages sent to {:sorcery, msg}
+  """
   alias Sorcery.PortalServer.Commands, as: Cmd
 
   @doc """

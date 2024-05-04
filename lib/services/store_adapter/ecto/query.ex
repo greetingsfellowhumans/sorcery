@@ -1,4 +1,5 @@
 defmodule Sorcery.StoreAdapter.Ecto.Query do
+  @moduledoc false
   import Ecto.Query
   alias Sorcery.ReturnedEntities, as: RE
 

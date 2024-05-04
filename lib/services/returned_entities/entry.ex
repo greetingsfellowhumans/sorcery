@@ -4,7 +4,7 @@ defmodule Sorcery.ReturnedEntities do
 
   Try not to access the data directly, but rather use the functions in this module.
 
-  The reason is that Sorcery is still a work in progress, the format might change, but the functions should never break their contract.
+  The reason is that Sorcery is still a work in progress, the format might change, but the functions should never break their contract's.
 
   This is also the basic format of portals.
   """
@@ -174,7 +174,7 @@ defmodule Sorcery.ReturnedEntities do
 
   # {{{ apply_find_map(re, find) :: re
   @doc """
-  Prunes all the entities by applying Map.take(li) to each.
+  Takes the :find key from some SrcQL and uses that to prune the RE.
   ## Examples
       iex> re = Sorcery.ReturnedEntities.new()
       iex> re = put_entities(re, :bird, [ %{id: 1, name: "A"}, %{id: 23, name: "B"}])

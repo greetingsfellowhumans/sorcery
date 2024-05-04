@@ -1,4 +1,5 @@
 defmodule Sorcery.PortalServer.Commands.SpawnPortal do
+  @moduledoc false
   alias Sorcery.PortalServer.Portal
   alias Sorcery.Query.ReverseQuery, as: RQ
   import Sorcery.Helpers.Maps
