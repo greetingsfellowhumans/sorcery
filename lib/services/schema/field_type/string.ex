@@ -38,8 +38,8 @@ defmodule Sorcery.Schema.FieldType.String do
 
   @impl true
   def get_sd_field(field_struct) do
-    min = Map.get(field_struct, :min)
-    max = Map.get(field_struct, :max)
+    #min = Map.get(field_struct, :min)
+    #max = Map.get(field_struct, :max)
     opts = :utf8
     #opts = [{:utf8, true}]
     #opts = if min, do: [{:min, min} | opts], else: opts

@@ -33,7 +33,7 @@ defmodule Sorcery.PortalServer do
   """
 
 
-  def add_portal_server_state(state, %{config_module: mod} = opts) do
+  def add_portal_server_state(state, %{config_module: _mod} = opts) do
     state
     |> Map.put(:sorcery, opts)
     |> put_in([:sorcery, :portals_to_parent], %{})

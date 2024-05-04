@@ -2,7 +2,6 @@ defmodule Sorcery.Query.ReverseQuery do
   @moduledoc false
 
   alias Sorcery.ReturnedEntities, as: RE
-  alias Sorcery.Query.WhereClause
 
   # {{{ Build the query
   def build_lvar_attr_set(config_module, query_module, :forward) do
@@ -26,7 +25,7 @@ defmodule Sorcery.Query.ReverseQuery do
     |> MapSet.new()
   end
 
-  def build_lvar_attr_set(config_module, query_module, :reverse) do
+  def build_lvar_attr_set(_config_module, query_module, :reverse) do
     wheres = query_module.clauses()
 
     # FIRST PASS: lvar/attr pairs
@@ -36,7 +35,7 @@ defmodule Sorcery.Query.ReverseQuery do
 
     # SECOND PASS: when referring to another lvar
     second_pass = Enum.reduce(wheres, first_pass, fn 
-      %{other_lvar: nil, other_lvar_attr: attr}, acc -> acc
+      %{other_lvar: nil, other_lvar_attr: _attr}, acc -> acc
       %{other_lvar: lvar, other_lvar_attr: nil}, acc -> [{lvar, :id} | acc]
       %{other_lvar: lvar, other_lvar_attr: attr}, acc -> [{lvar, attr} | acc]
     end)
@@ -84,7 +83,7 @@ defmodule Sorcery.Query.ReverseQuery do
     end)
   end
 
-  def diff_row_matches_portal?(%{tk: tk} = row, portal, lvars, clauses) do
+  def diff_row_matches_portal?(%{tk: _tk} = row, portal, lvars, clauses) do
     Enum.any?(lvars, fn lvar ->
       clauses = Enum.filter(clauses, &("#{&1.lvar}" == "#{lvar}"))
       Enum.all?(clauses, fn clause ->
@@ -104,7 +103,7 @@ defmodule Sorcery.Query.ReverseQuery do
       end)
     end)
   end
-  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :literal, right: right}, portal) do
+  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :literal, right: right}, _portal) do
     left_values = get_diff_row_values(row, attr)
     Enum.any?(left_values, fn l ->
       apply(Kernel, op, [l, right])

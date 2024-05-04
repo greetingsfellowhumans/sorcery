@@ -12,7 +12,7 @@ defmodule Sorcery.Query.BasicReverseTest do
       command: :spawn_portal,
       from: self(),
       args: %{player_id: 1, portal_name: :battle_portal},
-      query: MyApp.Queries.GetBattle,
+      query: GetBattle,
     }
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{portal: portal}}}

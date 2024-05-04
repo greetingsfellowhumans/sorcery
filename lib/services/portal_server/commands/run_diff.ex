@@ -10,13 +10,13 @@ defmodule Sorcery.PortalServer.Commands.RunDiff do
   > You are here < A child receives a message from a parent and calls RunDiff
   It updates the store, and portals.
   """
-  alias Sorcery.PortalServer.Portal
-  alias Sorcery.Query.ReverseQuery, as: RQ
-  alias Sorcery.ReturnedEntities, as: RE
-  import Sorcery.Helpers.Maps
+#  alias Sorcery.PortalServer.Portal
+#  alias Sorcery.Query.ReverseQuery, as: RQ
+#  alias Sorcery.ReturnedEntities, as: RE
+#  import Sorcery.Helpers.Maps
+#
 
-
-  def entry(%{args: _args} = msg, state) do
+  def entry(%{args: _args} = _msg, state) do
     "@TODO"
     state
   end

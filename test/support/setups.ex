@@ -14,7 +14,7 @@ defmodule Sorcery.Setups do
     }
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{portal: portal}} }
-    {:ok, %{portal: portal}}
+    {:ok, Map.put(ctx, :portal, portal) }
   end
   # }}}
 

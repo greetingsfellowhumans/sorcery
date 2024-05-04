@@ -2,7 +2,6 @@ defmodule Sorcery.PortalServer.PortalTest do
   use ExUnit.Case
   alias Sorcery.PortalServer.Portal, as: Portal
   doctest Portal
-  alias Sorcery.ReturnedEntities, as: RE
   import Sorcery.Setups
 
   setup [:spawn_portal]

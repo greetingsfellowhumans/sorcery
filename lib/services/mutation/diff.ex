@@ -50,6 +50,7 @@ defmodule Sorcery.Mutation.DiffRow do
       new_entity: new_entity,
       old_entity: nil
     }
+    struct(__MODULE__, body)
   end
 
 end

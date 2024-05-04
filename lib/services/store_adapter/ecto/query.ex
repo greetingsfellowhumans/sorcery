@@ -78,7 +78,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
       find -> select(q, [{^lvar, x}], %{^lvarstr => map(x, ^find)})
     end
   end
-  def add_next_select(q, finds, []), do: q
+  def add_next_select(q, _finds, []), do: q
   def add_next_select(q, finds, [lvar | lvars]) do
     lvarstr = "#{lvar}"
     case Map.get(finds, lvar) do

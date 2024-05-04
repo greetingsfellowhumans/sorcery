@@ -1,7 +1,6 @@
 defmodule Sorcery.PortalServer.Commands.SpawnPortal do
   alias Sorcery.PortalServer.Portal
   alias Sorcery.Query.ReverseQuery, as: RQ
-  alias Sorcery.ReturnedEntities, as: RE
   import Sorcery.Helpers.Maps
 
 

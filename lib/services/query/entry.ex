@@ -81,7 +81,7 @@ defmodule Sorcery.Query do
     find: %{},
     lvar_tks: []
   ] 
-  @type t :: %__MODULE__{refstr: String.t(), where: list(Sorcery.Query.WhereClause), find: map()}
+  @type t :: %__MODULE__{refstr: String.t(), where: list(WhereClause), find: map()}
 
   def new(opts) do
     ref = "#{inspect(make_ref())}"

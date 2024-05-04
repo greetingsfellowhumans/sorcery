@@ -10,7 +10,7 @@ defmodule Sorcery.Mutation.PreMutation do
     new_data: %{},
   ]
 
-  def init(portal, opts \\ []) do
+  def init(portal, _opts \\ []) do
     portal = Portal.freeze(portal)
     body = %{
       old_data: portal.known_matches.data,
