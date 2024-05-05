@@ -40,7 +40,7 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
     send(from, {:sorcery, msg})
 
     state
-    |> put_in_p([:sorcery, :portals_to_child, args.portal_name], parent_portal)
+    |> put_in_p([:sorcery, :portals_to_child, from, args.portal_name], parent_portal)
   end
 
 

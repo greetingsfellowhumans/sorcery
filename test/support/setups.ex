@@ -22,4 +22,22 @@ defmodule Sorcery.Setups do
   # }}}
 
 
+  # {{{ :teams_portal
+  def teams_portal(ctx) do
+    pid = ctx.parent_pid
+    msg = %{
+      command: :spawn_portal,
+      from: self(),
+      args: %{portal_name: :all_teams},
+      query: MyApp.Queries.AllTeams,
+    }
+    send(pid, {:sorcery, msg})
+    assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
+    ctx =
+      ctx
+      |> Map.put(:teams_portal, portal)
+    {:ok, ctx}
+  end
+  # }}}
+
 end

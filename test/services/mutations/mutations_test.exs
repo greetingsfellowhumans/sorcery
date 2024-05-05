@@ -1,9 +1,10 @@
 defmodule Sorcery.Mutations.MutationsTest do
   use ExUnit.Case
   alias Sorcery.Mutation, as: M
+  alias Sorcery.Query.ReverseQuery, as: RQ
   import Sorcery.Setups
 
-  setup [:spawn_portal]
+  setup [:spawn_portal, :teams_portal]
 
 
   # {{{ PreMutation operations should work
@@ -64,11 +65,10 @@ defmodule Sorcery.Mutations.MutationsTest do
   # }}}
 
   # {{{ Parent can delete entities
-  test "Parent can delete entities", %{portal: portal, parent_pid: parent} do
+  test "Parent can delete entities", %{teams_portal: portal, parent_pid: parent} do
     [team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
                  |> Enum.sort_by(&(&1.id), :desc)
     m = M.init(portal)
-        |> M.put([:player, 1, :age], 24)
         |> M.delete_entity(:team, team.id)
 
     msg = %{
@@ -76,15 +76,13 @@ defmodule Sorcery.Mutations.MutationsTest do
       from: self(),
       args: %{mutation: m},
     }
-    [id] = m.deletes.team
-    assert id == team.id
-    send(parent, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{mutation: _m}} } 
 
-    [next_team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
-               |> Enum.sort_by(&(&1.id), :desc)
-    assert next_team != team
-    assert next_team.id != id
+    send(parent, {:sorcery, msg})
+    assert_receive {:sorcery, %{args: %{mutation: m}, command: :mutation_to_children} } 
+
+    teams = Sorcery.Repo.all(MyApp.Schemas.Team)
+    team_ids = Enum.map(teams, &(&1.id))
+    refute team.id in team_ids
   end
   # }}}
 
@@ -105,42 +103,11 @@ defmodule Sorcery.Mutations.MutationsTest do
     [row] = diff.rows
     assert row.tk == :team 
     assert row.old_entity == nil
+
+    assert RQ.diff_matches_portal?(diff, portal)
   end
   # }}}
 
-  test "Handle deleting entities" do
-  end
-
-  test "Use primary and secondary entities" do
-  end
-
-  test "Handle NEW entities" do
-  end
-
-  test "Can reference new entities" do
-    # So we need to do inserts FIRST
-    # Mutation.create_entity(tk, "?person1", %{})
-    # and then later
-    # Mutation.put_attr(tk, 42, :player_id, "?person1.id")
-  end
-
-
-  #test "Build a mutation_chain and generate a diff" do
-  #  
-  #  {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
-  #  msg = %{
-  #    command: :spawn_portal,
-  #    from: self(),
-  #    args: %{player_id: 1, portal_name: :battle_portal},
-  #    query: MyApp.Queries.GetBattle,
-  #  }
-  #  send(pid, {:sorcery, msg})
-  #  assert_receive {:sorcery, %{args: %{portal: portal}}}
-  #  args = %{player1_id: 1, player2_id: 2}
-  #  spells = RE.get_entities(portal.known_matches, "?spells") |> Enum.filter(&(&1.player_id == args.player1_id))
-  #  dbg spells
-
-  #end
 
 
 end
