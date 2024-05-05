@@ -8,6 +8,7 @@ defmodule Sorcery.Mutation.PreMutation do
     args: %{},
     old_data: %{},
     new_data: %{},
+    deletes: %{},
   ]
 
   def init(portal, _opts \\ []) do
@@ -43,7 +44,7 @@ defmodule Sorcery.Mutation.PreMutation do
   end
 
   def delete_entity(mutation, tk, id) do
-    delete_in(mutation, [:new_data, tk, id])
+    update_in_p(mutation, [:deletes, tk], [id], &([id | &1]))
   end
 
 end

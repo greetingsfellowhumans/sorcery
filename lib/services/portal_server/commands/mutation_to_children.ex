@@ -1,4 +1,4 @@
-defmodule Sorcery.PortalServer.Commands.RunMutation do
+defmodule Sorcery.PortalServer.Commands.MutationToChildren do
   @moduledoc false
 
 

@@ -43,11 +43,14 @@ defmodule Sorcery.StoreAdapter.Ecto do
   ```
 
   """
+  @behaviour Sorcery.StoreAdapter
   alias Sorcery.StoreAdapter.Ecto
 
 
-  def run_query(portal_server_state, query_module, args) do
-    Ecto.Query.run_query(portal_server_state, query_module, args)
-  end
+  @impl true
+  defdelegate run_query(portal_server_state, query_module, args), to: Ecto.Query
+
+  @impl true
+  defdelegate run_mutation(portal_server_state, mutation), to: Ecto.Mutation
 
 end

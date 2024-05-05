@@ -1,6 +1,6 @@
 defmodule Sorcery.PortalServer.Portal do
   @moduledoc """
-  A Portal represents an ongoing Query.
+  A Portal represents an ongoing SrcQL Query.
   Rather than grabbing data and ending, it continues watching for changes to the results set.
 
   A copy of any given Portal is found in the state of two different PortalServers; the parent, and the child PortalServer.

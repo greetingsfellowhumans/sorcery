@@ -6,7 +6,8 @@ defmodule Sorcery.Mutations.MutationsTest do
   setup [:spawn_portal]
 
 
-  test "PreMutation operations", %{portal: portal} do
+  # {{{ PreMutation operations should work
+  test "PreMutation operations should work", %{portal: portal} do
     m = M.init(portal)
     m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
     new_player = M.get(m, [:player, 1])
@@ -26,14 +27,64 @@ defmodule Sorcery.Mutations.MutationsTest do
     new_team = M.get(m, [:team, "?my_new_team"])
     assert new_team.name == "My New Team"
     m = M.delete_entity(m, :player, 1)
-    refute Map.has_key?(m.new_data.player, 1)
+    assert m.deletes.player == [1]
+  end
+  # }}}
+
+
+  # {{{ PreMutation should convert into a ParentMutation
+  test "PreMutation should convert into a ParentMutation", %{portal: portal, parent_pid: _parent} do
+    m = M.init(portal)
+    m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
+    m = M.create_entity(m, :team, "?my_team", %{name: "Hello!"})
+    m = M.delete_entity(m, :team, 5)
+    m = Sorcery.Mutation.ParentMutation.init(m)
+    assert m.updates.player[1] |> is_map()
+    assert m.inserts.team["?my_team"] == %{name: "Hello!"}
+    assert m.deletes.team == [5]
+  end
+  # }}}
+
+
+  test "Parent can apply changes to store", %{portal: portal, parent_pid: parent} do
+    m = M.init(portal)
+        |> M.put([:player, 1, :age], 25)
+        |> M.create_entity(:team, "?my_team", %{name: "Hello!"})
+
+    msg = %{
+      command: :mutation_to_parent,
+      from: self(),
+      args: %{mutation: m},
+    }
+    send(parent, {:sorcery, msg})
+    assert_receive {:sorcery, %{args: %{mutation: m}} }
+
+    team_id = m.inserts.team |> Map.keys() |> List.first()
+    assert is_integer(team_id)
   end
 
 
+  test "Parent can delete entities", %{portal: portal, parent_pid: parent} do
+    [team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
+                 |> Enum.sort_by(&(&1.id), :desc)
+    m = M.init(portal)
+        |> M.put([:player, 1, :age], 24)
+        |> M.delete_entity(:team, team.id)
 
-  test "Mutation CMD" do
-    # Can send to Portal Server. 
-    # PS can receive.
+    msg = %{
+      command: :mutation_to_parent,
+      from: self(),
+      args: %{mutation: m},
+    }
+    [id] = m.deletes.team
+    assert id == team.id
+    send(parent, {:sorcery, msg})
+    assert_receive {:sorcery, %{args: %{mutation: _m}} } 
+
+    [next_team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
+               |> Enum.sort_by(&(&1.id), :desc)
+    assert next_team != team
+    assert next_team.id != id
   end
 
   test "Generate Diff" do

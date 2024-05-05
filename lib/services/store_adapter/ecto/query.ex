@@ -20,7 +20,6 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
   def initial_from([wc | _], tk_map) do
     mod = tk_map[wc.tk]
     lvar = wc.lvar
-    #dbg mod
     from(x in mod, as: ^lvar)
   end
 

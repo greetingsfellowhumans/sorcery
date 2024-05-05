@@ -1,6 +1,5 @@
 defmodule Sorcery.Setups do
-  use ExUnit.Case, async: true
-
+  use ExUnit.Case#, async: true
 
 
   # {{{ :spawn_portal
@@ -13,8 +12,12 @@ defmodule Sorcery.Setups do
       query: MyApp.Queries.GetBattle,
     }
     send(pid, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{portal: portal}} }
-    {:ok, Map.put(ctx, :portal, portal) }
+    assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
+    ctx =
+      ctx
+      |> Map.put(:portal, portal)
+      |> Map.put(:parent_pid, pid)
+    {:ok, ctx}
   end
   # }}}
 
