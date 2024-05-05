@@ -31,7 +31,6 @@ defmodule Sorcery.Mutations.MutationsTest do
   end
   # }}}
 
-
   # {{{ PreMutation should convert into a ParentMutation
   test "PreMutation should convert into a ParentMutation", %{portal: portal, parent_pid: _parent} do
     m = M.init(portal)
@@ -45,7 +44,7 @@ defmodule Sorcery.Mutations.MutationsTest do
   end
   # }}}
 
-
+  # {{{ Parent can apply changes to store
   test "Parent can apply changes to store", %{portal: portal, parent_pid: parent} do
     m = M.init(portal)
         |> M.put([:player, 1, :age], 25)
@@ -62,8 +61,9 @@ defmodule Sorcery.Mutations.MutationsTest do
     team_id = m.inserts.team |> Map.keys() |> List.first()
     assert is_integer(team_id)
   end
+  # }}}
 
-
+  # {{{ Parent can delete entities
   test "Parent can delete entities", %{portal: portal, parent_pid: parent} do
     [team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
                  |> Enum.sort_by(&(&1.id), :desc)
@@ -86,9 +86,27 @@ defmodule Sorcery.Mutations.MutationsTest do
     assert next_team != team
     assert next_team.id != id
   end
+  # }}}
 
-  test "Generate Diff" do
+  # {{{ Should be able to generate diffs from ChildrenMutations
+  test "Should be able to generate diffs from ChildrenMutations", %{portal: portal, parent_pid: parent} do
+    m = M.init(portal)
+        |> M.create_entity(:team, "?my_team", %{name: "Hello!"})
+
+    msg = %{
+      command: :mutation_to_parent,
+      from: self(),
+      args: %{mutation: m},
+    }
+    send(parent, {:sorcery, msg})
+    assert_receive {:sorcery, %{args: %{mutation: children_mutation}} }
+    diff = M.Diff.new(children_mutation)
+
+    [row] = diff.rows
+    assert row.tk == :team 
+    assert row.old_entity == nil
   end
+  # }}}
 
   test "Handle deleting entities" do
   end

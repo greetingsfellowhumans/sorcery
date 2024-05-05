@@ -10,6 +10,7 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
     case state.sorcery.store_adapter.run_mutation(state, mutation) do
       {:ok, data} ->
         mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, data)
+        diff = Sorcery.Mutation.Diff.new(mutation)
         msg = %{
           from: self(),
           command: :mutation_to_children,
