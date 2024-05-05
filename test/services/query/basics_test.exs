@@ -2,7 +2,9 @@ defmodule Sorcery.Query.BasicsTest do
   use ExUnit.Case
   #alias MyApp.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
   alias Sorcery.ReturnedEntities, as: RE
+  import Sorcery.Setups
 
+  setup [:spawn_portal]
 
   test "A demo module gets some query goodies" do
     {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
@@ -18,5 +20,8 @@ defmodule Sorcery.Query.BasicsTest do
   end
 
 
+  test "LiveViews also run queries", %{portal: portal} do
+    dbg portal
+  end
 
 end
