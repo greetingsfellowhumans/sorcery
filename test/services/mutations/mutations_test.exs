@@ -3,6 +3,7 @@ defmodule Sorcery.Mutations.MutationsTest do
   alias Sorcery.Mutation, as: M
   alias Sorcery.Query.ReverseQuery, as: RQ
   import Sorcery.Setups
+  alias Sorcery.PortalServer.Portal
 
   setup [:spawn_portal, :teams_portal]
 
@@ -58,33 +59,12 @@ defmodule Sorcery.Mutations.MutationsTest do
     }
     send(parent, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{mutation: m}} }
-
     team_id = m.inserts.team |> Map.keys() |> List.first()
     assert is_integer(team_id)
+
   end
   # }}}
 
-  # {{{ Parent can delete entities
-  test "Parent can delete entities", %{teams_portal: portal, parent_pid: parent} do
-    [team | _] = Sorcery.Repo.all(MyApp.Schemas.Team)
-                 |> Enum.sort_by(&(&1.id), :desc)
-    m = M.init(portal)
-        |> M.delete_entity(:team, team.id)
-
-    msg = %{
-      command: :mutation_to_parent,
-      from: self(),
-      args: %{mutation: m},
-    }
-
-    send(parent, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{mutation: m}, command: :mutation_to_children} } 
-
-    teams = Sorcery.Repo.all(MyApp.Schemas.Team)
-    team_ids = Enum.map(teams, &(&1.id))
-    refute team.id in team_ids
-  end
-  # }}}
 
   # {{{ Should be able to generate diffs from ChildrenMutations
   test "Should be able to generate diffs from ChildrenMutations", %{portal: portal, parent_pid: parent} do

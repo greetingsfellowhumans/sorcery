@@ -1,9 +1,9 @@
 defmodule Sorcery.Query.BasicReverseTest do
   use ExUnit.Case
   alias MyApp.Queries.{GetBattle}
-  alias Sorcery.Query.ReverseQuery, as: RQ
+  #alias Sorcery.Query.ReverseQuery, as: RQ
   alias Sorcery.ReturnedEntities, as: RE
-  alias Sorcery.Mutation.{Diff, DiffRow}
+  #alias Sorcery.Mutation.{Diff, DiffRow}
 
 
   test "Build the :find sets" do
@@ -16,7 +16,7 @@ defmodule Sorcery.Query.BasicReverseTest do
     }
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, %{args: %{portal: portal}}}
-    results = portal.known_matches
+    _results = portal.known_matches
 
 
     spell = RE.get_entities(portal.known_matches, "?spells") |> Enum.at(5)

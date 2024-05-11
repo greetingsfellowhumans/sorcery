@@ -53,7 +53,6 @@ defmodule Sorcery.Query.ReverseQuery do
 
   def get_known_matches(returned_entities, set) do
     finds = generate_find(set)
-    dbg finds
     Enum.reduce(finds, %{}, fn {lvar, li}, acc ->
       entities = RE.get_entities(returned_entities, "#{lvar}")
                 |> Enum.map(&Map.take(&1, li))

@@ -50,6 +50,7 @@ defmodule Sorcery.PortalServer do
   end
    
 
+
   def handle_info(%{command: :run_query} = msg, state), do: Cmd.RunQuery.entry(msg, state)
   def handle_info(%{command: :mutation_to_parent} = msg, state), do: Cmd.MutationToParent.entry(msg, state)
   def handle_info(%{command: :mutation_to_children} = msg, state), do: Cmd.MutationToChildren.entry(msg, state)

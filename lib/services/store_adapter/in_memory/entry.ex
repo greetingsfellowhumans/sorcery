@@ -5,13 +5,13 @@ defmodule Sorcery.StoreAdapter.InMemory do
 
   """
   @behaviour Sorcery.StoreAdapter
-  alias Sorcery.StoreAdapter.InMemory
+  alias Sorcery.ReturnedEntities, as: RE
 
 
   @impl true
-  defdelegate run_query(portal_server_state, query_module, args), to: InMemory.Query
+  def run_query(_, _, _), do: { :ok, RE.new() }
 
   @impl true
-  defdelegate run_mutation(portal_server_state, mutation), to: InMemory.Mutation
+  def run_mutation(_, _), do: { :ok, RE.new() }
 
 end

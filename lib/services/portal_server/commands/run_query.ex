@@ -1,5 +1,6 @@
 defmodule Sorcery.PortalServer.Commands.RunQuery do
   @moduledoc false
+  alias Sorcery.StoreAdapter
 
 
   def entry(%{query: module, from: from} = msg, state) do
@@ -7,8 +8,13 @@ defmodule Sorcery.PortalServer.Commands.RunQuery do
     args = msg[:args] || %{}
     clauses = module.clauses(args)
     finds = module.finds()
-    results = store_adapter.run_query(state.sorcery, clauses, finds)
-    send(from, results)
+    case StoreAdapter.query(store_adapter, state.sorcery, clauses, finds) do
+      {:ok, results} -> send(from, {:sorcery, %{
+        command: :query_response,
+        data: results
+      }})
+      _ -> nil
+    end
 
     state
   end

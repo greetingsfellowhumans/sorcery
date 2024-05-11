@@ -24,6 +24,10 @@ defmodule Sorcery.PortalServer.Portal do
     struct(__MODULE__, body)
   end
 
+  def get_in(portal, path) do
+    get_in_p(portal, [:known_matches, :data] ++ path)
+  end
+
  
   @doc """
   When we freeze a portal, all the lvars are replaced with tablekeys (tk).
@@ -41,5 +45,33 @@ defmodule Sorcery.PortalServer.Portal do
 
     put_in_p(portal, [:known_matches, :data], frozen_data)
   end
+
+  
+  # {{{ all_lvars_by_tk(portal, tk)
+  @doc """
+  Get the list of all lvars that match a given tk
+  """
+  def all_lvars_by_tk(portal, tk) do
+    Enum.reduce(portal.known_matches.lvar_tks, [], fn 
+      {lvar, ltk}, acc when ltk == tk -> [lvar | acc]
+      _, acc -> acc
+    end)
+  end
+  # }}}
+
+
+  @doc """
+  This requires all placeholder values to be resolved and turned into real entities/values.
+  Applies the inserts, updates, and deletes from a mutation.
+  """
+  def handle_mutation(portal, children_mutation) do
+    case Sorcery.PortalServer.Query.run_query(portal, children_mutation) do
+      {:ok, new_data} -> put_in_p(portal, [:known_matches, :data], new_data)
+      err -> 
+        dbg err
+        portal
+    end
+  end
+
 
 end

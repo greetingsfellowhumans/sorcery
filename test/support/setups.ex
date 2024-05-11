@@ -1,5 +1,6 @@
 defmodule Sorcery.Setups do
   use ExUnit.Case#, async: true
+  import Sorcery.Helpers.Maps
 
 
   # {{{ :spawn_portal
@@ -39,5 +40,26 @@ defmodule Sorcery.Setups do
     {:ok, ctx}
   end
   # }}}
+
+
+  # {{{ populate_in_memory
+  def populate_in_memory(%{portal: portal} = ctx) do
+    %{lvar_tks: tks, data: data} = portal.known_matches
+    db = Enum.reduce(data, %{}, fn {lvar, table}, acc ->
+      tk = tks[lvar]
+      Enum.reduce(table, acc, fn {id, entity}, acc ->
+        put_in_p(acc, [tk, id], entity)
+      end)
+    end)
+
+    {:ok, Map.put(ctx, :db, db)}
+  end
+  # }}}
+
+  def live_view(%{db: db} = ctx) do
+    {:ok, pid} = GenServer.start_link(MyApp.PortalServers.LiveView, %{db: db})
+    ctx = Map.put(ctx, :live_view_pid, pid)
+    {:ok, ctx}
+  end
 
 end

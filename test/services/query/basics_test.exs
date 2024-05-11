@@ -15,13 +15,13 @@ defmodule Sorcery.Query.BasicsTest do
       query: MyApp.Queries.GetBattle,
     }
     send(pid, {:sorcery, msg})
-    assert_receive returned_entities
+    assert_receive {:sorcery, %{data: returned_entities}}
     assert is_struct(returned_entities, RE)
   end
 
 
-  test "LiveViews also run queries", %{portal: portal} do
-    dbg portal
+  test "LiveViews also run queries", %{portal: _portal} do
+    #dbg portal
   end
 
 end

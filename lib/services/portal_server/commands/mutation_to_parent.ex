@@ -6,11 +6,15 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
   alias Sorcery.Mutation
   alias Mutation.Diff
   alias Sorcery.Query.ReverseQuery, as: RQ
+  alias Sorcery.StoreAdapter
+  alias Sorcery.PortalServer.Portal
+  import Sorcery.Helpers.Maps
 
 
   def entry(%{args: %{mutation: mutation}, from: child_pid} = _msg, state) do
     mutation = Sorcery.Mutation.ParentMutation.init(mutation)
-    case state.sorcery.store_adapter.run_mutation(state, mutation) do
+    adapter = state.sorcery.store_adapter
+    case Sorcery.StoreAdapter.mutation(adapter, state, mutation) do
       {:ok, data} ->
         mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, data)
         diff = Sorcery.Mutation.Diff.new(mutation)
@@ -30,12 +34,25 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
           send(pid, {:sorcery, msg})
         end
 
-      _ -> :error
-    end
+        state
+        |> update_portals(pids, mutation)
 
-    state
+      err ->
+        dbg err
+        state
+    end
+  end
+
+
+  defp update_portals(state, pids, mutation) do
+    Enum.reduce(pids, state, fn pid, state ->
+      portals = state.sorcery.portals_to_child[pid]
+      Enum.reduce(portals, state, fn {portal_name, portal}, state ->
+        portal = Portal.handle_mutation(portal, mutation)
+        put_in_p(state, [:sorcery, :portals_to_child, pid, portal_name], portal)
+      end)
+    end)
   end
 
 
 end
-

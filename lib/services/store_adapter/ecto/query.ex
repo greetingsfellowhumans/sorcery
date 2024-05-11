@@ -10,11 +10,12 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
     tk_map = config.schemas
 
     q = initial_from(wheres, tk_map)
-    Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)
-    |> add_select(finds)
-    |> repo.all()
-    |> convert_to_returned_entities()
-    |> assign_tks(wheres)
+    results = Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)
+              |> add_select(finds)
+              |> repo.all()
+              |> convert_to_returned_entities()
+              |> assign_tks(wheres)
+    {:ok, results}
   end
 
   def initial_from([wc | _], tk_map) do

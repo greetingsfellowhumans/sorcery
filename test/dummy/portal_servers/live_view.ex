@@ -2,15 +2,13 @@ defmodule MyApp.PortalServers.LiveView do
   use GenServer
 
 
-  def init(_) do
+  def init(args \\ %{}) do
 
     assigns = Sorcery.PortalServer.add_portal_server_state(%{}, %{
       config_module: MyApp.Sorcery,      # This is a required key
       store_adapter: Sorcery.StoreAdapter.InMemory,
 
-      args: %{
-        db: %{}
-      }
+      args: Map.merge(%{db: %{}}, args)
     })
 
     {:ok, %{assigns: assigns}}

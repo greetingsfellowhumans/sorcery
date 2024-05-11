@@ -48,7 +48,7 @@ defmodule Sorcery.StoreAdapter.Ecto do
 
 
   @impl true
-  defdelegate run_query(portal_server_state, query_module, args), to: Ecto.Query
+  defdelegate run_query(portal_server_state, clauses, finds), to: Ecto.Query
 
   @impl true
   defdelegate run_mutation(portal_server_state, mutation), to: Ecto.Mutation
