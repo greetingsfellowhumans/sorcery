@@ -13,30 +13,33 @@ defmodule Sorcery.PortalServer.Query do
   def run_query(portal, children_mutation) do
     db = build_db(portal, children_mutation)
     clauses = portal.query_module.clauses()
+    finds = portal.query_module.finds()
     data = rebuild_data(clauses, portal.args, db)
-           |> trim_by_find(portal.fwd_find_set)
+           |> trim_by_find(finds)
+
     {:ok, data}
   end
+   
 
-  def trim_by_find(data, finds) do
+  defp trim_by_find(data, finds) do
     Enum.reduce(data, %{}, fn {lvarkey, table}, acc ->
-      attrs = finds_attrs(lvarkey, finds)
       lvar = "#{lvarkey}"
-      if Enum.empty?(attrs) do
-        acc
-      else
-        new_table = Enum.reduce(table, %{}, fn {id, entity}, acc ->
-          new_entity = Map.take(entity, attrs)
-          Map.put(acc, id, new_entity)
-        end)
-        Map.put(acc, lvar, new_table)
+      case finds[lvarkey] do
+
+        :* -> Map.put(acc, lvar, table)
+
+        attrs when is_list(attrs) ->
+          new_table = Enum.reduce(table, %{}, fn {id, entity}, acc ->
+            new_entity = Map.take(entity, attrs)
+            Map.put(acc, id, new_entity)
+          end)
+          Map.put(acc, lvar, new_table)
+
+        err -> 
+          dbg err
+          acc
+
       end
-    end)
-  end
-  defp finds_attrs(lvarkey, finds) do
-    Enum.reduce(finds, [], fn 
-      {k, attr}, acc when k == lvarkey -> [attr | acc]
-      _, acc -> acc
     end)
   end
 

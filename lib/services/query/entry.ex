@@ -109,8 +109,14 @@ defmodule Sorcery.Query do
         Enum.reduce(find, %{}, fn 
           {str, :*}, acc -> Map.put(acc, String.to_atom(str), :*)
           {str, li}, acc ->
-            li = [:id | li] |> Enum.uniq()
-            Map.put(acc, String.to_atom(str), li)
+            lvarkey = String.to_existing_atom(str)
+            clause_attrs = Enum.filter(__MODULE__.clauses(), fn %{lvar: lvar} -> lvar == lvarkey end)
+                           |> Enum.map(&(&1.attr))
+
+            li = clause_attrs ++ [:id | li] 
+                 |> Enum.uniq()
+
+            Map.put(acc, lvarkey, li)
         end)
       end
 

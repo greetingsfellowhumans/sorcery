@@ -6,7 +6,7 @@ defmodule MyApp.Queries.GetBattle do
       #"?player" => :*,
       #"?team" => :*,
       "?arena" => :*,
-      "?all_teams" => [:name],
+      "?all_teams" => [:name, :location_id],
       "?all_players" => :*,
       "?spells" => :*,
       "?spell_types" => :*,

@@ -11,7 +11,14 @@ defmodule Sorcery.Mutation.PreMutation do
     deletes: %{},
   ]
 
-  def init(portal, _opts \\ []) do
+  def init(sorcery_state, portal_name) do
+    parent_pid = Enum.find_value(sorcery_state.portals_to_parent, fn {pid, portals} ->
+      names = Map.keys(portals)
+      if portal_name in names, do: pid, else: nil
+    end)
+    init(sorcery_state.portals_to_parent[parent_pid][portal_name])
+  end
+  def init(portal) do
     portal = Portal.freeze(portal)
     body = %{
       old_data: portal.known_matches.data,

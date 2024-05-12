@@ -27,7 +27,7 @@ defmodule Sorcery do
       defp get_mod_map(k, opts) do 
         paths = Keyword.get(opts, :paths, %{})
         if Map.has_key?(paths, k) do
-          Sorcery.Helpers.Files.build_modules_map(paths[k], MyApp.Schemas)
+          Sorcery.Helpers.Files.build_modules_map(paths[k], __MODULE__.Schemas)
         else
           %{}
         end

@@ -24,8 +24,12 @@ defmodule Sorcery.PortalServer.Portal do
     struct(__MODULE__, body)
   end
 
-  def get_in(portal, path) do
-    get_in_p(portal, [:known_matches, :data] ++ path)
+  def get_in(sorcery_state, portal_name, lvar) do
+    parent_pid = Enum.find_value(sorcery_state.portals_to_parent, fn {pid, portals} ->
+      names = Map.keys(portals)
+      if portal_name in names, do: pid, else: nil
+    end)
+    get_in_p(sorcery_state, [:portals_to_parent, parent_pid, portal_name, :known_matches, :data, lvar])
   end
 
  
@@ -66,7 +70,8 @@ defmodule Sorcery.PortalServer.Portal do
   """
   def handle_mutation(portal, children_mutation) do
     case Sorcery.PortalServer.Query.run_query(portal, children_mutation) do
-      {:ok, new_data} -> put_in_p(portal, [:known_matches, :data], new_data)
+      {:ok, new_data} -> 
+        put_in_p(portal, [:known_matches, :data], new_data)
       err -> 
         dbg err
         portal

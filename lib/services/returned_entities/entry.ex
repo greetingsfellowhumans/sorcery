@@ -124,8 +124,10 @@ defmodule Sorcery.ReturnedEntities do
       [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ]
   """
   def get_entities(re, tk) do
-    re.data[tk]
-    |> Map.values()
+    case re.data[tk] do
+      m when is_map(m) -> Map.values(m)
+      _ -> []
+    end
   end
   # }}}
 

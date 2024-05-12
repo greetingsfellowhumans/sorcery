@@ -57,6 +57,7 @@ defmodule Sorcery.Mutation do
       true
   """
   defdelegate init(portal), to: PreMutation
+  defdelegate init(state, portal_name), to: PreMutation
   # }}}
 
   # {{{ update
