@@ -24,6 +24,9 @@ defmodule Sorcery.PortalServer do
 
     state = Sorcery.PortalServer.add_portal_server_state(state, %{
       config_module: MyApp.Sorcery,      # This is a required key
+
+      db: %{}, # In memory storage of entities being tracked by portals
+
       store_adapter: Sorcery.StoreAdapters.Ecto,
 
       # This depends on the adapters you use
@@ -31,6 +34,7 @@ defmodule Sorcery.PortalServer do
         repo_module: MyApp.Repo
       }
     })
+
     {:ok, state}
   end
 
@@ -47,6 +51,7 @@ defmodule Sorcery.PortalServer do
     |> Map.put(:sorcery, opts)
     |> put_in([:sorcery, :portals_to_parent], %{})
     |> put_in([:sorcery, :portals_to_child], %{})
+
   end
    
 
