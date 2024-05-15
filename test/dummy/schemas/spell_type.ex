@@ -1,4 +1,4 @@
-defmodule MyApp.Schemas.SpellType do
+defmodule MyApp.Sorcery.Schemas.SpellType do
   use Sorcery.Schema, 
     meta: %{ optional?: false },
     fields: %{

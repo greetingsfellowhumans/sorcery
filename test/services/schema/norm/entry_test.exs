@@ -1,7 +1,7 @@
 defmodule Sorcery.Schema.Norm.EntryTest do
   use ExUnit.Case
   alias Sorcery.Schema, as: S
-  alias MyApp.Schemas.Player, as: Player
+  alias MyApp.Sorcery.Schemas.Player, as: Player
   import Norm
 
   doctest S

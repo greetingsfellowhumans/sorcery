@@ -29,7 +29,12 @@ defmodule Sorcery.PortalServer.Portal do
       names = Map.keys(portals)
       if portal_name in names, do: pid, else: nil
     end)
-    get_in_p(sorcery_state, [:portals_to_parent, parent_pid, portal_name, :known_matches, :data, lvar])
+    path = [:portals_to_parent, parent_pid, portal_name, :known_matches, :data, lvar]
+    if has_in_p(sorcery_state, path) do
+      get_in_p(sorcery_state, path)
+    else
+      %{}
+    end
   end
 
  

@@ -61,6 +61,7 @@ defmodule Sorcery.PortalServer.Query do
              |> Map.values()
              |> Enum.map(&(&1[clause.other_lvar_attr]))
              |> Enum.uniq()
+
     Enum.reduce(table, %{}, fn {id, entity}, acc ->
       left = Map.get(entity, clause.attr)
       matches? = Enum.any?(rights, fn right ->
@@ -87,13 +88,23 @@ defmodule Sorcery.PortalServer.Query do
   defp filter_table_by_clause(table, _clause, _args, _all_data), do: table
   # }}}
 
+
   # {{{ build_db(portal, mutation)
   defp build_db(portal, m) do
-    db = m.old_data
+    pdata = lvar_strings_to_atoms(portal)
+    db = deep_merge(pdata, m.old_data)
     db = deep_merge(db, m.inserts)
     db = deep_merge(db, m.updates)
     Enum.reduce(m.deletes, db, fn {tk, ids}, acc ->
       table = Map.drop(db[tk], ids)
+      Map.put(acc, tk, table)
+    end)
+  end
+  defp lvar_strings_to_atoms(portal) do
+    %{data: db, lvar_tks: lvar_tks} = portal.known_matches
+    
+    Enum.reduce(db, %{}, fn {lvar, table}, acc ->
+      tk = lvar_tks[lvar]
       Map.put(acc, tk, table)
     end)
   end
