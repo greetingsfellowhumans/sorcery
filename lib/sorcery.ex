@@ -9,10 +9,7 @@ defmodule Sorcery do
 
   defmacro __using__(opts) do
     quote do
-#      @config %{
-#        debug: Keyword.get(opts, :debug, false),
-#        paths: Keyword.get(opts, :path, %{})
-#      }
+      use Sorcery.SorceryDb, opts: unquote(opts)
 
       def config() do
         %{

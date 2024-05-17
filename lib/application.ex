@@ -6,6 +6,7 @@ defmodule Sorcery.Application do
   def start(_start_type, _start_args) do
     children = if Mix.env() == :test do
       [
+        MyApp.Sorcery,
         Sorcery.Repo
       ]
     else
