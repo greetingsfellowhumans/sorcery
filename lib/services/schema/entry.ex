@@ -77,7 +77,6 @@ defmodule Sorcery.Schema do
 
 
       use Sorcery.Schema.EctoSchema, opts
-      use Sorcery.Schema.Db, opts
 
     end
   end
