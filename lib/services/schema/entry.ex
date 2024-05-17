@@ -1,5 +1,5 @@
 defmodule Sorcery.Schema do
-  @moduledoc """
+  @moduledoc """ 
   In sorcery, you must define your entity types as 'Schemas'
 
 
@@ -77,12 +77,14 @@ defmodule Sorcery.Schema do
 
 
       use Sorcery.Schema.EctoSchema, opts
+      use Sorcery.Schema.Db, opts
 
     end
   end
 
   def meta_defaults(module), do: %{
     optional?: true,
-    tk: Macro.underscore(module) |> String.split("/") |> List.last() |> String.to_atom()
+    tk: Sorcery.Helpers.Names.mod_to_tk(module)
+    #tk: Macro.underscore(module) |> String.split("/") |> List.last() |> String.to_atom()
   }
 end

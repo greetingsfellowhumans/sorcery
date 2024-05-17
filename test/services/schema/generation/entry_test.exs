@@ -13,6 +13,10 @@ defmodule Sorcery.Schema.Generation.EntryTest do
     #demo_player = struct(Player, demo_player)
     [demo_player] = Player.gen(%{team_id: 42}) |> Enum.take(1)
     assert demo_player.team_id == 42
+
+    # Can generate a specific id
+    [demo_player] = Player.gen(%{id: 42}) |> Enum.take(1)
+    assert demo_player.id == 42
   end
 
   #test "Generate ReturnedEntities" do

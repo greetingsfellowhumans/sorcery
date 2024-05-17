@@ -2,7 +2,12 @@ defmodule Sorcery.Schema.Generation do
   @moduledoc false
 
   def gen(full_fields, body \\ %{}) do
-    sd_map = Enum.reduce(full_fields, %{id: StreamData.positive_integer()}, fn {k, v}, acc -> 
+    id = case body do
+      %{id: id} -> StreamData.constant(id)
+      _ -> StreamData.positive_integer()
+    end
+
+    sd_map = Enum.reduce(full_fields, %{id: id}, fn {k, v}, acc -> 
       sd_field = if Map.has_key?(body, k) do
         StreamData.constant(body[k])
       else
