@@ -44,7 +44,7 @@ defmodule Sorcery.MixProject do
   def application do
     [
       mod: {Sorcery.Application, []},
-      extra_applications: [:logger]
+      extra_applications: [:logger, :mnesia]
     ]
   end
 

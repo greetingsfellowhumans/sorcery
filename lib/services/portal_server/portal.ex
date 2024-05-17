@@ -9,6 +9,7 @@ defmodule Sorcery.PortalServer.Portal do
 
   defstruct [
     :query_module,
+    :updated_at,
     :child_pids,
     :parent_pid,
     :ref,
@@ -20,7 +21,10 @@ defmodule Sorcery.PortalServer.Portal do
   ]
 
   def new(body \\ %{}) do
-    body = Map.put(body, :ref, make_ref())
+    body = Map.merge(body, %{
+      ref: make_ref(),
+      updated_at: Time.utc_now()
+    })
     struct(__MODULE__, body)
   end
 
