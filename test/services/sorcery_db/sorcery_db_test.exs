@@ -15,8 +15,10 @@ defmodule Sorcery.SorceryDbTest do
     }
 
     m = Sorcery.Mutation.ChildrenMutation.init(m, data)
-    MyApp.Sorcery.run_mutation(m, [self()])
-    assert_receive {:sorcery, %{command: :rerun_queries}}
+    MyApp.Sorcery.run_mutation(m, [{self(), :get_teams}])
+    assert_receive {:sorcery, %{command: :rerun_queries, args: args}}
+    assert is_struct(args[:updated_at], Time)
+    assert is_atom(args[:portal])
   end
 
 

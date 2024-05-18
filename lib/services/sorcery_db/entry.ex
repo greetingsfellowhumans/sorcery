@@ -102,16 +102,24 @@ defmodule Sorcery.SorceryDb do
       def cache_pid_entity(pid, portal, timestamp, tk, entity), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, entity})
       # @TODO unchache_pid_entity
 
-      def run_mutation(mutation, pids) do
+      def run_mutation(mutation, pid_portals) do
         #dbg mutation
         schemas = __MODULE__.config().schemas
+        timestamp = Time.utc_now()
         :mnesia.transaction(fn ->
           Sorcery.SorceryDb.apply_inserts(mutation, schemas)
           Sorcery.SorceryDb.apply_updates(mutation, schemas)
           Sorcery.SorceryDb.apply_deletes(mutation)
         end)
 
-        for pid <- pids, do: send(pid, {:sorcery, %{command: :rerun_queries}})
+        for {pid, portal} <- pid_portals do 
+          args = %{
+            updated_at: timestamp,
+            portal: portal
+          }
+         
+          send(pid, {:sorcery, %{command: :rerun_queries, args: args}})
+        end
       end
 
       # }}}

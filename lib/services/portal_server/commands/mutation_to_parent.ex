@@ -18,9 +18,15 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
       {:ok, data} ->
         mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, data)
         diff = Sorcery.Mutation.Diff.new(mutation)
+
+        ##########################################
+        # Possibly removing these
         pids = get_watching_pids(state, diff)
         inform_children(pids, mutation)
-        state.sorcery.config_module.run_mutation(mutation, pids)
+        ##########################################
+
+        pid_portals = get_watching_pid_portals(state, diff)
+        state.sorcery.config_module.run_mutation(mutation, pid_portals)
 
 
         state
@@ -58,6 +64,17 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
   end
   # }}}
 
+  # {{{ get_watching_pid_portals(state, diff)
+  defp get_watching_pid_portals(state, diff) do
+    Enum.reduce(state.sorcery.portals_to_child, [], fn {pid, portals}, acc ->
+      Enum.reduce(portals, acc, fn {_, portal}, matching_portals ->
+        if RQ.diff_matches_portal?(diff, portal) do
+          [{pid, portal} | matching_portals]
+        end
+      end)
+    end)
+  end
+  # }}}
 
   # {{{ update_portals(state, pids, mutation)
   defp update_portals(state, pids, mutation) do
