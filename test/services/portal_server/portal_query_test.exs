@@ -1,13 +1,13 @@
 defmodule Sorcery.PortalServer.PortalQueryTest do
   use ExUnit.Case
-  alias Sorcery.PortalServer.{Portal, Query}
+  alias Sorcery.PortalServer.{Portal}
   alias Sorcery.Mutation, as: M
   alias M.{ParentMutation, ChildrenMutation}
   import Sorcery.Setups
 
   setup [:spawn_portal]
 
-  test "Portal Query namechange", %{portal: portal, parent_pid: parent} do
+  test "Portal Query namechange", %{portal: portal, parent_pid: _parent} do
     mutation_data = %{
       inserts: %{
         spell_type: %{42 => %{id: 42, name: "Magic sparkles"}}, 
@@ -30,4 +30,3 @@ defmodule Sorcery.PortalServer.PortalQueryTest do
 
 
 end
-

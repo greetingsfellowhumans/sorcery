@@ -93,7 +93,7 @@ defmodule Sorcery.Query.ReverseQuery do
   end
 
 
-  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :lvar, other_lvar: lvar, other_lvar_attr: lvar_attr} = clause, portal) do
+  defp row_matches_clause?(row, %{op: op, attr: attr, right_type: :lvar, other_lvar: lvar, other_lvar_attr: lvar_attr} = _clause, portal) do
     left_values = get_diff_row_values(row, attr)
     right_values = RE.get_entities( portal.known_matches, "#{lvar}") |> Enum.map(&(&1[lvar_attr]))
     Enum.any?(right_values, fn r ->

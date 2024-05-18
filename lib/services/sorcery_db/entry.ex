@@ -6,11 +6,15 @@ defmodule Sorcery.SorceryDb do
 
   # {{{ build_mnesia_table
   def build_mnesia_table(tk, schema_mod) do
+    attrs = get_attrs_list(schema_mod)
+    :mnesia.create_table(tk, [attributes: attrs])
+  end
+  defp get_attrs_list(schema_mod) do
     attrs = schema_mod.fields()
             |> Map.keys()
             |> Enum.sort()
-    attrs = [:id | attrs] |> Enum.uniq()
-    :mnesia.create_table(tk, [attributes: attrs])
+    [:id | attrs] 
+    |> Enum.uniq()
   end
   # }}}
 
@@ -26,10 +30,41 @@ defmodule Sorcery.SorceryDb do
   end
   # }}}
 
+
+  # {{{ apply_changes
+  def apply_inserts(%{inserts: inserts}, schemas) do
+    for {tk, table} <- inserts do
+      attrs = get_attrs_list(schemas[tk])
+      for {_id, entity} <- table do
+        values = Enum.map(attrs, &(Map.get(entity, &1)))
+        tup = List.to_tuple([tk | values])
+        :mnesia.write(tup)
+      end
+    end
+  end
+  def apply_updates(%{updates: updates}, schemas) do
+    for {tk, table} <- updates do
+      attrs = get_attrs_list(schemas[tk])
+      for {_id, entity} <- table do
+        values = Enum.map(attrs, &(Map.get(entity, &1)))
+        tup = List.to_tuple([tk | values])
+        :mnesia.write(tup)
+      end
+    end
+  end
+  def apply_deletes(%{deletes: deletes}) do
+    for {tk, ids} <- deletes do
+      for id <- ids do
+        :mnesia.delete({tk, id})
+      end
+    end
+  end
+  # }}}
+
   # }}}
 
 
-  # {{{ use macro
+  # {{{ use macro / GenServer
 
   defmacro __using__(opts) do
     quote do
@@ -66,6 +101,18 @@ defmodule Sorcery.SorceryDb do
       # {{{ Client
       def cache_pid_entity(pid, portal, timestamp, tk, entity), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, entity})
       # @TODO unchache_pid_entity
+
+      def run_mutation(mutation, pids) do
+        #dbg mutation
+        schemas = __MODULE__.config().schemas
+        :mnesia.transaction(fn ->
+          Sorcery.SorceryDb.apply_inserts(mutation, schemas)
+          Sorcery.SorceryDb.apply_updates(mutation, schemas)
+          Sorcery.SorceryDb.apply_deletes(mutation)
+        end)
+
+        for pid <- pids, do: send(pid, {:sorcery, %{command: :rerun_queries}})
+      end
 
       # }}}
 

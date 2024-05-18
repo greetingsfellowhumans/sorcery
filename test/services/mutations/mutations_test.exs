@@ -3,7 +3,6 @@ defmodule Sorcery.Mutations.MutationsTest do
   alias Sorcery.Mutation, as: M
   alias Sorcery.Query.ReverseQuery, as: RQ
   import Sorcery.Setups
-  alias Sorcery.PortalServer.Portal
 
   setup [:spawn_portal, :teams_portal]
 
@@ -33,6 +32,7 @@ defmodule Sorcery.Mutations.MutationsTest do
   end
   # }}}
 
+
   # {{{ PreMutation should convert into a ParentMutation
   test "PreMutation should convert into a ParentMutation", %{portal: portal, parent_pid: _parent} do
     m = M.init(portal)
@@ -45,6 +45,7 @@ defmodule Sorcery.Mutations.MutationsTest do
     assert m.deletes.team == [5]
   end
   # }}}
+
 
   # {{{ Parent can apply changes to store
   test "Parent can apply changes to store", %{portal: portal, parent_pid: parent} do
@@ -89,6 +90,4 @@ defmodule Sorcery.Mutations.MutationsTest do
   # }}}
 
 
-
 end
-

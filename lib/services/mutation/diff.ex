@@ -24,7 +24,7 @@ defmodule Sorcery.Mutation.Diff do
 
     # Add Inserts
     acc = Enum.reduce(mutation.inserts, acc, fn {tk, table}, acc ->
-      Enum.reduce(table, acc, fn {id, entity}, acc ->
+      Enum.reduce(table, acc, fn {_id, entity}, acc ->
         row = Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: entity})
         [row | acc]
       end)

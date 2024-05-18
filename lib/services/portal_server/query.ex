@@ -35,9 +35,7 @@ defmodule Sorcery.PortalServer.Query do
           end)
           Map.put(acc, lvar, new_table)
 
-        err -> 
-          dbg err
-          acc
+        _err -> acc
 
       end
     end)
@@ -56,7 +54,7 @@ defmodule Sorcery.PortalServer.Query do
   # }}}
 
   # {{{ filter_table_by_clause(table, clause, args, all_data)
-  defp filter_table_by_clause(table, %{right_type: :lvar} = clause, args, all_data) do
+  defp filter_table_by_clause(table, %{right_type: :lvar} = clause, _args, all_data) do
     rights = all_data[clause.other_lvar] 
              |> Map.values()
              |> Enum.map(&(&1[clause.other_lvar_attr]))
@@ -70,14 +68,14 @@ defmodule Sorcery.PortalServer.Query do
       if matches?, do: Map.put(acc, id, entity), else: acc
     end)
   end
-  defp filter_table_by_clause(table, %{right_type: :literal, right: right} = clause, args, all_data) do
+  defp filter_table_by_clause(table, %{right_type: :literal, right: right} = clause, _args, _all_data) do
     Enum.reduce(table, %{}, fn {id, entity}, acc ->
       left = Map.get(entity, clause.attr)
       matches? = apply(Kernel, clause.op, [left, right])
       if matches?, do: Map.put(acc, id, entity), else: acc
     end)
   end
-  defp filter_table_by_clause(table, %{right_type: :arg} = clause, args, all_data) do
+  defp filter_table_by_clause(table, %{right_type: :arg} = clause, args, _all_data) do
     right = args[clause.arg_name]
     Enum.reduce(table, %{}, fn {id, entity}, acc ->
       left = Map.get(entity, clause.attr)
