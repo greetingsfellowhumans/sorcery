@@ -53,28 +53,34 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ to_string_keys/1
-  @contract to_string_keys(map?()) :: map?()
+  @contract to_string_keys(map?(), int?(), int?()) :: map?()
   @doc ~S"""
   Given a map, converts all string keys into atoms
 
   ## Examples
       iex> to_string_keys(%{a: 1, b: 2, c: %{foo: "bar"}})
       %{"a" => 1, "b" => 2, "c" => %{"foo" => "bar"}}
+      iex> to_string_keys(%{a: 1, b: 2, c: %{foo: "bar"}}, 1)
+      %{"a" => 1, "b" => 2, "c" => %{foo: "bar"}}
   """
-  def to_string_keys(map) do
-    Enum.reduce(map, %{}, fn 
-      {ak, v}, acc when is_atom(ak) -> 
-        sk = "#{ak}"
+  def to_string_keys(map, max_depth \\ -1, curr_depth \\ 0) do
+    if max_depth == curr_depth do
+      map
+    else
+      Enum.reduce(map, %{}, fn 
+        {ak, v}, acc when is_atom(ak) -> 
+          sk = "#{ak}"
 
-        v = case v do
-          m when is_map(m) -> to_string_keys(m)
-          v -> v
-        end
+          v = case v do
+            m when is_map(m) -> to_string_keys(m, max_depth, curr_depth + 1)
+            v -> v
+          end
 
-        Map.put(acc, sk, v)
-      {k, m}, acc when is_map(m) -> Map.put(acc, k, to_string_keys(m))
-      {k, v}, acc -> Map.put(acc, k, v)
-    end)
+          Map.put(acc, sk, v)
+        {k, m}, acc when is_map(m) -> Map.put(acc, k, to_string_keys(m, max_depth, curr_depth + 1))
+        {k, v}, acc -> Map.put(acc, k, v)
+      end)
+    end
   end
   # }}}
 

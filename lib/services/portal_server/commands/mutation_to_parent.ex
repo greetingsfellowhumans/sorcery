@@ -21,12 +21,14 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
 
         ##########################################
         # Possibly removing these
-        pids = get_watching_pids(state, diff)
-        inform_children(pids, mutation)
+        #pids = get_watching_pids(state, diff)
+        #inform_children(pids, mutation)
         ##########################################
 
         pid_portals = get_watching_pid_portals(state, diff)
-        state.sorcery.config_module.run_mutation(mutation, pid_portals)
+        dbg pid_portals
+        state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
+        pids = Enum.map(pid_portals, &(&1.pid))
 
 
         state
@@ -47,7 +49,7 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
         command: :mutation_to_children,
         args: %{mutation: mutation}
       }
-      send(pid, {:sorcery, msg})
+      #send(pid, {:sorcery, msg})
     end
   end
   # }}}
@@ -64,17 +66,24 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
   end
   # }}}
 
+
   # {{{ get_watching_pid_portals(state, diff)
   defp get_watching_pid_portals(state, diff) do
     Enum.reduce(state.sorcery.portals_to_child, [], fn {pid, portals}, acc ->
-      Enum.reduce(portals, acc, fn {_, portal}, matching_portals ->
+      Enum.reduce(portals, acc, fn {portal_name, portal}, matching_portals ->
         if RQ.diff_matches_portal?(diff, portal) do
-          [{pid, portal} | matching_portals]
+          body = Map.take(portal, [:args, :query_module])
+                 |> Map.put(:pid, pid)
+                 |> Map.put(:portal_name, portal_name)
+          [body | matching_portals]
+        else
+          matching_portals
         end
       end)
     end)
   end
   # }}}
+
 
   # {{{ update_portals(state, pids, mutation)
   defp update_portals(state, pids, mutation) do

@@ -62,5 +62,6 @@ defmodule Sorcery.PortalServer do
   def handle_info(%{command: :spawn_portal} = msg, state), do: Cmd.SpawnPortal.entry(msg, state)
   def handle_info(%{command: :receive_portal} = msg, state), do: Cmd.ReceivePortal.entry(msg, state)
   def handle_info(%{command: :spawn_portal_response} = msg, state), do: Cmd.ReceivePortal.entry(msg, state)
+  def handle_info(%{command: :replace_portal} = msg, state), do: Cmd.ReplacePortal.entry(msg, state)
 
 end

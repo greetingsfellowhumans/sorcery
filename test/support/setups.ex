@@ -1,5 +1,27 @@
 defmodule Sorcery.Setups do
   use ExUnit.Case#, async: true
+  alias MyApp.Sorcery.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
+  import Sorcery.Helpers.Names
+  import Sorcery.Helpers.Maps
+
+  # {{{ :populate_sorcery_db
+  def populate_sorcery_db(ctx) do
+    all_schemas = [Player, BattleArena, Team, SpellType, SpellInstance]
+    m = Enum.reduce(all_schemas, %{inserts: %{}, updates: %{}, deletes: %{}}, fn schema, acc ->
+      tk = mod_to_tk(schema)
+
+      entities = Sorcery.Repo.all(schema)
+      Enum.reduce(entities, acc, fn entity, acc ->
+        put_in_p(acc, [:updates, tk, entity.id], entity)
+      end)
+
+    end)
+
+    MyApp.Sorcery.run_mutation(m, %{}, self())
+
+    {:ok, ctx}
+  end
+  # }}}
 
 
   # {{{ :spawn_portal
@@ -41,11 +63,13 @@ defmodule Sorcery.Setups do
   # }}}
 
 
-
+  # {{{ :live_view
   def live_view(%{db: db} = ctx) do
     {:ok, pid} = GenServer.start_link(MyApp.PortalServers.LiveView, %{db: db})
     ctx = Map.put(ctx, :live_view_pid, pid)
     {:ok, ctx}
   end
+  # }}}
+
 
 end

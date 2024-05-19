@@ -6,7 +6,15 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
   alias Sorcery.StoreAdapter
 
 
-  def entry(%{query: module, from: from} = msg, state) do
+  defp sdb_mutation(%{data: data, lvar_tks: lvar_tks}) do
+    updates = Enum.reduce(data, %{}, fn {lvar, lvar_data}, acc ->
+      tk = lvar_tks[lvar]
+      Map.update(acc, tk, lvar_data, &(Map.merge(&1, lvar_data)))
+    end)
+    %{inserts: %{}, deletes: %{}, updates: updates}
+  end
+
+  def entry(%{query: module, from: from, args: args} = msg, state) do
     %{store_adapter: store_adapter} = state.sorcery
     args = msg[:args] || %{}
     clauses = module.clauses(args)
@@ -18,6 +26,11 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
 
     case StoreAdapter.query(store_adapter, state.sorcery, clauses, finds) do
       {:ok, results} ->
+        # Send results to SorceryDb
+        pid_portals = [%{pid: from, query_module: module, args: args, portal_name: args.portal_name}]
+        mutation = sdb_mutation(results)
+        state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
+
         portal = Portal.new(%{
           query_module: module,
           child_pids: [from],

@@ -1,5 +1,5 @@
 if Mix.env() == :test do
-  alias MyApp.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
+  alias MyApp.Sorcery.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
   alias Sorcery.Repo
 
   arena_names = ["Ice Room", "Candy Land", "Fire Pit"]
