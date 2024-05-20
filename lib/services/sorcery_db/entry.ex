@@ -104,7 +104,7 @@ defmodule Sorcery.SorceryDb do
 
 
       # {{{ Client
-      def cache_pid_entity(pid, portal, timestamp, tk, entity), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, entity})
+      def cache_pid_entity(pid, portal, timestamp, tk, rev_set), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, rev_set})
       # @TODO unchache_pid_entity
 
       def run_mutation(mutation, pid_portals, parent_pid) do

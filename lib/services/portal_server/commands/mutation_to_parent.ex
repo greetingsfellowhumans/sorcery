@@ -26,7 +26,6 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
         ##########################################
 
         pid_portals = get_watching_pid_portals(state, diff)
-        dbg pid_portals
         state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
         pids = Enum.map(pid_portals, &(&1.pid))
 

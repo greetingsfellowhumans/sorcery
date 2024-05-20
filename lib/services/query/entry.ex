@@ -103,6 +103,11 @@ defmodule Sorcery.Query do
       @raw_struct Sorcery.Query.new(opts)
 
       def raw_struct(), do: @raw_struct
+      def tks_affected() do
+        @raw_struct.where
+        |> Enum.map(&(Enum.at(&1, 1)))
+        |> Enum.uniq()
+      end
 
       def finds() do
         find =  @raw_struct.find

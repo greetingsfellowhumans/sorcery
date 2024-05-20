@@ -9,7 +9,7 @@ defmodule Sorcery.Specs do
   def string?(), do: spec(is_binary())
   def atom?(), do: spec(is_atom())
   def int?(), do: spec(is_integer())
-  def id?(), do: spec(is_integer() and fn id -> id > 0 end)
+  def id?(), do: spec(is_integer() and &(&1 > 0))
   def float?(), do: spec(is_float())
   def number?(), do: spec(is_float() or is_integer())
   def list?(), do: spec(is_list())
@@ -31,8 +31,19 @@ defmodule Sorcery.Specs do
   #############################
   # Sorceryisms
   #############################
-  def re?(), do: struct?(Sorcery.ReturnedEntities)
   def tk?(), do: atom?()
+  def entity?(), do: selection(schema(%{id: id?()}))
+  def entity_list?(), do: coll_of(entity?())
+  def entity_table?(), do: map_of(id?(), entity?())
+  def lvars?(),  do: spec(is_binary() and fn k -> match?("?" <> _, k)      end)
+  def lvark?(), do: spec(is_atom()   and fn k -> match?("?" <> _, "#{k}") end)
+  def lvar?(),  do: one_of([lvars?(), lvark?()])
+
+  ##############################
+  # Structs
+  ##############################
+  def re?(), do: struct?(Sorcery.ReturnedEntities)
+  def clause?(), do: struct?(Sorcery.Query.WhereClause)
       
 
 

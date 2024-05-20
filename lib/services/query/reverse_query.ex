@@ -61,6 +61,29 @@ defmodule Sorcery.Query.ReverseQuery do
     end)
   end
 
+  # Get an ETS friendly tuple of all the known entities matching the pid/portal/lvar
+  def parse_known_for_ets(%{known_matches: matches, child_pids: pids, args: %{portal_name: name}, updated_at: timestamp} = portal) do
+    lvar_tks = matches.lvar_tks
+
+    Enum.map(pids, fn pid ->
+      matches.data
+      |> Enum.reduce([], fn {lvar, entities}, acc ->
+        tk = lvar_tks[lvar]
+        entities = Map.values(entities)
+        {pid, name, timestamp, tk, lvar, entities}
+      end)
+    end)
+    |> List.flatten()
+
+    #Enum.reduce(known_matches, [], fn {lvark, set}, acc ->
+    #  tk = Keyword.get(lvar_tks, lvark)
+    #  dbg lvar_tks
+    #  dbg lvark
+    #  entities = MapSet.to_list(set)
+    #  {pid, portal_name, timestamp, tk, entities}
+    #end)
+  end
+
   def prune_results(returned_entities, set) do
     finds = generate_find(set)
     Enum.reduce(finds, RE.new(), fn {lvar, attrs}, re ->
