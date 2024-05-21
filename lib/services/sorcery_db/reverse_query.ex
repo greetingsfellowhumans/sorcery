@@ -134,7 +134,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   # {{{ entity_matches_lclauses(entity, lclauses, ctx)
   defp lclauses?(), do: map_of(one_of([nil?(), lvark?()]), coll_of(clause?()))
 
-  @contract entity_matches_lclauses(entity?(), lclauses?(), schema(%{pid: pid?(), args: map?(), portal_name: atom?()})) :: bool?()
+  #@contract entity_matches_lclauses(entity?(), lclauses?(), schema(%{pid: pid?(), args: map?(), portal_name: atom?()})) :: bool?()
   def entity_matches_lclauses(entity, lclauses, ctx) do
     
     Enum.all?(lclauses, fn {other_lvark, where_clauses} ->
@@ -165,7 +165,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   defp apply_olr(:in, left, right), do: left in right
   defp apply_olr(op, left, right), do: apply(Kernel, op, [left, right])
 
-  @contract entity_matches_clause(entity?(), clause?(), ctx?()) :: bool?()
+  #@contract entity_matches_clause(entity?(), clause?(), ctx?()) :: bool?()
   def entity_matches_clause(entity, %{right_type: :literal} = clause, _ctx) do
     op = get_op(clause)
     left = entity[clause.attr]

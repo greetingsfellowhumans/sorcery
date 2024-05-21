@@ -26,8 +26,14 @@ defmodule Sorcery.PortalServer.Commands.MutationToParent do
         ##########################################
 
         pid_portals = get_watching_pid_portals(state, diff)
-        state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
+        #state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
         pids = Enum.map(pid_portals, &(&1.pid))
+
+        Sorcery.SorceryDb.ReverseQuery.reverse_query(diff)
+        |> Enum.each(fn {pid, portal_name} ->
+          msg = %{command: :rerun_query, portal_name: portal_name}
+          send(pid, {:sorcery, msg})
+        end)
 
 
         state

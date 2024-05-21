@@ -28,9 +28,19 @@ defmodule Sorcery.PortalServer.Commands.SpawnPortal do
       {:ok, results} ->
         timestamp = Time.utc_now()
 
+        ###############
         # Send results to SorceryDb
         pid_portals = [%{pid: from, query_module: module, args: args, portal_name: args.portal_name}]
+
+        Sorcery.SorceryDb.ReverseQuery.put_portal_table(args.portal_name, from, module, args)
+        for {lvar, table} <- results.data do
+          Sorcery.SorceryDb.ReverseQuery.repopulate_watcher_table(args.portal_name, lvar, from, Map.values(table))
+        end
+        ###############
+
+        ### Is this needed?
         mutation = sdb_mutation(results)
+        ### Or this?
         state.sorcery.config_module.run_mutation(mutation, pid_portals, self())
 
         portal = Portal.new(%{
