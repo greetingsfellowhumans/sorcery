@@ -1,62 +1,41 @@
-So I could have an ets :"sorcery_knownmatches_#{lvar}" table that basically stores the known right value(s) of every clause. Maybe index of clause
-and I have another :portals table that holds {pid, portal_name, querymod, args}
+commands
 
-So sorcery_knownmatches_lvar: {pid, portal_name, tk, entities}
-So sorcery_portals_{portal_name}:  {child_pid, querymod, args}
+When you first create a portal
 
+CreatePortal
+  %{query_mod, from, args}
+  From a child to a parent
 
-def reverse_query(diff) do
-  for {_pid, _portal_name, _querymod, _args} = results <- ets.all(:sorcery_rev_portals) do
-    results = group_by(:pid, {portalname, querymod, args})
-    Enum.filter(results, fn {pid, {portalname, querymod, args}} ->
-      clauses = querymod.clauses(args)
-                |> Enum.filter(&(&1.tk in diff.tks_affected))
-                |> Enum.group_by(:lvar)
-      Enum.any?(diff.rows, fn %{tk: tk, old: old, new: new} ->
-        Enum.any?([old, new], fn entity ->
-          Enum.any?(clauses, fn {lvar, clauses} ->
-            
-            # Also, if there are multiple clauses references the same other_lvar, those need to be grouped
-            # So a match must be a match against all the clauses for a specific other entity
-            # Maybe here we create a map of other entities...
-            # %{"?teams" => %{1 => ...}}
-            lclauses = group_by(:other_lvar)
+  Adds portal_table and watcher_table rows in SorceryDb
+  Adds a portal entry to the parent state, and packages the portal for the child
+  msg = %{command: :portal_merge, from: self(), args: %{portal: child_portal}}
+  
+PortalUpdatesDetected
+  %{args: %{portal_name, parent_pid}}
+  From an unknown process to a child
 
+  Probably middleware can go here at some point
+  send(parent, %{command: :PortalFetch, portal_name, query, args, from})
 
-            Enum.all?(lclauses, fn {other_lvar, clauses} ->
-              ctx = %{args: args, pid, portalname, etc...}
-              case other_lvar do
-                "?" <> _ -> 
-                  right_ents = :ets.select(:sorcery_known_matches_{other_lvar})
-                  Enum.any?(right_ents, fn right_entity ->
-                    ctx = Map.merge(ctx, :right_entity, right_entity)
-                    Enum.all?(clauses, fn clause -> entity_matches_clause(entity, clause, ctx))
-                  end)
-                _nil -> Enum.all?(clauses, fn clause -> entity_matches_clause(entity, clause, ctx))
-              end
+PortalFetch
+  %{portal_name, query, args, from}
+  From a child to a parent
 
+  data = state.store_adapter.run_query(query, args)
+  updates sorcerydb ets tables
+  send(%{command: :portal_merge, args: %{portal: portal, portal_name: portal_name}})
 
-            end)
-          end)
-        end)
-      end)
-    end)
-    |> Enum.each(fn {pid, {portal_name, _, _}} -> 
-      send(pid, {:rerun_queries, portal_name})
-    end)
+PortalMerge
+  %{args: %{portal_name, parent_pid, portal}}
+  From a parent to a child
 
-  end
-end
+  adds it to state.sorcery.portals_to_parent.parent.portal_name
+  
+RunMutation 
+  %{args: %{mutation}}
+  From a child to a parent
 
-  def entity_matches_clause(entity, clause, ctx) do
-    ...
-    apply(op, left, right)
-  end
-
-  # def other_lvar_clauses_match?({other_lvar, clauses}, ctx) 
-  # def lvar_clauses_match?({lvar, clauses}, ctx) do
-  # def entity_matches_clauses?(entity, clauses, ctx)
-  # def diff_row_matches_clauses(row, clauses, ctx)
-  # def group_clauses(c)
-
-end
+  Applies changes to Store
+  gets a diff in return with real ids
+  Submits the reverse query to get a list of pids
+  sends %{command: PortalUpdatesDetected, portal_name, parent_pid}

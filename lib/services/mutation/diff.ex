@@ -4,6 +4,7 @@ defmodule Sorcery.Mutation.Diff do
     tks_affected: MapSet.new([]),
     rows: [],
   ]
+  import Sorcery.Helpers.Maps
 
   def new(%Sorcery.Mutation.ChildrenMutation{} = mutation) do
     struct(__MODULE__, %{
@@ -27,7 +28,12 @@ defmodule Sorcery.Mutation.Diff do
     end)
     acc = Enum.reduce(mutation.updates, acc, fn {tk, table}, acc ->
       Enum.reduce(table, acc, fn {id, entity}, acc ->
-        row = Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: entity})
+        
+        row = case get_in_p(mutation, [:old_data, tk, id]) do
+          nil -> Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: entity})
+          old_entity -> Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: entity, old_entity: old_entity})
+        end
+        
         [row | acc]
       end)
     end)

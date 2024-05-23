@@ -55,10 +55,13 @@ defmodule Sorcery.PortalServer do
   end
    
 
+  def handle_info(%{command: :create_portal} = msg, state), do: Cmd.CreatePortal.entry(msg, state)
+  def handle_info(%{command: :portal_merge} = msg, state), do: Cmd.PortalMerge.entry(msg, state)
+  def handle_info(%{command: :run_mutation} = msg, state), do: Cmd.RunMutation.entry(msg, state)
+  def handle_info(%{command: :portal_put} = msg, state), do: Cmd.PortalPut.entry(msg, state)
+
   def handle_info(%{command: cmd} = msg, state) do
-    mod_string = Macro.camelize("#{cmd}")
-    mod = Module.concat([Cmd, mod_string])
-    mod.entry(msg, state)
+    raise "#{cmd} was just caught"
   end
 
   #def handle_info(%{command: :run_query} = msg, state), do: Cmd.RunQuery.entry(msg, state)

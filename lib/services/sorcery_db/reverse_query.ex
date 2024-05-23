@@ -4,13 +4,14 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   import Sorcery.Specs
   import Sorcery.Helpers.Ets
 
+
   # Return the set of {pid, portal_name} pairs that are affected by this diff.
   def reverse_query(diff) do
     portal_names = get_portal_names_affected_by_diff(diff)
     reverse_query(diff, portal_names, [])
   end
   def reverse_query(diff, [portal_name | portal_names], passing_pid_portals) do
-    passing_pids = Enum.map(passing_pid_portals, &(Enum.at(&1, 0)))
+    passing_pids = Enum.map(passing_pid_portals, fn {pid, _portal_name, _query_mod, _args} -> pid end)# &(Enum.at(&1, 0)))
     instances = get_all_portal_instances(portal_name, exclude_pids: passing_pids)
     ctx = %{diff: diff, portal_name: portal_name}
 
@@ -18,6 +19,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
     reverse_query(diff, portal_names, new_passing_pid_portals ++ passing_pid_portals)
   end
   def reverse_query(_, [], passing_pid_portals), do: passing_pid_portals
+
 
   def intersect_clauses_and_diffs(portal_instances, %{diff: diff, portal_name: portal_name} = ctx) do
     Enum.reduce(portal_instances, [], fn [pid, query_mod, args], acc ->
@@ -36,7 +38,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
         end)
       end)
 
-      if intersects?, do: [{pid, portal_name} | acc], else: acc
+      if intersects?, do: [{pid, portal_name, query_mod, args} | acc], else: acc
 
     end)
   end
@@ -66,13 +68,15 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   end
   # }}}
 
+
   # {{{ portal_tables (i.e.  {:"sorcery_portals?portal=:get_battle", child_pid, query_mod, args})
   def get_portal_table_name(portal_name) do
     "sorcery_portals?portal=:#{portal_name}"
     |> String.to_atom()
   end
 
-  def put_portal_table(portal_name, child_pid, query_mod, args) do
+  #def put_portal_table(portal_name, child_pid, query_mod, args) do
+  def put_portal_table(%{portal_name: portal_name, child_pid: child_pid, query_module: query_mod, args: args} = _portal) do
     table = get_portal_table_name(portal_name)
     ensure_table(table, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
     put_all_portal_names(portal_name)
@@ -95,6 +99,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   end
 
   # }}}
+
 
   # {{{ watcher_tables (i.e. {:"sorcery_watchers?portal=:get_battle&lvar=?team", entities_list})
 

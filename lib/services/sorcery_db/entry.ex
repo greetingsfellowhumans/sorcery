@@ -4,6 +4,7 @@ defmodule Sorcery.SorceryDb do
   import Sorcery.SorceryDb.MnesiaAdapter
   import Sorcery.SorceryDb.Query
   import Sorcery.Helpers.Maps
+  alias Sorcery.SorceryDb.ReverseQuery, as: RQ
 
 
   # {{{ SorceryDb
@@ -18,8 +19,9 @@ defmodule Sorcery.SorceryDb do
 
 
 
+
   # {{{ query_portal(pid_portal)
-  def query_portal(%{args: args, query_module: mod} = pid_portal, schemas) do
+  def query_portal(%{args: args, query_module: mod} = _portal, schemas) do
     schemas_attrs = tk_attrs_map(schemas)
     clauses = mod.clauses()
     lvar_names = Enum.map(clauses, &(&1.lvar)) |> Enum.uniq()
@@ -107,29 +109,47 @@ defmodule Sorcery.SorceryDb do
       def cache_pid_entity(pid, portal, timestamp, tk, rev_set), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, rev_set})
       # @TODO unchache_pid_entity
 
-      def run_mutation(mutation, pid_portals, parent_pid) do
+      #def run_mutation(mutation, pid_portals, parent_pid) do
+      def run_mutation(mutation, diff) do
+        dbg "sdb run_mutation"
         schemas = __MODULE__.config().schemas
-        timestamp = Time.utc_now()
         :mnesia.transaction(fn ->
           Sorcery.SorceryDb.MnesiaAdapter.apply_changes(mutation, schemas)
         end)
+        |> dbg()
+        timestamp = Time.utc_now()
 
-        new_portals = run_queries(pid_portals, schemas)
-        for {pid, portal_name, data} <- new_portals do
-          args = %{updated_at: timestamp, data: data, portal_name: portal_name, parent: parent_pid}
-          send(pid, {:sorcery, %{command: :replace_portal, args: args}})
-        end
+        RQ.reverse_query(diff) # returns [ {pid, portal_name, query_mod, args} | _]
+        |> dbg()
+        |> Enum.each(&(run_queries(&1, schemas, timestamp)))
+
+        #new_portals = run_queries(portals, schemas)
+        #for portal <- new_portals do
+        #  #args = %{updated_at: timestamp, data: data, portal_name: portal_name, parent: parent_pid}
+        #  send(portal.child_pid, {:sorcery, %{
+        #    command: :portal_merge, 
+        #    portal: portal
+        #  }})
+        #end
       end
 
-      def run_queries(pid_portals, schemas) do
-        Enum.map(pid_portals, fn pid_portal ->
+
+      def run_queries({pid, name, query, args}, schemas, timestamp) do
+          pid_portal = %{pid: pid, portal_name: name, query_module: query, args: args}
           case Sorcery.SorceryDb.query_portal(pid_portal, schemas) do
             {:atomic, {:ok, data}} -> 
               data = to_string_keys(data, 1)
-              {pid_portal.pid, pid_portal.portal_name, data}
+              dbg data
+              msg = %{
+                command: :portal_put,
+                data: data,
+                updated_at: timestamp,
+                portal_name: name
+              }
+              send(pid, {:sorcery, msg})
+
             err -> raise err
           end
-        end)
       end
 
       # }}}

@@ -13,4 +13,5 @@ config :sorcery,
   ecto_repos: [Sorcery.Repo]
 
 config :logger,
+  truncate: :infinity,
   level: :warning

@@ -6,6 +6,30 @@ defmodule Sorcery.Setups do
   alias Sorcery.Query.WhereClause, as: Clause
   alias Sorcery.SorceryDb.ReverseQuery, as: RQ
 
+  
+  def commands_setup(ctx) do
+    msg = %{
+      command: :create_portal,
+      child_pid: self(),
+      portal_name: :the_battle,
+      query_module: MyApp.Queries.GetBattle,
+      args: %{player_id: 1}
+    }
+
+    {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
+    send(pid, {:sorcery, msg})
+    assert_receive {:sorcery, msg}
+    %{command: :portal_merge, portal_name: name, portal: portal} = msg
+
+    ctx = 
+      ctx
+      |> put_in_p([:child_state, :sorcery, :portals_to_parent, pid, name], portal)
+      |> put_in_p([:child_pid], self())
+      |> put_in_p([:parent_pid], pid)
+
+    {:ok, ctx}
+  end
+
   # {{{ :populate_sorcery_db
   def populate_sorcery_db(ctx) do
     all_schemas = [Player, BattleArena, Team, SpellType, SpellInstance]
@@ -27,42 +51,42 @@ defmodule Sorcery.Setups do
 
 
   # {{{ :spawn_portal
-  def spawn_portal(ctx) do
-    {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
-    msg = %{
-      command: :spawn_portal,
-      from: self(),
-      args: %{player_id: 1, portal_name: :battle_portal},
-      query: MyApp.Queries.GetBattle,
-    }
-    send(pid, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
-    ctx =
-      ctx
-      |> Map.put(:portal, portal)
-      |> Map.put(:parent_pid, pid)
-    {:ok, ctx}
-  end
+  #def spawn_portal(ctx) do
+  #  {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
+  #  msg = %{
+  #    command: :spawn_portal,
+  #    from: self(),
+  #    args: %{player_id: 1, portal_name: :battle_portal},
+  #    query: MyApp.Queries.GetBattle,
+  #  }
+  #  send(pid, {:sorcery, msg})
+  #  assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
+  #  ctx =
+  #    ctx
+  #    |> Map.put(:portal, portal)
+  #    |> Map.put(:parent_pid, pid)
+  #  {:ok, ctx}
+  #end
   # }}}
 
 
-  # {{{ :teams_portal
-  def teams_portal(ctx) do
-    pid = ctx.parent_pid
-    msg = %{
-      command: :spawn_portal,
-      from: self(),
-      args: %{portal_name: :all_teams},
-      query: MyApp.Queries.AllTeams,
-    }
-    send(pid, {:sorcery, msg})
-    assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
-    ctx =
-      ctx
-      |> Map.put(:teams_portal, portal)
-    {:ok, ctx}
-  end
-  # }}}
+#  # {{{ :teams_portal
+#  def teams_portal(ctx) do
+#    pid = ctx.parent_pid
+#    msg = %{
+#      command: :create_portal,
+#      from: self(),
+#      args: %{portal_name: :all_teams},
+#      query: MyApp.Queries.AllTeams,
+#    }
+#    send(pid, {:sorcery, msg})
+#    assert_receive {:sorcery, %{args: %{portal: portal}, command: :spawn_portal_response} }
+#    ctx =
+#      ctx
+#      |> Map.put(:teams_portal, portal)
+#    {:ok, ctx}
+#  end
+#  # }}}
 
 
   # {{{ :live_view
@@ -74,6 +98,7 @@ defmodule Sorcery.Setups do
   # }}}
 
 
+  # {{{ rev_query_tables(ctx)
   def rev_query_tables(ctx) do
     ###
     # Suppose there is a battle happening between players 1 and 2, while player 3 is looking at a list of teams
@@ -146,5 +171,6 @@ defmodule Sorcery.Setups do
 
     {:ok, ctx}
   end
+  # }}}
 
 end

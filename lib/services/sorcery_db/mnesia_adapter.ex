@@ -27,6 +27,22 @@ defmodule Sorcery.SorceryDb.MnesiaAdapter do
     apply_deletes(mutation)
   end
 
+  # Used in CreatePortal. 
+  # In theory no change has happened so there is no need to notify anyone.
+  def apply_fetched(data, schemas) do
+    :mnesia.transaction(fn ->
+      for {tk, table} <- data do
+        attrs = get_attrs_list(schemas[tk])
+        for {_id, entity} <- table do
+          values = Enum.map(attrs, &(Map.get(entity, &1)))
+          tup = List.to_tuple([tk | values])
+          :mnesia.write(tup)
+        end
+      end
+    end)
+  end
+
+
   defp apply_inserts(%{inserts: inserts}, schemas) do
     for {tk, table} <- inserts do
       attrs = get_attrs_list(schemas[tk])
@@ -45,7 +61,9 @@ defmodule Sorcery.SorceryDb.MnesiaAdapter do
       for {_id, entity} <- table do
         values = Enum.map(attrs, &(Map.get(entity, &1)))
         tup = List.to_tuple([tk | values])
+        dbg tup
         :mnesia.write(tup)
+        |> dbg()
       end
     end
   end

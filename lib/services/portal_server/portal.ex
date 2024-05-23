@@ -10,14 +10,15 @@ defmodule Sorcery.PortalServer.Portal do
   defstruct [
     :query_module,
     :updated_at,
-    :child_pids,
+    :portal_name,
+    :child_pid,
     :parent_pid,
     :ref,
     #:reverse_query,
     args: %{}, # Is this even necessary? Might be useable for optimizing?
     known_matches: %{},
-    fwd_find_set: MapSet.new([]),
-    rev_find_set: MapSet.new([]),
+    fwd_find_set: MapSet.new([]), # DEPRECATED
+    rev_find_set: MapSet.new([]), # DEPRECATED
   ]
 
   def new(body \\ %{}) do
@@ -34,6 +35,7 @@ defmodule Sorcery.PortalServer.Portal do
       if portal_name in names, do: pid, else: nil
     end)
     path = [:portals_to_parent, parent_pid, portal_name, :known_matches, :data, lvar]
+
     if has_in_p(sorcery_state, path) do
       get_in_p(sorcery_state, path)
     else
