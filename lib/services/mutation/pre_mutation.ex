@@ -4,6 +4,7 @@ defmodule Sorcery.Mutation.PreMutation do
   alias Sorcery.PortalServer.Portal
 
   defstruct [
+    :portal,
     version: 1,
     args: %{},
     old_data: %{},
@@ -19,6 +20,7 @@ defmodule Sorcery.Mutation.PreMutation do
     body = %{
       old_data: portal.known_matches.data,
       new_data: portal.known_matches.data,
+      portal: portal
     }
     struct(__MODULE__, body)
   end

@@ -2,9 +2,9 @@
 
 Every journey starts at the same point: installation and setup.
 
-First, add sorcery to your mix.deps. If you don't know how to do that, then sorcery might be a little too advanced for you. Sorry.
+First, add sorcery to your mix.deps.
 
-Next, we add your own personal Sorcery module. This is kind of like how you might use Ecto.Repo, in the sense that you dedicate a module of your own app to it, and use that as the entrypoint for everything.
+Next, create your own personal Sorcery module. This is kind of like how you might use Ecto.Repo, in the sense that you dedicate a module of your own app to it, and use that as the entrypoint for everything.
 
 ```elixir
 defmodule MyApp.Sorcery do

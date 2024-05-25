@@ -50,7 +50,6 @@ defmodule Sorcery.PortalServer do
     state
     |> Map.put(:sorcery, opts)
     |> put_in([:sorcery, :portals], %{})
-
   end
    
 
@@ -60,7 +59,7 @@ defmodule Sorcery.PortalServer do
   def handle_info(%{command: :portal_put} = msg, state), do: Cmd.PortalPut.entry(msg, state)
 
   def handle_info(%{command: cmd} = msg, state) do
-    raise "#{cmd} was just caught"
+    raise "#{cmd} was just sent as a :command."
   end
 
 

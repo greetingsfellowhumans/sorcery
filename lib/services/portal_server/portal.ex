@@ -25,15 +25,17 @@ defmodule Sorcery.PortalServer.Portal do
     struct(__MODULE__, body)
   end
 
-  def get_in(sorcery_state, portal_name, lvar) do
+  def get_in(sorcery_state, portal_name, lvar) when is_map(sorcery_state) do
     path = [:portals, portal_name, :known_matches, :data, lvar]
 
     if has_in_p(sorcery_state, path) do
       get_in_p(sorcery_state, path)
+      |> Map.values()
     else
-      %{}
+      [] 
     end
   end
+  def get_in(_, _, _), do: []
 
  
   @doc """

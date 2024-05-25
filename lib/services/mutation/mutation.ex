@@ -52,7 +52,7 @@ defmodule Sorcery.Mutation do
   The first step of every mutation. You must have an existing portal in order to do any of this.
 
   ## Examples
-      iex> m = Sorcery.Mutation.init(socket.assigns.sorcery.portals.my_portal)
+      iex> m = Sorcery.Mutation.init(socket.assigns.sorcery, :my_portal)
       iex> is_struct(m)
       true
   """
@@ -127,4 +127,30 @@ defmodule Sorcery.Mutation do
   """
   defdelegate delete_entity(mutation, tk, id), to: PreMutation
   # }}}
+
+  # {{{ send_mutation(mutation)
+  @doc """
+  Sends the mutation to the corresponding Portal Server
+  The Portal Server will then update its own data store.
+  All portals that care about the changes will automatically update accordingly (including the one calling this function) 
+
+  Returns the mutation passed in.
+
+  To be clear, this does not return the new data you are waiting for. You probably won't need the return value.
+  All the updates happen automatically, through some ~~magic~~  sorcery behind the scenes.
+  """
+  def send_mutation(%{portal: portal} = mutation) do
+    %{parent_pid: parent} = portal
+    msg = %{
+      command: :run_mutation,
+      portal: portal,
+      mutation: mutation
+    }
+    send(parent, {:sorcery, msg})
+
+    mutation
+  end
+  # }}}
+
+
 end
