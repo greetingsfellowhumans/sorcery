@@ -49,8 +49,7 @@ defmodule Sorcery.PortalServer do
   def add_portal_server_state(state, %{config_module: _mod} = opts) do
     state
     |> Map.put(:sorcery, opts)
-    |> put_in([:sorcery, :portals_to_parent], %{})
-    |> put_in([:sorcery, :portals_to_child], %{})
+    |> put_in([:sorcery, :portals], %{})
 
   end
    
@@ -64,13 +63,5 @@ defmodule Sorcery.PortalServer do
     raise "#{cmd} was just caught"
   end
 
-  #def handle_info(%{command: :run_query} = msg, state), do: Cmd.RunQuery.entry(msg, state)
-  #def handle_info(%{command: :rerun_query} = msg, state), do: Cmd.RerunQuery.entry(msg, state)
-  #def handle_info(%{command: :mutation_to_parent} = msg, state), do: Cmd.MutationToParent.entry(msg, state)
-  #def handle_info(%{command: :mutation_to_children} = msg, state), do: Cmd.MutationToChildren.entry(msg, state)
-  #def handle_info(%{command: :spawn_portal} = msg, state), do: Cmd.SpawnPortal.entry(msg, state)
-  #def handle_info(%{command: :receive_portal} = msg, state), do: Cmd.ReceivePortal.entry(msg, state)
-  #def handle_info(%{command: :spawn_portal_response} = msg, state), do: Cmd.ReceivePortal.entry(msg, state)
-  #def handle_info(%{command: :replace_portal} = msg, state), do: Cmd.ReplacePortal.entry(msg, state)
 
 end

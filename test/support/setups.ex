@@ -23,7 +23,7 @@ defmodule Sorcery.Setups do
 
     ctx = 
       ctx
-      |> put_in_p([:child_state, :sorcery, :portals_to_parent, pid, name], portal)
+      |> put_in_p([:child_state, :sorcery, :portals, name], portal)
       |> put_in_p([:child_pid], self())
       |> put_in_p([:parent_pid], pid)
 

@@ -8,7 +8,7 @@ defmodule Sorcery.PortalServer.Commands.RunMutationTest do
   setup [:commands_setup]
 
   test "Should handle the RunMutation cmd", %{parent_pid: parent, child_state: state} do
-    portal = state.sorcery.portals_to_parent[parent].the_battle
+    portal = state.sorcery.portals.the_battle
     player11 = portal.known_matches.data["?all_players"][11]
 
 

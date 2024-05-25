@@ -29,7 +29,7 @@ PortalMerge
   %{args: %{portal_name, parent_pid, portal}}
   From a parent to a child
 
-  adds it to state.sorcery.portals_to_parent.parent.portal_name
+  adds it to state.sorcery.portals.parent.portal_name
   
 RunMutation 
   %{args: %{mutation}}
