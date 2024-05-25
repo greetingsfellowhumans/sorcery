@@ -11,11 +11,12 @@ defmodule Sorcery.LiveHelpers do
           msg = %{
             command: :create_portal,
             portal_name: name,
+            #query_module: Module.concat(socket.assigns.sorcery.config_module, mod),
             query_module: mod,
             child_pid: self(),
             args: args,
           }
-          send(parent, {:sorcery, msg})
+          send(Module.concat([socket.assigns.sorcery.config_module, "PortalServers", parent]), {:sorcery, msg})
         end
 
         socket

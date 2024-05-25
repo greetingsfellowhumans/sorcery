@@ -1,6 +1,6 @@
 defmodule Sorcery.Helpers.Files do
   @moduledoc false
-  
+
   def build_modules_map(path, module_root) do
     filenames = File.ls!(path)
     Enum.reduce(filenames, %{}, fn name, acc ->

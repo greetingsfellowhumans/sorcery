@@ -13,21 +13,29 @@ defmodule Sorcery do
 
       def config() do
         %{
-          schemas: get_mod_map(:schemas, unquote(opts)),
-          queries: get_mod_map(:queries, unquote(opts)),
           mutations: get_mod_map(:mutations, unquote(opts)),
-          modifications: get_mod_map(:modifications, unquote(opts)),
+          plugins: get_mod_map(:plugins, unquote(opts)),
+          queries: get_mod_map(:queries, unquote(opts)),
+          schemas: get_mod_map(:schemas, unquote(opts)),
         }
       end
 
 
-      defp get_mod_map(k, opts) do 
-        paths = Keyword.get(opts, :paths, %{})
-        if Map.has_key?(paths, k) do
-          Sorcery.Helpers.Files.build_modules_map(paths[k], __MODULE__.Schemas)
-        else
-          %{}
-        end
+      def get_mod_map(k, opts) do 
+        sorcery_module_list = Module.split(__MODULE__) ++ [Macro.camelize("#{k}")]
+        sorcery_module_len = Enum.count(sorcery_module_list)
+
+        appname = Application.get_application(__MODULE__)
+        {:ok, all_modules} = :application.get_key(appname, :modules)
+        Enum.reduce(all_modules, %{}, fn module, acc ->
+          strings = Module.split(module)
+          if sorcery_module_list == Enum.slice(strings, 0, sorcery_module_len) do
+            tk = Sorcery.Helpers.Names.mod_to_tk(module)
+            Map.put(acc, tk, module)
+          else
+            acc
+          end
+        end)
       end
 
 

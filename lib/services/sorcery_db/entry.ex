@@ -83,22 +83,26 @@ defmodule Sorcery.SorceryDb do
       end
 
       @impl true
-      def init(_) do
+      def init(state) do
         watchers_table = :ets.new(:sorcery_watchers, [:named_table, :duplicate_bag, :public, read_concurrency: true, write_concurrency: true])
         :mnesia.create_schema([node()])
         :mnesia.start()
 
-        schema_files =
-          unquote(opts)
-          |> Keyword.get(:opts)
-          |> Keyword.get(:paths)
-          |> Map.get(:schemas)
-          |> File.ls!()
-
-        for filename <- schema_files do
-          {tk, schema_mod} = Sorcery.SorceryDb.SchemaAdapter.parse_schema_module(filename, __MODULE__.Schemas)
-          Sorcery.SorceryDb.build_mnesia_table(tk, schema_mod)
+        for {tk, mod} <- __MODULE__.config().schemas do
+          Sorcery.SorceryDb.build_mnesia_table(tk, mod)
         end
+
+        #schema_files =
+        #  unquote(opts)
+        #  |> Keyword.get(:opts)
+        #  |> Keyword.get(:paths)
+        #  |> Map.get(:schemas)
+        #  |> File.ls!()
+
+        #for filename <- schema_files do
+        #  {tk, schema_mod} = Sorcery.SorceryDb.SchemaAdapter.parse_schema_module(filename, __MODULE__.Schemas)
+        #  Sorcery.SorceryDb.build_mnesia_table(tk, schema_mod)
+        #end
 
         {:ok, %{}}
       end
