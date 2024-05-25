@@ -5,7 +5,6 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
 
   def entry(%{mutation: mutation, portal: portal} = msg, state) do
     %{child_pid: pid, args: args, query_module: query_module, portal_name: portal_name} = portal
-    dbg "PING! Run Mutation"
 
     # Submit changes to store
     case update_the_store(msg, state) do

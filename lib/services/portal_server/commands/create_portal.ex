@@ -9,8 +9,6 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
   import Sorcery.Helpers.Maps
 
   def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
-    dbg "1 PING! CreatePortal"
-
     %{store_adapter: store, config_module: config_module} = state.sorcery
     clauses = query.clauses(args)
 
@@ -20,7 +18,6 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
 
     case StoreAdapter.query(store, state.sorcery, clauses, finds) do
       {:ok, results} ->
-        dbg 2
         timestamp = Time.utc_now()
         schemas = config_module.config().schemas
         #pid_portal = %{pid: pid, query_module: query, args: args, portal_name: portal_name}
@@ -29,24 +26,19 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
 
         #RQ.put_portal_table(portal_name, pid, query, args)
         RQ.put_portal_table(portal)
-        |> dbg
         for {lvar, table} <- results.data do
           entities = parse_rev_entities(rev_find_set, lvar, table)
           RQ.repopulate_watcher_table(portal_name, lvar, pid, entities)
-          |> dbg
         end
 
         lvar_tks = query.raw_struct().lvar_tks
-        dbg lvar_tks
         data = Enum.reduce(results.data, %{}, fn {lvar, table}, acc ->
-          dbg lvar
           tk = Enum.find_value(lvar_tks, fn {l, tk} ->
             if l == lvar, do: tk, else: nil
           end)
           Map.update(acc, tk, table, &(Map.merge(&1, table)))
         end)
         MnesiaAdapter.apply_fetched(to_atom_keys(data), schemas)
-        |> dbg()
 
     end
 
@@ -70,7 +62,6 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
       command: :portal_merge,
       portal: portal,
     }
-    dbg "Parent is about to send the new portal to child "
     send(portal.child_pid, {:sorcery, msg})
      
     portal

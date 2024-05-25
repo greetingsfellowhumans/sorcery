@@ -75,13 +75,6 @@ defmodule Sorcery.Query.ReverseQuery do
     end)
     |> List.flatten()
 
-    #Enum.reduce(known_matches, [], fn {lvark, set}, acc ->
-    #  tk = Keyword.get(lvar_tks, lvark)
-    #  dbg lvar_tks
-    #  dbg lvark
-    #  entities = MapSet.to_list(set)
-    #  {pid, portal_name, timestamp, tk, entities}
-    #end)
   end
 
   def prune_results(returned_entities, set) do

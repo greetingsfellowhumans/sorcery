@@ -109,28 +109,15 @@ defmodule Sorcery.SorceryDb do
       def cache_pid_entity(pid, portal, timestamp, tk, rev_set), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, rev_set})
       # @TODO unchache_pid_entity
 
-      #def run_mutation(mutation, pid_portals, parent_pid) do
       def run_mutation(mutation, diff) do
-        dbg "sdb run_mutation"
         schemas = __MODULE__.config().schemas
         :mnesia.transaction(fn ->
           Sorcery.SorceryDb.MnesiaAdapter.apply_changes(mutation, schemas)
         end)
-        |> dbg()
         timestamp = Time.utc_now()
 
         RQ.reverse_query(diff) # returns [ {pid, portal_name, query_mod, args} | _]
-        |> dbg()
         |> Enum.each(&(run_queries(&1, schemas, timestamp)))
-
-        #new_portals = run_queries(portals, schemas)
-        #for portal <- new_portals do
-        #  #args = %{updated_at: timestamp, data: data, portal_name: portal_name, parent: parent_pid}
-        #  send(portal.child_pid, {:sorcery, %{
-        #    command: :portal_merge, 
-        #    portal: portal
-        #  }})
-        #end
       end
 
 
@@ -139,7 +126,6 @@ defmodule Sorcery.SorceryDb do
           case Sorcery.SorceryDb.query_portal(pid_portal, schemas) do
             {:atomic, {:ok, data}} -> 
               data = to_string_keys(data, 1)
-              dbg data
               msg = %{
                 command: :portal_put,
                 data: data,

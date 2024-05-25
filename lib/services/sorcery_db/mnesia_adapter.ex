@@ -61,9 +61,7 @@ defmodule Sorcery.SorceryDb.MnesiaAdapter do
       for {_id, entity} <- table do
         values = Enum.map(attrs, &(Map.get(entity, &1)))
         tup = List.to_tuple([tk | values])
-        dbg tup
         :mnesia.write(tup)
-        |> dbg()
       end
     end
   end

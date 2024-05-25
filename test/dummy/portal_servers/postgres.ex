@@ -1,7 +1,6 @@
 defmodule MyApp.PortalServers.Postgres do
   use GenServer
 
-
   def init(_) do
     state = %{} # You can still add whatever you want here
 
