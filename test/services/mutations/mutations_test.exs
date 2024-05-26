@@ -1,9 +1,9 @@
 defmodule Sorcery.Mutations.MutationsTest do
-  use ExUnit.Case
-  alias Sorcery.Mutation, as: M
-  alias Sorcery.Query.ReverseQuery, as: RQ
-  import Sorcery.Setups
-
+#  use ExUnit.Case
+#  alias Sorcery.Mutation, as: M
+#  alias Sorcery.Query.ReverseQuery, as: RQ
+#  import Sorcery.Setups
+#
 #  setup [:spawn_portal, :teams_portal]
 #
 #

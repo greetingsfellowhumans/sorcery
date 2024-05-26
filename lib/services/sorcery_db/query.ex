@@ -1,7 +1,9 @@
 defmodule Sorcery.SorceryDb.Query do
+  @moduledoc false
   import Sorcery.SorceryDb.{MnesiaAdapter, SchemaAdapter}
 
-  
+  # Builds a match_spec guard clause out of a SrcQL WhereClause
+  # {{{ where_to_guard(clause, data, args, schema_attrs)
   def where_to_guard(%{op: op, attr: attr, tk: tk, right: right, right_type: :literal} = _clause, _data, _args, schemas_attrs) do
     op = sanitize_op(op)
     left = attr_to_pos(schemas_attrs, tk, attr)
@@ -28,6 +30,38 @@ defmodule Sorcery.SorceryDb.Query do
         guard_in(op, left, right_values)
     end
   end
+  # }}}
+
+  
+  # {{{ get_entities(sorcery_module, tk, ids)
+  # Given a tk and list of ids, returns all the matching entities, if possible. In their map form
+  def get_entities(sorcery_module, tk, ids) do
+    schemas = sorcery_module.config().schemas
+    schemas_attrs = tk_attrs_map(schemas)
+
+    :mnesia.transaction(fn -> 
+      for id <- ids do
+        :mnesia.read({tk, id})
+      end
+    end)
+    |> case do
+      {:atomic, li} ->
+        entities = Enum.map(li, fn [ent_tup] ->
+          [tk | ent_list] = Tuple.to_list(ent_tup)
+          Enum.zip(schemas_attrs[tk], ent_list)
+          |> Enum.into(%{})
+        end)
+        if Enum.count(ids) == Enum.count(entities) do
+          {:ok, entities}
+        else
+          {:partial, entities}
+        end
+      err -> {:error, err}
+    end
+  end
+  # }}}
+
+
 
 
 end

@@ -1,10 +1,39 @@
 defmodule Sorcery.Setups do
   use ExUnit.Case#, async: true
+  alias Src.PortalServers.GenericClient, as: Client
 #  alias Src.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
 #  import Sorcery.Helpers.Names
 #  import Sorcery.Helpers.Maps
 #  alias Sorcery.Query.WhereClause, as: Clause
 #  alias Sorcery.SorceryDb.ReverseQuery, as: RQ
+  def demo_ecosystem(ctx) do
+    {:ok, pid} = GenServer.start_link(Src.PortalServers.Postgres, %{})
+    ctx = Map.put(ctx, :postgres_pid, pid)
+    {:ok, ctx}
+  end
+
+  @doc """
+  This is NOT to be used like setup `[:spawn_client]`
+  But call it inside a test to create a new GenServer, like a LiveView
+  Pass in a list of portal_spec maps to create some portals for it.
+  Returns a pid.
+  Use that pid to inspect the state with:
+  `Src.PortalServers.GenericClient.get_state(pid)`
+
+  Any time it receives a {:sorcery, msg}, it will automatically forward that to the test process
+  use
+  `assert_receive {:received_msg, {_client_pid, _msg, _old_state, _new_state}}`
+
+  to solve race conditions and keep things synchronous.
+  Or use one of those variables. I can't imagine how they might come in handy though...
+  """
+  def spawn_client(portals \\ []) do
+    {:ok, pid} = GenServer.start_link(Client, %{
+      origin: self(),
+      portals: portals
+    })
+    pid
+  end
 #
 #  
 #  def commands_setup(ctx) do

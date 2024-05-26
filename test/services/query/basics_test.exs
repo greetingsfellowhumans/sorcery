@@ -1,8 +1,8 @@
 defmodule Sorcery.Query.BasicsTest do
-  use ExUnit.Case
+#  use ExUnit.Case
   #alias MyApp.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
-  alias Sorcery.ReturnedEntities, as: RE
-  import Sorcery.Setups
+#  alias Sorcery.ReturnedEntities, as: RE
+#  import Sorcery.Setups
 
   #setup [:spawn_portal]
 

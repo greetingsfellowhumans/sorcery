@@ -6,7 +6,6 @@ defmodule Sorcery.SorceryDb.Inspection do
   def view_tk(sorcery_module, tk) do
     schemas = sorcery_module.config().schemas
     schemas_attrs = tk_attrs_map(schemas)
-    dbg schemas_attrs[tk]
 
     head = get_variable_attrs_list(schemas_attrs[tk])
     head = [tk | head] |> List.to_tuple()

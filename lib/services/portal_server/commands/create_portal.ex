@@ -7,10 +7,17 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
   alias Sorcery.PortalServer.Portal
   import Sorcery.Helpers.Maps
 
+  defp sanitize_query_module(query, config_module) do
+    Module.split(query)
+    |> case do
+      [_config_module, "Queries", _] -> query
+      _li -> Module.concat([config_module, "Queries", query])
+    end
+  end
 
   def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
     %{store_adapter: store, config_module: config_module} = state.sorcery
-    query = Module.concat([config_module, "Queries", query])
+    query = sanitize_query_module(query, config_module)
     clauses = query.clauses(args)
 
     fwd_find_set = Find.build_lvar_attr_set(state.sorcery.config_module, query, :forward)

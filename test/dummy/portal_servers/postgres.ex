@@ -1,5 +1,10 @@
 defmodule Src.PortalServers.Postgres do
   use GenServer
+  use Sorcery.PortalServer
+
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+  end
 
   def init(_) do
     state = %{} # You can still add whatever you want here

@@ -1,9 +1,9 @@
 defmodule Sorcery.SorceryDbTest do
-  use ExUnit.Case
-  alias Sorcery.Mutation, as: M
-  import Sorcery.Setups
-  import Sorcery.SorceryDb.MnesiaAdapter
-
+#  use ExUnit.Case
+#  alias Sorcery.Mutation, as: M
+#  import Sorcery.Setups
+#  import Sorcery.SorceryDb.MnesiaAdapter
+#
 #  setup [:spawn_portal, :teams_portal, :populate_sorcery_db]
 #
 #  test "SorceryDb can be populated via mutations", %{portal: portal} do
