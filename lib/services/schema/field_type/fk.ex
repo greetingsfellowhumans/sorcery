@@ -33,8 +33,6 @@ defmodule Sorcery.Schema.FieldType.Fk do
   def is_valid?(:tk,    nil, _value), do: false
   def is_valid?(_, _, _), do: true
 
-  @impl true
-  def base_norm_spec(), do: &is_integer/1
 
   @impl true
   def get_sd_field(field_struct) do

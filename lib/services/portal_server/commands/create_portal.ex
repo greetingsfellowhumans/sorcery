@@ -7,10 +7,6 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
   alias Sorcery.PortalServer.Portal
   import Sorcery.Helpers.Maps
 
-  def inspect_db() do
-    :mnesia.transaction(fn -> :mnesia.select(:player, [{ {:player, :"$1", :"$2", :"$3", :"$4", :"$5", :"$6", :"$7"}, [], [:"$$"] }]) end)
-    |> dbg
-  end
 
   def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
     %{store_adapter: store, config_module: config_module} = state.sorcery

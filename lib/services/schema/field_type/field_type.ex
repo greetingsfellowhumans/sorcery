@@ -22,10 +22,6 @@ defmodule Sorcery.Schema.FieldType do
 
 
 
-  @doc """
-  For example the Integer type would return n&is_integer/1
-  """
-  @callback base_norm_spec() :: function()
 
 
   @doc """

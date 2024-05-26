@@ -30,8 +30,6 @@ defmodule Sorcery.Schema.FieldType.Integer do
   def is_valid?(:max, attr_v, value), do: value <= attr_v
   def is_valid?(_, _, _), do: true
 
-  @impl true
-  def base_norm_spec(), do: &is_integer/1
 
   @impl true
   def get_sd_field(field_struct) do

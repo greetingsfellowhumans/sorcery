@@ -2,7 +2,6 @@ defmodule Sorcery.Schema.Generation.EntryTest do
   use ExUnit.Case
   alias Sorcery.Schema, as: S
   alias Src.Schemas.Player, as: Player
-  use Norm
 
   doctest S
   

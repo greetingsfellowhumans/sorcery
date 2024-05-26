@@ -1,23 +1,23 @@
 # Sorcery
 
-A platform for highly connected Apps.
+A framework which rethinks how data flows, in order to create the next generation of apps in the future.
 
-Pubsubs on steroids.
-(and other goodies)
+Plays nicely with Phoenix LiveViews, or can be used alone.
+
+
 
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `sorcery` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:sorcery, "~> 0.1.0"},
-    {:norm, "~> 0.13", only: [:dev, :test], runtime: false},
+    {:sorcery, "~> 0.3.0"},
     {:stream_data, "~> 0.6.0"},
   ]
 end
 ```
 
+
+Get started with `mix sorcery.init`

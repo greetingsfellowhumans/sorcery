@@ -27,18 +27,10 @@ defmodule Sorcery.Schema.FieldType.String do
   def is_valid?(:max, attr_v, value), do: String.length(value) <= attr_v
   def is_valid?(_, _, _), do: true
 
-  @impl true
-  def base_norm_spec(), do: &is_binary/1
-
 
   @impl true
   def get_sd_field(field_struct) do
-    #min = Map.get(field_struct, :min)
-    #max = Map.get(field_struct, :max)
     opts = :utf8
-    #opts = [{:utf8, true}]
-    #opts = if min, do: [{:min, min} | opts], else: opts
-    #opts = if max, do: [{:max, max} | opts], else: opts
 
     li = []
     li = [SD.string(opts) | li]

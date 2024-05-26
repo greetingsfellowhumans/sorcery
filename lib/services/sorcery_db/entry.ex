@@ -84,7 +84,6 @@ defmodule Sorcery.SorceryDb do
 
       @impl true
       def init(state) do
-        watchers_table = :ets.new(:sorcery_watchers, [:named_table, :duplicate_bag, :public, read_concurrency: true, write_concurrency: true])
         :mnesia.create_schema([node()])
         :mnesia.start()
 
@@ -92,26 +91,12 @@ defmodule Sorcery.SorceryDb do
           Sorcery.SorceryDb.build_mnesia_table(tk, mod)
         end
 
-        #schema_files =
-        #  unquote(opts)
-        #  |> Keyword.get(:opts)
-        #  |> Keyword.get(:paths)
-        #  |> Map.get(:schemas)
-        #  |> File.ls!()
-
-        #for filename <- schema_files do
-        #  {tk, schema_mod} = Sorcery.SorceryDb.SchemaAdapter.parse_schema_module(filename, __MODULE__.Schemas)
-        #  Sorcery.SorceryDb.build_mnesia_table(tk, schema_mod)
-        #end
-
         {:ok, %{}}
       end
       # }}}
 
 
       # {{{ Client
-      def cache_pid_entity(pid, portal, timestamp, tk, rev_set), do: :ets.insert(:sorcery_watchers, {pid, portal, timestamp, tk, rev_set})
-      # @TODO unchache_pid_entity
 
       def run_mutation(mutation, diff) do
         schemas = __MODULE__.config().schemas
