@@ -135,9 +135,6 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
 
 
   # {{{ entity_matches_lclauses(entity, lclauses, ctx)
-  #defp lclauses?(), do: map_of(one_of([nil?(), lvark?()]), coll_of(clause?()))
-
-  #@contract entity_matches_lclauses(entity?(), lclauses?(), schema(%{pid: pid?(), args: map?(), portal_name: atom?()})) :: bool?()
   def entity_matches_lclauses(entity, lclauses, ctx) do
     
     Enum.all?(lclauses, fn {other_lvark, where_clauses} ->
@@ -159,16 +156,11 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
 
 
   # {{{ entity_matches_clause(entity, clause, ctx)
-  #defp literal_ctx?(), do: selection(schema(%{}), [])
-  #defp args_ctx?(), do: selection(schema(%{args: map?()}), [])
-  #defp lvar_ctx?(), do: selection(schema(%{right_entity: entity?()}), [])
-  #defp ctx?(), do: one_of([literal_ctx?(), args_ctx?(), lvar_ctx?()])
   defp get_op(%{op: op}) when op in [:==, :in, :!=, :>, :>=, :<, :<=], do: op
   defp get_op(clause), do: raise ":#{clause[:op]} is not a valid SrcQl op atom."
   defp apply_olr(:in, left, right), do: left in right
   defp apply_olr(op, left, right), do: apply(Kernel, op, [left, right])
 
-  #@contract entity_matches_clause(entity?(), clause?(), ctx?()) :: bool?()
   def entity_matches_clause(entity, %{right_type: :literal} = clause, _ctx) do
     op = get_op(clause)
     left = entity[clause.attr]

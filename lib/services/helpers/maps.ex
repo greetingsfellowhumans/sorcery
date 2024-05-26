@@ -1,12 +1,8 @@
 defmodule Sorcery.Helpers.Maps do
-  use Norm
-  import Sorcery.Specs
-
   @moduledoc false
 
 
   # {{{ from_struct/1
-  @contract from_struct(strct :: struct?()) :: map?()
   @doc ~S"""
   The usual Map.from_struct/1 causes huge trouble because the __meta__ field contains a '#'. Tests break with EOF errors.
 
@@ -23,7 +19,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ to_atom_keys/1
-  @contract to_atom_keys(map?()) :: map?()
   @doc ~S"""
   Given a map, converts all string keys into atoms
 
@@ -50,7 +45,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ to_string_keys/1
-  @contract to_string_keys(map?(), int?(), int?()) :: map?()
   @doc ~S"""
   Given a map, converts all string keys into atoms
 
@@ -83,7 +77,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ get_in_p/2
-  @contract get_in_p(m :: any?(), li :: list?()) :: any?()
   @doc ~S"""
   Safely does get_in, assuming nothing but maps all the way down.
 
@@ -109,7 +102,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ has_in_p/2
-  @contract has_in_p(m :: map?(), li :: list?()) :: any?()
   @doc ~S"""
   Checks whether a value exists at the path
 
@@ -131,7 +123,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ find_nil(m, path)
-  @contract find_nil(m :: map?(), path :: list?()) :: one_of([ {:no_nil, list?()}, {:nil_at, list?()} ])
   @doc ~S"""
   Goes through a path, one step at a time, until it finds a key that doesn't exist in the map.
 
@@ -165,7 +156,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ put_in_p/3
-  @contract put_in_p(map?(), list?(), any?()) :: map?()
   @doc ~S"""
   Like `mkdir -p`, but for elixir maps.
   Safely does put_in, assuming nothing but maps all the way down.
@@ -187,7 +177,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ update_in_p/1
-  @contract update_in_p(map?(), list?(), any?(), any?()) :: map?()
   @doc ~S"""
   Like `mkdir -p`, but for elixir maps.
   Safely does update_in, assuming nothing but maps all the way down.
@@ -211,7 +200,6 @@ defmodule Sorcery.Helpers.Maps do
 
 
   # {{{ delete_in/1
-  @contract delete_in(map?(), list?()) :: map?()
   @doc ~S"""
   Deletes a key inside a map, at the given path. Returns the map.
   Even if the path doesn't exist.
@@ -239,7 +227,6 @@ defmodule Sorcery.Helpers.Maps do
 
   
   # {{{ deep_merge/1
-  @contract deep_merge(left :: map?(), right :: map?()) :: map?()
   @doc ~S"""
 
   Like Map.merge, but better handling of depth.

@@ -5,8 +5,6 @@ defmodule Sorcery.Schema.FieldType.Fk do
   ## @TODO All of this
   ##
 
-  use Norm
-  #import Sorcery.Specs
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
 

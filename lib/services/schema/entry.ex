@@ -41,17 +41,6 @@ defmodule Sorcery.Schema do
       """
       def meta(), do: @meta
 
-      @doc ~s"""
-      The Norm spec for this schema
-      """
-      def t() do
-        if Code.ensure_loaded?(Norm) do
-          Sorcery.Schema.Norm.build_spec(@full_fields)
-        else
-          raise "In order to use #{__MODULE__}.t/0, you must install the :norm library."
-        end
-      end
-
 
       @doc ~s"""
       A generator that returns a lazy stream of entities matching the schema.

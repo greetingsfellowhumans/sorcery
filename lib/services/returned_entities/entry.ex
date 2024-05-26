@@ -8,9 +8,7 @@ defmodule Sorcery.ReturnedEntities do
 
   This is also the basic format of portals.
   """
-  use Norm
   import Sorcery.Helpers.Maps
-  import Sorcery.Specs
 
   defstruct [
     primary_entities: [], # i.e. player: 1, post: 24
@@ -18,10 +16,8 @@ defmodule Sorcery.ReturnedEntities do
     data: %{}
   ]
 
-  defp re_key?(), do: one_of([tk?(), string?()])
    
   # {{{ new() :: struct?(__MODULE__)
-  @contract new() :: struct?(__MODULE__)
   @doc ~S"""
   Creates a new, empty RE struct.
 
@@ -36,7 +32,6 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ put_entities(re, tk, li) :: struct?(__MODULE__)
-  @contract put_entities(re :: re?(), tk :: re_key?(), li :: list?()) :: re?()
   @doc ~S"""
 
   ## Examples
@@ -63,7 +58,6 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ delete_entities(re, tk, li) :: re?()
-  @contract delete_entities(re?(), re_key?(), list?()) :: re?()
   @doc ~S"""
 
   Removes all the listed ids of a given tk.
@@ -88,7 +82,6 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ delete_attrs(re, tk, li) :: re?()
-  @contract delete_attrs(re?(), re_key?(), list?()) :: re?()
   @doc ~S"""
 
   Deletes attribute keys from every entity of the given tk
@@ -114,7 +107,6 @@ defmodule Sorcery.ReturnedEntities do
 
 
   # {{{ get_entities(re, tk) :: list
-  @contract get_entities(re?(), re_key?()) :: list?()
   @doc ~S"""
 
   ## Examples
@@ -132,43 +124,6 @@ defmodule Sorcery.ReturnedEntities do
   # }}}
 
 
-#  # {{{ get_primary(re, tk) :: map()
-#  @contract get_primary(re?(), re_key?()) :: map?()
-#  @doc ~S"""
-#
-#  ## Examples
-#      iex> re = Sorcery.ReturnedEntities.new()
-#      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
-#      iex> re = put_primary(re, :player, 23)
-#      iex> get_primary(re, :player)
-#      %{id: 23, name: "B"}
-#  """
-#  def get_primary(re, tk) do
-#    case Keyword.get(re.primary_entities, tk) do
-#      nil -> nil
-#      id -> re.data[tk][id]
-#    end
-#  end
-#  # }}}
-#
-
-
-#  # {{{ put_primary(re, tk, id) :: re()
-#  @contract put_primary(re?(), re_key?(), id?()) :: re?()
-#  @doc ~S"""
-#
-#  ## Examples
-#      iex> re = Sorcery.ReturnedEntities.new()
-#      iex> re = put_entities(re, :player, [ %{id: 1, name: "A"}, %{id: 23, name: "B"} ])
-#      iex> re = put_primary(re, :player, 23)
-#      iex> get_primary(re, :player)
-#      %{id: 23, name: "B"}
-#  """
-#  def put_primary(%{primary_entities: pe} = re, tk, id) do
-#    pe = Keyword.put(pe, tk, id)
-#    Map.put(re, :primary_entities, pe)
-#  end
-#  # }}}
 
 
   def assign_lvar_tk(re, lvar, tk), do: put_in_p(re, [:lvar_tks, lvar], tk)

@@ -52,7 +52,6 @@ defmodule Sorcery.MixProject do
   defp deps do
     [
       {:mix_test_watch, "~> 1.2", only: [:dev, :test], runtime: false},
-      {:norm, "~> 0.13"},
       {:stream_data, "~> 0.6.0"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:ecto, "~> 3.11.2"},

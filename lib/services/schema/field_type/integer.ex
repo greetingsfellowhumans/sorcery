@@ -1,7 +1,5 @@
 defmodule Sorcery.Schema.FieldType.Integer do
   @moduledoc false
-  use Norm
-  #import Sorcery.Specs
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
   @default_min -10_000
