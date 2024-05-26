@@ -1,6 +1,5 @@
 defmodule Sorcery.PortalServer.Commands.CreatePortal do
   @moduledoc false
-  alias Sorcery.PortalServer.Commands.CreatePortal
   alias Sorcery.SorceryDb.ReverseQuery, as: RQ
   alias Sorcery.SorceryDb.MnesiaAdapter
   alias Sorcery.StoreAdapter
@@ -30,7 +29,6 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
         portal = create_and_send_portal(pid, args, results, portal_name, query, timestamp)
 
 
-        #RQ.put_portal_table(portal_name, pid, query, args)
         RQ.put_portal_table(portal)
         for {lvar, table} <- results.data do
           entities = parse_rev_entities(rev_find_set, lvar, table)

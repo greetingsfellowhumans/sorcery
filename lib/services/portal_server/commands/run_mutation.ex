@@ -1,10 +1,7 @@
 defmodule Sorcery.PortalServer.Commands.RunMutation do
   @moduledoc false
-  alias Sorcery.SorceryDb, as: SDB
-  alias Sorcery.SorceryDb.ReverseQuery, as: RQ
 
-  def entry(%{mutation: mutation, portal: portal} = msg, state) do
-    %{child_pid: pid, args: args, query_module: query_module, portal_name: portal_name} = portal
+  def entry(%{mutation: mutation} = msg, state) do
 
     # Submit changes to store
     case update_the_store(msg, state) do

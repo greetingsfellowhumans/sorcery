@@ -1,7 +1,5 @@
 defmodule Sorcery.SorceryDb.ReverseQuery do
   @moduledoc false
-  use Norm
-  import Sorcery.Specs
   import Sorcery.Helpers.Ets
 
 
@@ -29,9 +27,9 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
               |> Enum.filter(&(&1.tk in diff.tks_affected))
               |> Enum.group_by(&(&1.lvar))
 
-      intersects? = Enum.any?(diff.rows, fn %{tk: tk, old_entity: old_ent, new_entity: new_ent} ->
+      intersects? = Enum.any?(diff.rows, fn %{old_entity: old_ent, new_entity: new_ent} ->
         Enum.any?([old_ent, new_ent], fn entity ->
-          Enum.any?(clauses, fn {lvar, clauses} ->
+          Enum.any?(clauses, fn {_lvar, clauses} ->
             lclauses = Enum.group_by(clauses, &(&1.other_lvar))
             entity_matches_lclauses(entity, lclauses, ctx)
           end)
@@ -55,7 +53,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
   end
   def get_portal_names_affected_by_diff(%{tks_affected: tks} = _diff) do
     difftks = MapSet.new(tks)
-    names = get_all_portal_names()
+    get_all_portal_names()
     |> Enum.filter(fn name ->
       table_name = get_portal_table_name(name)
       case :ets.select(table_name, [{ {:_, :"$2", :_}, [], [:"$2"]}], 1) do
@@ -95,7 +93,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
         li ++ guards
       _ -> guards
     end
-    results = :ets.select(table_name, [{ {:"$1", :"$2", :"$3"}, guards, [:"$$"] }])
+    :ets.select(table_name, [{ {:"$1", :"$2", :"$3"}, guards, [:"$$"] }])
   end
 
   # }}}
@@ -137,7 +135,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
 
 
   # {{{ entity_matches_lclauses(entity, lclauses, ctx)
-  defp lclauses?(), do: map_of(one_of([nil?(), lvark?()]), coll_of(clause?()))
+  #defp lclauses?(), do: map_of(one_of([nil?(), lvark?()]), coll_of(clause?()))
 
   #@contract entity_matches_lclauses(entity?(), lclauses?(), schema(%{pid: pid?(), args: map?(), portal_name: atom?()})) :: bool?()
   def entity_matches_lclauses(entity, lclauses, ctx) do
@@ -150,7 +148,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
             ctx = Map.put(ctx, :right_entity, right_entity)
             Enum.all?(where_clauses, fn clause -> entity_matches_clause(entity, clause, ctx) end)
           end)
-        bap ->  
+        _ ->  
           Enum.all?(where_clauses, fn clause -> entity_matches_clause(entity, clause, ctx) end)
       end
     end)
@@ -161,10 +159,10 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
 
 
   # {{{ entity_matches_clause(entity, clause, ctx)
-  defp literal_ctx?(), do: selection(schema(%{}), [])
-  defp args_ctx?(), do: selection(schema(%{args: map?()}), [])
-  defp lvar_ctx?(), do: selection(schema(%{right_entity: entity?()}), [])
-  defp ctx?(), do: one_of([literal_ctx?(), args_ctx?(), lvar_ctx?()])
+  #defp literal_ctx?(), do: selection(schema(%{}), [])
+  #defp args_ctx?(), do: selection(schema(%{args: map?()}), [])
+  #defp lvar_ctx?(), do: selection(schema(%{right_entity: entity?()}), [])
+  #defp ctx?(), do: one_of([literal_ctx?(), args_ctx?(), lvar_ctx?()])
   defp get_op(%{op: op}) when op in [:==, :in, :!=, :>, :>=, :<, :<=], do: op
   defp get_op(clause), do: raise ":#{clause[:op]} is not a valid SrcQl op atom."
   defp apply_olr(:in, left, right), do: left in right

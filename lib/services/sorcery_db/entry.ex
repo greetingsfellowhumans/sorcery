@@ -73,7 +73,7 @@ defmodule Sorcery.SorceryDb do
 
   # {{{ use macro / GenServer
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     quote do
       use GenServer
 

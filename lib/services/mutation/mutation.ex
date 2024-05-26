@@ -20,6 +20,7 @@ defmodule Sorcery.Mutation do
   iex> m = M.init(socket.assigns.sorcery, :my_portal)
   iex> m = M.update(m, [:player, 1, :age], fn _original_age, latest_age -> latest_age + 1 end)
   iex> m = M.put(m, [:player, 1, :health], 100)
+  iex> # Avoid this in real life, the value could be different by time the mutation reaches the PortalServer
   iex> player = M.get(m, [:player, 1])
   iex> player.health
   100
@@ -31,15 +32,13 @@ defmodule Sorcery.Mutation do
   "?my_new_team.id"
   iex> # This string is of course, the placeholder. But after we actually run the mutation, the team is created with a normal integer id.
   iex> # The parent PortalServer creates the new team entity, it will automatically replace all calls to "?my_new_team" with that entity.
-  iex> msg = %{from: self(), command: :run_mutation, mutation: m}
-  iex> send(parent_pid, {:sorcery, msg})
-  iex> # In a new function call, after receiving the update
-  iex> portal = socket.assigns.sorcery.portals.my_portal
-  iex> player = portal["?all_players"][1]
+  iex> Sorcery.Mutation.send_mutation(m)
+  iex> # ... a few milliseconds later, after receiving the update
+  iex> player = portal_view(@sorcery, :my_portal, "?all_players")[1]
   iex> new_team_id = player.team_id
   iex> is_integer(new_team_id)
   true
-  iex> team = portal["?teams"][new_team_id]
+  iex> team = portal_view(@sorcery, :my_portal, "?all_teams")[new_team_id]
   iex> team.name
   "My New Team"
   ```
@@ -56,8 +55,9 @@ defmodule Sorcery.Mutation do
       iex> is_struct(m)
       true
   """
-  defdelegate init(portal), to: PreMutation
   defdelegate init(state, portal_name), to: PreMutation
+  @doc false
+  defdelegate init(portal), to: PreMutation
   # }}}
 
   # {{{ update

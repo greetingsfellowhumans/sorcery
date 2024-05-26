@@ -21,12 +21,12 @@ defmodule Sorcery.Mutation.Diff do
   defp get_rows(mutation) do
     acc = []
     acc = Enum.reduce(mutation.inserts, acc, fn {tk, table}, acc ->
-      Enum.reduce(table, acc, fn {id, entity}, acc ->
+      Enum.reduce(table, acc, fn {_id, entity}, acc ->
         row = Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: entity})
         [row | acc]
       end)
     end)
-    acc = Enum.reduce(mutation.updates, acc, fn {tk, table}, acc ->
+    Enum.reduce(mutation.updates, acc, fn {tk, table}, acc ->
       Enum.reduce(table, acc, fn {id, entity}, acc ->
         
         row = case get_in_p(mutation, [:old_data, tk, id]) do

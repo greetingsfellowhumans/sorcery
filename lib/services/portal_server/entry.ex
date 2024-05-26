@@ -18,15 +18,13 @@ defmodule Sorcery.PortalServer do
 
   ```elixir
   use GenServer
+  use Sorcery.PortalServer
 
   def init(_) do
     state = %{} # You can still add whatever you want here
 
     state = Sorcery.PortalServer.add_portal_server_state(state, %{
-      config_module: MyApp.Sorcery,      # This is a required key
-
-      db: %{}, # In memory storage of entities being tracked by portals
-
+      config_module: Src,
       store_adapter: Sorcery.StoreAdapters.Ecto,
 
       # This depends on the adapters you use
@@ -36,11 +34,6 @@ defmodule Sorcery.PortalServer do
     })
 
     {:ok, state}
-  end
-
-  def handle_info({:sorcery, msg}, state) do
-    new_state = Sorcery.PortalServer.handle_info(msg, state)
-    {:noreply, new_state}
   end
   ```
   """
@@ -52,13 +45,23 @@ defmodule Sorcery.PortalServer do
     |> put_in([:sorcery, :portals], %{})
   end
    
+  defmacro __using__(_) do
+    quote do
+      #@impl Sorcery.PortalServer
+      def handle_info({:sorcery, msg}, state) do
+        new_state = Sorcery.PortalServer.handle_info(msg, state)
+        {:noreply, new_state}
+      end
+    end
+  end
 
+  @doc false
   def handle_info(%{command: :create_portal} = msg, state), do: Cmd.CreatePortal.entry(msg, state)
   def handle_info(%{command: :portal_merge} = msg, state), do: Cmd.PortalMerge.entry(msg, state)
   def handle_info(%{command: :run_mutation} = msg, state), do: Cmd.RunMutation.entry(msg, state)
   def handle_info(%{command: :portal_put} = msg, state), do: Cmd.PortalPut.entry(msg, state)
 
-  def handle_info(%{command: cmd} = msg, state) do
+  def handle_info(%{command: cmd} = _msg, _state) do
     raise "#{cmd} was just sent as a :command."
   end
 

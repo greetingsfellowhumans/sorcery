@@ -60,12 +60,14 @@ defmodule Sorcery.LiveHelpers do
   """
   @callback portal_view(sorcery_config :: map(), lvar :: binary()) :: list()
 
-  @doc """
-  When a PortalServer needs to send a message to this LiveView, it goes through this.
+  #@doc """
+  #When a PortalServer needs to send a message to this LiveView, it goes through this.
 
-  You can still use your own `handle_info` functions with different function heads. But `handle_info({:sorcery, _}, socket)` is reserved.
-  """
-  @callback handle_info(msg :: {:sorcery, map()}, socket :: Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
+  #You can still use your own `handle_info` functions with different function heads. But `handle_info({:sorcery, _}, socket)` is reserved.
+  #"""
+  ##@callback handle_info(msg :: {:sorcery, map()}, socket :: Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
+
+
   # }}}
 
   defmacro __using__(_) do
@@ -89,6 +91,7 @@ defmodule Sorcery.LiveHelpers do
 
         socket
       end
+      @impl true
       def spawn_portal(_, body) do
         expected = [:portal_server, :portal_name, :query_module, :query_args]
         expected_str = Enum.reduce(expected, "", fn k, acc -> ":#{k} " <> acc end)
@@ -134,7 +137,7 @@ defmodule Sorcery.LiveHelpers do
 
 
     # {{{ handle_info({:sorcery, msg})
-    @impl true
+    @impl Phoenix.LiveView #Sorcery.LiveHelpers
     def handle_info({:sorcery, msg}, socket) do
       resp = Sorcery.PortalServer.handle_info(msg, socket.assigns)
       {:noreply, assign(socket, :sorcery, resp.sorcery)}
@@ -155,6 +158,7 @@ defmodule Sorcery.LiveHelpers do
       end)
       portal_view(sorcery, portal_name, lvar)
     end
+    @impl true
     def portal_view(sorcery, portal_name, lvar) do
       Sorcery.PortalServer.Portal.get_in(sorcery, portal_name, lvar)
     end
