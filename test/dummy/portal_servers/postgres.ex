@@ -1,11 +1,11 @@
-defmodule MyApp.PortalServers.Postgres do
+defmodule Src.PortalServers.Postgres do
   use GenServer
 
   def init(_) do
     state = %{} # You can still add whatever you want here
 
     state = Sorcery.PortalServer.add_portal_server_state(state, %{
-      config_module: MyApp.Sorcery,      # This is a required key
+      config_module: Src,      # This is a required key
       store_adapter: Sorcery.StoreAdapter.Ecto,
 
       args: %{

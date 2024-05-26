@@ -8,6 +8,11 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
   alias Sorcery.PortalServer.Portal
   import Sorcery.Helpers.Maps
 
+  def inspect_db() do
+    :mnesia.transaction(fn -> :mnesia.select(:player, [{ {:player, :"$1", :"$2", :"$3", :"$4", :"$5", :"$6", :"$7"}, [], [:"$$"] }]) end)
+    |> dbg
+  end
+
   def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
     %{store_adapter: store, config_module: config_module} = state.sorcery
     query = Module.concat([config_module, "Queries", query])
@@ -37,7 +42,11 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
           tk = Enum.find_value(lvar_tks, fn {l, tk} ->
             if l == lvar, do: tk, else: nil
           end)
-          Map.update(acc, tk, table, &(Map.merge(&1, table)))
+          Enum.reduce(table, acc, fn {id, entity}, acc ->
+            update_in_p(acc, [tk, id], entity, fn old_entity ->
+              Map.merge(entity, old_entity)
+            end)
+          end)
         end)
         MnesiaAdapter.apply_fetched(to_atom_keys(data), schemas)
 

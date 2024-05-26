@@ -7,11 +7,11 @@ defmodule Sorcery.PortalServer.Commands.CreatePortalTest do
       command: :create_portal,
       child_pid: self(),
       portal_name: :the_battle,
-      query_module: MyApp.Queries.GetBattle,
+      query_module: GetBattle,
       args: %{player_id: 1}
     }
 
-    {:ok, pid} = GenServer.start_link(MyApp.PortalServers.Postgres, %{})
+    {:ok, pid} = GenServer.start_link(Src.PortalServers.Postgres, %{})
     send(pid, {:sorcery, msg})
     assert_receive {:sorcery, msg}
     #%{command: :portal_merge, portal_name: name, data: data, timestamp: time} = msg

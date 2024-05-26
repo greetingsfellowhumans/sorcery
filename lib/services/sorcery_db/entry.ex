@@ -129,7 +129,7 @@ defmodule Sorcery.SorceryDb do
           pid_portal = %{pid: pid, portal_name: name, query_module: query, args: args}
           case Sorcery.SorceryDb.query_portal(pid_portal, schemas) do
             {:atomic, {:ok, data}} -> 
-              data = to_string_keys(data, 1)
+              data = to_string_keys(data, 1) # convert :"?lvar" into "?lvar"
               msg = %{
                 command: :portal_put,
                 data: data,

@@ -1,4 +1,4 @@
-defmodule MyApp.Queries.GetArena do
+defmodule Src.Queries.GetArena do
   use Sorcery.Query, %{
     find: %{"?arena" => :*, "?team" => [:name, :location_id]},
     args: %{

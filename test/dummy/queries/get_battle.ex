@@ -1,4 +1,4 @@
-defmodule MyApp.Queries.GetBattle do
+defmodule Src.Queries.GetBattle do
   # This is my new favourite example query. It is its own stress test, and elegantly covers most use cases.
 
   use Sorcery.Query, %{

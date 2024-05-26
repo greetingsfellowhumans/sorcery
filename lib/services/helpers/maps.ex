@@ -2,10 +2,7 @@ defmodule Sorcery.Helpers.Maps do
   use Norm
   import Sorcery.Specs
 
-  @moduledoc """
-  The missing util functions of Map.
-  Especially useful when you have arbitrarily deep nesting, and don't even know which keys exist.
-  """
+  @moduledoc false
 
 
   # {{{ from_struct/1

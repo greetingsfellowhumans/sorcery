@@ -17,7 +17,7 @@ defmodule Sorcery.Mutation do
 
   ```elixir
   iex> alias Sorcery.Mutation, as: M
-  iex> m = M.init(socket.assigns.sorcery.portals.my_portal)
+  iex> m = M.init(socket.assigns.sorcery, :my_portal)
   iex> m = M.update(m, [:player, 1, :age], fn _original_age, latest_age -> latest_age + 1 end)
   iex> m = M.put(m, [:player, 1, :health], 100)
   iex> player = M.get(m, [:player, 1])

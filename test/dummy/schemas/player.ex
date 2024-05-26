@@ -1,4 +1,4 @@
-defmodule MyApp.Sorcery.Schemas.Player do
+defmodule Src.Schemas.Player do
 
   use Sorcery.Schema, 
     meta: %{
@@ -10,6 +10,6 @@ defmodule MyApp.Sorcery.Schemas.Player do
       health: %{t: :integer, min: 0, max: 100},
       mana: %{t: :integer, min: 0, max: 500},
       money: %{t: :integer, min: 0, max: 9999},
-      team_id: %{t: :fk, module: MyApp.Sorcery.Schemas.Team},
+      team_id: %{t: :fk, module: Src.Schemas.Team},
     }
 end

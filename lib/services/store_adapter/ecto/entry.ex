@@ -5,14 +5,14 @@ defmodule Sorcery.StoreAdapter.Ecto do
   Here is an example PortalServer
 
   ```elixir
-  defmodule MyApp.PortalServers.Postgres do
+  defmodule Src.PortalServers.Postgres do
     use GenServer
 
     def init(_) do
       state = %{} # You can still add whatever you want here
 
       state = Sorcery.PortalServer.add_portal_server_state(state, %{
-        config_module: MyApp.Sorcery,  # See below
+        config_module: Src,  # See below
         store_adapter: Sorcery.StoreAdapter.Ecto,
 
         args: %{
@@ -31,7 +31,7 @@ defmodule Sorcery.StoreAdapter.Ecto do
 
   end
 
-  defmodule MyApp.Sorcery do
+  defmodule Src do
     use Sorcery,
       debug: if Mix.env == :prod, do: false, else: true,
       paths: %{

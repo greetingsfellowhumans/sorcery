@@ -1,4 +1,4 @@
-defmodule MyApp.Sorcery.Schemas.BattleArena do
+defmodule Src.Schemas.BattleArena do
   use Sorcery.Schema, 
     meta: %{ optional?: false },
     fields: %{
