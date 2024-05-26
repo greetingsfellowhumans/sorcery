@@ -10,6 +10,7 @@ defmodule Sorcery.PortalServer.Ecto.MutationTest do
   setup [:demo_ecosystem]
 
   test "Ecto PortalServer can handle Mutations", _ctx do
+    Src.PortalServers.Postgres.put_origin()
     portal_name = :battle_portal
     args = %{player_id: 1}
 
@@ -24,17 +25,15 @@ defmodule Sorcery.PortalServer.Ecto.MutationTest do
     
     assert_receive {:received_msg, {_pid, _msg, _old_state, state}}
 
-    Client.spoof(pid, fn -> 
-      M.init(state.sorcery, portal_name)
-      |> M.put([:player, args.player_id, :health], 100)
-      |> M.send_mutation()
-    end)
+    M.init(state.sorcery, portal_name)
+    |> M.put([:player, args.player_id, :health], 100)
+    |> M.update([:player, args.player_id, :health], fn _old_h, new_h -> new_h - 1 end)
+    |> M.send_mutation()
 
-    #assert_receive {:received_msg, {_pid, %{command: :portal_put}, _old_state, state}}
-    #Process.sleep(200)
-    #assert_receive {:received_msg, {_pid, msg, _old_state, state}}
 
-    #portal_view(state.sorcery, portal_name, "?all_players")[args.player_id]
+
+    state = Client.get_state(pid)
+    assert 99 == state.sorcery.portals.battle_portal.known_matches.data["?all_players"][1].health
   end
 
 end

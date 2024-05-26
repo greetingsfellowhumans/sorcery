@@ -1,6 +1,7 @@
 defmodule Src.PortalServers.Postgres do
   use GenServer
   use Sorcery.PortalServer
+  import Sorcery.Helpers.Maps
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -20,9 +21,19 @@ defmodule Src.PortalServers.Postgres do
     {:ok, state}
   end
 
+  def put_origin(), do: GenServer.call(__MODULE__, {:put_origin, self()})
+  def put_origin(pid), do: GenServer.call(__MODULE__, {:put_origin, pid})
 
+  def handle_call({:put_origin, pid}, _, state) do
+    {:reply, :ok, Map.put(state, :origin, pid)}
+  end
   def handle_info({:sorcery, msg}, state) do
     new_state = Sorcery.PortalServer.handle_info(msg, state)
+
+    if pid = new_state[:origin] do
+      send(pid, {:postgres_received_msg, {self(), msg, state, new_state}})
+    end
+
     {:noreply, new_state}
   end
 

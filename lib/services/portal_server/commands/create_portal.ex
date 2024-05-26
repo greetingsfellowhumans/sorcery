@@ -15,6 +15,7 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
     end
   end
 
+
   def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
     %{store_adapter: store, config_module: config_module} = state.sorcery
     query = sanitize_query_module(query, config_module)

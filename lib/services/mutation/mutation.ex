@@ -141,14 +141,16 @@ defmodule Sorcery.Mutation do
   """
   def send_mutation(%{portal: portal} = mutation) do
     %{parent_pid: parent} = portal
+
+    operations = mutation.operations |> Enum.reverse()
+    mutation = Map.put(mutation, :operations, operations)
+
     msg = %{
       command: :run_mutation,
       portal: portal,
       mutation: mutation
     }
     send(parent, {:sorcery, msg})
-
-    mutation
   end
   # }}}
 

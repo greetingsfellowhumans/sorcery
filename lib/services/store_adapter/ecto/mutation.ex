@@ -8,7 +8,6 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
     repo = portal_server_state.sorcery.args.repo_module
     schemas = portal_server_state.sorcery.config_module.config().schemas
     M.new()
-    |> refresh_data(mutation, schemas)
     |> handle_updates(mutation, schemas)
     |> handle_inserts(mutation, schemas)
     |> handle_deletes(mutation, schemas)
@@ -43,11 +42,6 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
     {:ok, m}
   end
 
-
-  defp refresh_data(multi, mutation, _schemas) do
-    #dbg mutation
-    multi
-  end
 
 
   # {{{ handle_updates
