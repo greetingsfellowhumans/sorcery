@@ -18,7 +18,17 @@ defmodule Sorcery.MixProject do
         extras: extras()
       ],
       elixirc_paths: elixirc_paths(Mix.env),
+      package: package(),
       deps: deps()
+    ]
+  end
+
+  defp package() do
+    [
+      name: "sorcery",
+      description: "A framework which rethinks how data flows, and how we build apps.",
+      licenses: ["MIT NO AI"],
+      links: %{"GitHub" => "https://github.com/greetingsfellowhumans/sorcery"}
     ]
   end
 
@@ -57,7 +67,6 @@ defmodule Sorcery.MixProject do
       {:ecto, "~> 3.11.2"},
       {:ecto_sql, "~> 3.11.1"},
       {:postgrex, ">= 0.0.0"},
-      {:explorer, "~> 0.8.0"},
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
