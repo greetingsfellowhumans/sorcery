@@ -1,4 +1,5 @@
 defmodule Sorcery.SorceryDb.Inspection do
+  @moduledoc false
   import Sorcery.SorceryDb.SchemaAdapter
 
 

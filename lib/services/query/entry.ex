@@ -73,6 +73,11 @@ end
 
 
 defmodule Sorcery.Query do
+  @moduledoc ~s"""
+  A query module defines, in plain elixir data structures, the kind of data we want to watch for.
+
+  The syntax takes some inspiration from Datalog, but with many differences as well.
+  """
   alias Sorcery.Query.WhereClause
 
   defstruct [

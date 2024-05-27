@@ -69,19 +69,6 @@ defmodule Sorcery.PortalServer.Portal do
   # }}}
 
 
-  @doc """
-  This requires all placeholder values to be resolved and turned into real entities/values.
-  Applies the inserts, updates, and deletes from a mutation.
-  """
-  def handle_mutation(portal, children_mutation) do
-    case Sorcery.PortalServer.Query.run_query(portal, children_mutation) do
-      {:ok, new_data} -> 
-        put_in_p(portal, [:known_matches, :data], new_data)
-      err -> 
-        dbg err
-        portal
-    end
-  end
 
 
 end

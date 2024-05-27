@@ -1,4 +1,5 @@
 defmodule Sorcery.Query.Find do
+  @moduledoc false
 
   def generate_find([set1 | sets]) do
     Enum.reduce(sets, set1, &MapSet.union/2)

@@ -4,6 +4,16 @@ defmodule Sorcery do
 
   `mix sorcery.init`
 
+  By default it creates a new namespace 'Src' in your app.
+  The src.ex module is very special, it starts up some :ets/:mnesia tables, as well as holds together some config for making everything else work.
+
+  You can manually create your own with 
+  ```elixir
+  defmodule MyApp.Src do
+    use Sorcery
+  end
+  ```
+  And then make sure your queries and schemas, etc. are all namespaced below that like `MyApp.Src.Queries.GetStuff` and 'MyApp.Src.Schemas.Thing'
   """
 
 

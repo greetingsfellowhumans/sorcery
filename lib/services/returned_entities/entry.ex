@@ -7,6 +7,8 @@ defmodule Sorcery.ReturnedEntities do
   The reason is that Sorcery is still a work in progress, the format might change, but the functions should never break their contract's.
 
   This is also the basic format of portals.
+
+  Currently the :primary_entities field is not being used. The idea was for it to help with ergonomics when a query is only expected to have one result.
   """
   import Sorcery.Helpers.Maps
 

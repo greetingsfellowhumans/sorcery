@@ -30,16 +30,6 @@ defmodule Sorcery.StoreAdapter.Ecto do
 
 
   end
-
-  defmodule Src do
-    use Sorcery,
-      debug: if Mix.env == :prod, do: false, else: true,
-      paths: %{
-        schemas: "lib/my_app/sorcery/schemas",
-        queries: "lib/my_apop/sorcery/queries"
-      }
-  end
-
   ```
 
   """

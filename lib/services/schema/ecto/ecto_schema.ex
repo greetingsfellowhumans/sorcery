@@ -1,4 +1,5 @@
 defmodule Sorcery.Schema.EctoSchema do
+  @moduledoc false
   import Sorcery.Schema.EctoSchema.CastableFields
 
   defmacro __using__([meta: %{ecto: false}]), do: nil

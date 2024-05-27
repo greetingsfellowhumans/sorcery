@@ -1,4 +1,5 @@
 defmodule Sorcery.SorceryDb.MnesiaAdapter do
+  @moduledoc false
   import Sorcery.SorceryDb.SchemaAdapter
 
 

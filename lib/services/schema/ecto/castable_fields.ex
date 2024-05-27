@@ -1,4 +1,5 @@
 defmodule Sorcery.Schema.EctoSchema.CastableFields do
+  @moduledoc false
 
 
   def castable_fields(:insert, schema) do

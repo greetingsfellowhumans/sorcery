@@ -17,33 +17,34 @@ Now suppose we want a query that pulls up data for arena 1
 alias Sorcery.Query, as: SrcQL
 SrcQL.new(%{
   where: [
-    {"?arena",   :arena,   :id, 1}, 
-    {"?teams",   :team,    :current_arena_id, "?arena.id"}
-    {"?players", :player,  :team_id, "?teams.id"}
-    {"?players", :player,  :health, {:>, 0}}
-    {"?spells",  :spell,   :player_id, "?players.id"}
+    ["?arena",   :arena,   :id, :args_arena_id],
+    ["?teams",   :team,    :current_arena_id, "?arena.id"],
+    ["?players", :player, [
+      {:team_id, "?teams.id"},
+      {:health, {:>, 0}}
+    ]],
+    ["?spells",  :spell,   :player_id, "?players.id"]
   ],
+  args: %{
+    arena_id: :integer
+  },
   find: %{
-    "?players" => [:name, :health, :team_id]
+    "?players" => :*,
     "?spells" =>  [:name, :energy, :type, :player_id]
   }
 })
 
+args = %{arena_id: 1}
 
-# => eventually fetches a map like
-%{
-    "?players" => %{
-        2 => %{id: 2, name: "Jose", health: 100, team_id: 1},
-        85 => %{id: 85, name: "Aaron", health: 10, team_id: 2},
-        ...
-    },
-    "?spells" => %{
-        123 => %{id: 123, name: "Heal", energy: 2, player_id: 85, type: "white"},
-        254 => %{id: 254, name: "Fire", energy: 5, player_id: 2, type: "red"},
-        ...
-    },
-}
+
+# Now when you assign this Query to a Portal called :portal_name, and you pass in the args above, you can forevermore view the "?players" and "?spells" lvars
+iex> portal_view(@sorcery, :portal_name, "?players")
+[
+  %{id: 2, name: "Jose", health: 100, team_id: 1},
+  %{id: 85, name: "Aaron", health: 10, team_id: 2},
+]
 ```
+
 
 So you might have guessed the list of :where tuples is similar to something you might find in SQL. Just a list of conditions for filtering data. Except the tuples look weeeeiiird.
 

@@ -20,17 +20,10 @@ defmodule Sorcery.Mutation do
   iex> m = M.init(socket.assigns.sorcery, :my_portal)
   iex> m = M.update(m, [:player, 1, :age], fn _original_age, latest_age -> latest_age + 1 end)
   iex> m = M.put(m, [:player, 1, :health], 100)
-  iex> # Avoid this in real life, the value could be different by time the mutation reaches the PortalServer
-  iex> player = M.get(m, [:player, 1])
-  iex> player.health
-  100
   iex> ### We can also use placeholder ids so that new entities (which haven't even been created yet) can be referenced by other entities.
   iex> m = M.create_entity(m, :team, "?my_new_team", %{name: "My New Team"})
   iex> m = M.put(m, [:player, 1, :team_id], "?my_new_team.id")
-  iex> player = M.get(m, [:player, 1])
-  iex> player.team_id
-  "?my_new_team.id"
-  iex> # This string is of course, the placeholder. But after we actually run the mutation, the team is created with a normal integer id.
+  iex> # This funny string is of course, the placeholder. But after we actually run the mutation, the team is created with a normal integer id.
   iex> # The parent PortalServer creates the new team entity, it will automatically replace all calls to "?my_new_team" with that entity.
   iex> Sorcery.Mutation.send_mutation(m)
   iex> # ... a few milliseconds later, after receiving the update
@@ -81,31 +74,6 @@ defmodule Sorcery.Mutation do
       iex> m = Sorcery.Mutation.put(m, [:player, 1, :health], 100)
   """
   defdelegate put(mutation, path, value), to: PreMutation
-  # }}}
-
-  # {{{ get
-  @doc """
-  Just like get_in, but for mutations. Always returns the latest version of a value or entity, with all the changes applied (if possible).
-
-  ## Examples
-      iex> player = Sorcery.Mutation.get(m, [:player, 1])
-  """
-  defdelegate get(mutation, path), to: PreMutation
-  # }}}
-
-  # {{{ get_original
-  @doc """
-  Just like get_in, but for the unchanged entity/value.
-
-
-  ## Examples
-      iex> m = Sorcery.Mutation.update(m, [:player, 1, :age], 100, &(&1 + 1))
-      iex> old_player = Sorcery.Mutation.get_original(m, [:player, 1])
-      iex> new_player = Sorcery.Mutation.get(m, [:player, 1])
-      iex> new_player.age == old_player.age + 1
-      true
-  """
-  defdelegate get_original(mutation, path), to: PreMutation
   # }}}
 
   # {{{ create_entity

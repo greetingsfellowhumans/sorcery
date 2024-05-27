@@ -4,6 +4,20 @@ Herein lies the key to writing a schema. Here is how we would rewrite the Exampl
 
 ```elixir
 defmodule App.User do
+#######
+# We don't need this anymore
+#######
+#
+#use Ecto.Schema
+#
+#schema "users" do
+#  field :name, :string
+#  field :age, :integer, default: 0
+#  field :password, :string, redact: true
+#  has_many :posts, Post
+#end
+
+
   use Sorcery.Schema, %{
     meta: %{},
     fields: %{
@@ -15,18 +29,6 @@ defmodule App.User do
   }
 
 
-  #######
-  # We don't need this anymore
-  #######
-  #
-  #use Ecto.Schema
-  #
-  #schema "users" do
-  #  field :name, :string
-  #  field :age, :integer, default: 0
-  #  field :password, :string, redact: true
-  #  has_many :posts, Post
-  #end
 end
 ```
 
