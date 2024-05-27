@@ -4,12 +4,12 @@ defmodule Sorcery.MixProject do
   def project do
     [
       app: :sorcery,
-      version: "0.3.0",
+      version: "0.3.1",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       docs: [
-        main: "Sorcery", # The main page in the docs
+        main: "README.md", # The main page in the docs
         extras: extras(),
         #logo: "path/to/logo.png",
         extra_section: "GUIDES",
@@ -64,11 +64,9 @@ defmodule Sorcery.MixProject do
       {:mix_test_watch, "~> 1.2", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 0.6.0"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:ecto, "~> 3.11.2"},
-      {:ecto_sql, "~> 3.11.1"},
-      {:postgrex, ">= 0.0.0"},
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:ecto, "~> 3.11.2", only: [:test]},
+      {:ecto_sql, "~> 3.11.1", only: [:test]},
+      {:postgrex, ">= 0.0.0", only: [:test]},
     ]
   end
 

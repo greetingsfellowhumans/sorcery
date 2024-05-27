@@ -22,8 +22,12 @@ It should be automatic.
 We should not even need to think about it. I use an entity in a page, and it should stay up to date forever. Period.
 ```
 
+## See the demo
+These docs are horribly incomplete. But you can clone and run the demo app [https://github.com/greetingsfellowhumans/sorcery_demo.git](https://github.com/greetingsfellowhumans/sorcery_demo.git)
+It is extremely minimalistic. No css whatsoever... but it shows how everything works together.
 
-## How does it work
+
+## But how *does* it work?!
 Sorcery comes with it's own headless, reversible, query language (SrcQL). By default it uses Ecto and whatever backend you want (Postgres, etc.). 
 You run the query and get a 'Portal' which is like a little wormhole showing whatever database entities match the Query.
 
