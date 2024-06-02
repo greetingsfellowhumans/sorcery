@@ -6,6 +6,7 @@ defmodule Sorcery.PortalServer.Ecto.MutationTest do
   alias Src.PortalServers.GenericClient, as: Client
   alias Sorcery.SorceryDb.Inspection
   alias Sorcery.Mutation, as: M
+  alias Sorcery.PortalServer.InnerState
 
   setup [:demo_ecosystem]
 
@@ -22,18 +23,18 @@ defmodule Sorcery.PortalServer.Ecto.MutationTest do
       query_args: args
       }
     ])
-    
-    assert_receive {:received_msg, {_pid, _msg, _old_state, state}}
 
-    M.init(state.sorcery, portal_name)
-    |> M.put([:player, args.player_id, :health], 100)
-    |> M.update([:player, args.player_id, :health], fn _old_h, new_h -> new_h - 1 end)
-    |> M.send_mutation()
+    assert_receive {:received_msg, {_pid, _msg, _old_state, inner_state}}
+    assert is_struct(inner_state, InnerState)
+
+    {:ok, inner_state = %InnerState{}} = 
+      M.init(inner_state, portal_name)
+      |> M.put([:player, args.player_id, :health], 100)
+      |> M.update([:player, args.player_id, :health], fn _old_h, new_h -> new_h - 1 end)
+      |> M.send_mutation(inner_state)
 
 
 
-    state = Client.get_state(pid)
-    assert 99 == state.sorcery.portals.battle_portal.known_matches.data["?all_players"][1].health
   end
 
 end

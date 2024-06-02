@@ -37,6 +37,8 @@ defmodule Sorcery.Mutation do
   ```
   """
   alias Sorcery.Mutation.PreMutation
+  alias Sorcery.PortalServer.InnerState
+  import Sorcery.Helpers.Maps
   
 
   # {{{ :init
@@ -49,8 +51,6 @@ defmodule Sorcery.Mutation do
       true
   """
   defdelegate init(state, portal_name), to: PreMutation
-  @doc false
-  defdelegate init(portal), to: PreMutation
   # }}}
 
   # {{{ update
@@ -107,7 +107,10 @@ defmodule Sorcery.Mutation do
   To be clear, this does not return the new data you are waiting for. You probably won't need the return value.
   All the updates happen automatically, through some ~~magic~~  sorcery behind the scenes.
   """
-  def send_mutation(%{portal: portal} = mutation) do
+  def send_mutation(%{skip?: true}, _state), do: {:error, "Portal mutation already in progress."}
+  def send_mutation(%{portal: portal} = mutation, %InnerState{} = state) do
+    %{portal_name: name} = portal
+
     %{parent_pid: parent} = portal
 
     operations = mutation.operations |> Enum.reverse()
@@ -119,6 +122,10 @@ defmodule Sorcery.Mutation do
       mutation: mutation
     }
     send(parent, {:sorcery, msg})
+
+    state = Sorcery.Mutation.Temp.add_temp_portal(state, mutation)
+    {:ok, state}
+    
   end
   # }}}
 

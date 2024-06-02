@@ -27,11 +27,12 @@ defmodule Src.PortalServers.Postgres do
   def handle_call({:put_origin, pid}, _, state) do
     {:reply, :ok, Map.put(state, :origin, pid)}
   end
-  def handle_info({:sorcery, msg}, state) do
-    new_state = Sorcery.PortalServer.handle_info(msg, state)
+  def handle_info({:sorcery, msg}, %{sorcery: inner_state} = outer_state) do
+    inner_state = Sorcery.PortalServer.handle_info(msg, inner_state)
+    new_state = Map.put(outer_state, :sorcery, inner_state)
 
     if pid = new_state[:origin] do
-      send(pid, {:postgres_received_msg, {self(), msg, state, new_state}})
+      send(pid, {:postgres_received_msg, {self(), msg, outer_state, new_state}})
     end
 
     {:noreply, new_state}

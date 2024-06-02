@@ -16,16 +16,16 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
   end
 
 
-  def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, state) do
-    %{store_adapter: store, config_module: config_module} = state.sorcery
+  def entry(%{portal_name: portal_name, query_module: query, child_pid: pid, args: args}, %Sorcery.PortalServer.InnerState{} = state) do
+    %{store_adapter: store, config_module: config_module} = state
     query = sanitize_query_module(query, config_module)
     clauses = query.clauses(args)
 
-    fwd_find_set = Find.build_lvar_attr_set(state.sorcery.config_module, query, :forward)
-    rev_find_set = Find.build_lvar_attr_set(state.sorcery.config_module, query, :reverse)
+    fwd_find_set = Find.build_lvar_attr_set(state.config_module, query, :forward)
+    rev_find_set = Find.build_lvar_attr_set(state.config_module, query, :reverse)
     finds = Find.generate_find([fwd_find_set, rev_find_set])
 
-    case StoreAdapter.query(store, state.sorcery, clauses, finds) do
+    case StoreAdapter.query(store, state, clauses, finds) do
       {:ok, results} ->
         timestamp = Time.utc_now()
         schemas = config_module.config().schemas

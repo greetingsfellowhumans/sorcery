@@ -68,9 +68,10 @@ defmodule Sorcery.GenServerHelpers do
     quote do
       @behaviour Sorcery.LiveHelpers
 
+
       # {{{ spawn_portal/2
       @impl true
-      def spawn_portal(state, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body) do
+      def spawn_portal(%Sorcery.PortalServer.InnerState{} = inner_state, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body) do
         msg = %{
           command: :create_portal,
           portal_name: name,
@@ -78,9 +79,9 @@ defmodule Sorcery.GenServerHelpers do
           child_pid: self(),
           args: args,
         }
-        send(Module.concat([state.sorcery.config_module, "PortalServers", parent]), {:sorcery, msg})
+        send(Module.concat([inner_state.config_module, "PortalServers", parent]), {:sorcery, msg})
 
-        state
+        inner_state
       end
       @impl true
       def spawn_portal(_, body) do

@@ -39,31 +39,31 @@ defmodule Sorcery.PortalServer do
   """
 
 
-  def add_portal_server_state(state, %{config_module: _mod} = opts) do
-    state
-    |> Map.put(:sorcery, opts)
-    |> put_in([:sorcery, :portals], %{})
+  def add_portal_server_state(outer_state, opts) do
+    inner_state = Sorcery.PortalServer.InnerState.new(opts)
+    Map.put(outer_state, :sorcery, inner_state)
   end
    
   defmacro __using__(_) do
     quote do
       #@impl Sorcery.PortalServer
-      def handle_info({:sorcery, msg}, state) do
-        new_state = Sorcery.PortalServer.handle_info(msg, state)
-        {:noreply, new_state}
-      end
+      #def handle_info({:sorcery, msg}, state) do
+      #  new_state = Sorcery.PortalServer.handle_info(msg, state)
+      #  {:noreply, new_state}
+      #end
     end
   end
 
   @doc false
-  def handle_info(%{command: :create_portal} = msg, state), do: Cmd.CreatePortal.entry(msg, state)
-  def handle_info(%{command: :portal_merge} = msg, state), do: Cmd.PortalMerge.entry(msg, state)
-  def handle_info(%{command: :run_mutation} = msg, state), do: Cmd.RunMutation.entry(msg, state)
-  def handle_info(%{command: :portal_put} = msg, state), do: Cmd.PortalPut.entry(msg, state)
+  def handle_info(%{command: :create_portal} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.CreatePortal.entry(msg, state)
+  def handle_info(%{command: :portal_merge} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.PortalMerge.entry(msg, state)
+  def handle_info(%{command: :run_mutation} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.RunMutation.entry(msg, state)
+  def handle_info(%{command: :portal_put} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.PortalPut.entry(msg, state)
 
-  def handle_info(%{command: cmd} = _msg, _state) do
+  def handle_info(%{command: cmd}, %Sorcery.PortalServer.InnerState{}) do
     raise "#{cmd} was just sent as a :command."
   end
+  def handle_info(msg, %{sorcery: inner_state}), do: handle_info(msg, inner_state)
 
 
 end

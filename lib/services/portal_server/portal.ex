@@ -15,6 +15,7 @@ defmodule Sorcery.PortalServer.Portal do
     :parent_pid,
     args: %{},
     known_matches: %{},
+    temp_data: %{},
   ]
 
   def new(body \\ %{}) do
@@ -27,13 +28,14 @@ defmodule Sorcery.PortalServer.Portal do
 
   def get_in(sorcery_state, portal_name, lvar) when is_map(sorcery_state) do
     path = [:portals, portal_name, :known_matches, :data, lvar]
+    temp_path = [:portals, portal_name, :temp_data, lvar]
 
-    if has_in_p(sorcery_state, path) do
-      get_in_p(sorcery_state, path)
-      |> Map.values()
-    else
-      [] 
+    cond do
+      has_in_p(sorcery_state, temp_path) -> get_in_p(sorcery_state, temp_path) |> Map.values()
+      has_in_p(sorcery_state, path) -> get_in_p(sorcery_state, path) |> Map.values()
+      true -> []
     end
+
   end
   def get_in(_, _, _), do: []
 

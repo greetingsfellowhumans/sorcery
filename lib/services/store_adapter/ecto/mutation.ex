@@ -4,9 +4,9 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
   import Sorcery.Helpers.Maps
 
 
-  def run_mutation(portal_server_state, mutation) do
-    repo = portal_server_state.sorcery.args.repo_module
-    schemas = portal_server_state.sorcery.config_module.config().schemas
+  def run_mutation(inner_state, mutation) do
+    repo = inner_state.args.repo_module
+    schemas = inner_state.config_module.config().schemas
     M.new()
     |> handle_updates(mutation, schemas)
     |> handle_inserts(mutation, schemas)

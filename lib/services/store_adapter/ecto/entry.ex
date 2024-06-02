@@ -23,9 +23,9 @@ defmodule Sorcery.StoreAdapter.Ecto do
     end
 
 
-    def handle_info({:sorcery, msg}, state) do
-      new_state = Sorcery.PortalServer.handle_info(msg, state)
-      {:noreply, new_state}
+    def handle_info({:sorcery, msg}, %{sorcery: inner_state} = outer_state) do
+      inner_state = Sorcery.PortalServer.handle_info(msg, inner_state)
+      {:noreply, Map.put(outer_state, :sorcery, inner_state)}
     end
 
 
@@ -38,9 +38,9 @@ defmodule Sorcery.StoreAdapter.Ecto do
 
 
   @impl true
-  defdelegate run_query(portal_server_state, clauses, finds), to: Ecto.Query
+  defdelegate run_query(inner_state, clauses, finds), to: Ecto.Query
 
   @impl true
-  defdelegate run_mutation(portal_server_state, mutation), to: Ecto.Mutation
+  defdelegate run_mutation(inner_state, mutation), to: Ecto.Mutation
 
 end

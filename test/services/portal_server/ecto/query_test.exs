@@ -21,13 +21,12 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
       }
     ])
 
-    assert_receive {:received_msg, {_pid, _msg, _old_state, new_state}}
-    client_src = new_state.sorcery 
-    portal = client_src.portals.battle_portal
+    assert_receive {:received_msg, {_pid, _msg, _old_state, inner_state}}
+    portal = inner_state.portals.battle_portal
     expected = [%{id: 1, location_id: 1}]
-    assert expected == portal_view(client_src, portal_name, "?team")
+    assert expected == portal_view(inner_state, portal_name, "?team")
     assert expected == Map.values(portal.known_matches.data["?team"])
-    assert client_src == Client.get_state(pid).sorcery
+    assert inner_state == Client.get_state(pid).sorcery
 
     ## SorceryDb should now have an entry for the query
     expected = [pid, Src.Queries.GetBattle, args]

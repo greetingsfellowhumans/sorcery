@@ -5,17 +5,17 @@ defmodule Src.PortalServers.GenericClient do
 
   @impl true
   def init(args) do
-    state = initialize_sorcery(%{}, %{sorcery_module: Src})
-    state = case args[:origin] do
-      nil -> state
-      pid -> Map.put(state, :origin, pid)
+    outer_state = initialize_sorcery(%{}, %{sorcery_module: Src})
+    outer_state = case args[:origin] do
+      nil -> outer_state
+      pid -> Map.put(outer_state, :origin, pid)
     end
 
     for portal_data <- Map.get(args, :portals) do
-      spawn_portal(state, portal_data)
+      spawn_portal(outer_state.sorcery, portal_data)
     end
 
-    {:ok, state}
+    {:ok, outer_state}
   end
 
   def get_state(pid), do: GenServer.call(pid, :get_state)
@@ -31,16 +31,18 @@ defmodule Src.PortalServers.GenericClient do
   end
 
   @impl true
-  def handle_info({:sorcery, msg}, state) do
-    new_state = Sorcery.PortalServer.handle_info(msg, state)
+  def handle_info({:sorcery, msg}, outer_state) do
+    inner_state = Sorcery.PortalServer.handle_info(msg, outer_state.sorcery)
+    #dbg new_state
+    #dbg msg
 
-    case state[:origin] do
+    case outer_state[:origin] do
       nil -> nil
-      pid -> send(pid, {:received_msg, {self(), msg, state, new_state}})
+      pid -> send(pid, {:received_msg, {self(), msg, outer_state.sorcery, inner_state}})
     end
     
 
-    {:noreply, new_state}
+    {:noreply, Map.put(outer_state, :sorcery, inner_state)}
   end
 
 

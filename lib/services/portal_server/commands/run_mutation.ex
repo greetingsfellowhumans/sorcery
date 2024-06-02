@@ -2,26 +2,26 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
   @moduledoc false
   import Sorcery.Helpers.Maps
 
-  def entry(%{mutation: mutation} = msg, state) do
+  def entry(%{mutation: mutation} = msg, inner_state) do
     mutation = 
       mutation
-      |> refresh_data(state)
+      |> refresh_data(inner_state)
       |> apply_operations()
     msg = Map.put(msg, :mutation, mutation)
 
     # Submit changes to store
-    case update_the_store(msg, state) do
+    case update_the_store(msg, inner_state) do
       {:ok, results} ->
         child_mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, results)
         diff = Sorcery.Mutation.Diff.new(child_mutation)
 
-        state.sorcery.config_module.run_mutation(results, diff)
+        inner_state.config_module.run_mutation(results, diff)
 
       err -> dbg err
     end
 
 
-    state
+    inner_state
   end
 
   # To eliminate the possibility of race conditions and more nefarious issues
@@ -33,7 +33,7 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
   #      Therefore, it would be the one updating said data. 
   #      And since it waits for SorceryDb to update before continuing
   #      We can logically prove that SorceryDb is technically up to date at this point in time.
-  defp refresh_data(mutation, state) do
+  defp refresh_data(mutation, _inner_state) do
     tk_ids = Enum.reduce(mutation.operations, %{}, fn
       {:update, [tk, id | _], _}, acc -> update_in_p(acc, [tk], [id], &([id | &1]))
       {:put, [tk, id | _], _}, acc -> update_in_p(acc, [tk], [id], &([id | &1]))
@@ -70,10 +70,10 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
   end
 
 
-  defp update_the_store(%{mutation: mutation}, state) do
+  defp update_the_store(%{mutation: mutation}, inner_state) do
     mutation = Sorcery.Mutation.ParentMutation.init(mutation)
-    adapter = state.sorcery.store_adapter
-    Sorcery.StoreAdapter.mutation(adapter, state, mutation)
+    adapter = inner_state.store_adapter
+    Sorcery.StoreAdapter.mutation(adapter, inner_state, mutation)
   end
 
 end

@@ -136,11 +136,11 @@ defmodule Sorcery.LiveHelpers do
       # }}}
 
 
-    # {{{ handle_info({:sorcery, msg})
-    @impl Phoenix.LiveView #Sorcery.LiveHelpers
-    def handle_info({:sorcery, msg}, socket) do
-      resp = Sorcery.PortalServer.handle_info(msg, socket.assigns)
-      {:noreply, assign(socket, :sorcery, resp.sorcery)}
+    # {{{ handle_sorcery({:sorcery, msg}, socket)
+    #@impl Phoenix.LiveView #Sorcery.LiveHelpers
+    def handle_sorcery({:sorcery, msg}, socket) do
+      inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
+      {:noreply, assign(socket, :sorcery, inner_state)}
     end
     # }}}
 

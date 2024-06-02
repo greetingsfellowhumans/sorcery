@@ -8,8 +8,8 @@ defmodule Sorcery.StoreAdapter do
   """
   alias Sorcery.ReturnedEntities, as: RE
 
-  @callback run_query(sorcery_state :: map(), where_clauses :: list(%Sorcery.Query.WhereClause{}), finds :: map()) :: {:ok, %RE{}} | {:error, any()}
-  @callback run_mutation(sorcery_state :: map(), mutation :: %Sorcery.Mutation.ParentMutation{} | %Sorcery.Mutation.ChildrenMutation{} ) :: {:ok, %{
+  @callback run_query(sorcery_state :: %Sorcery.PortalServer.InnerState{}, where_clauses :: list(%Sorcery.Query.WhereClause{}), finds :: map()) :: {:ok, %RE{}} | {:error, any()}
+  @callback run_mutation(sorcery_state :: %Sorcery.PortalServer.InnerState{}, mutation :: %Sorcery.Mutation.ParentMutation{} | %Sorcery.Mutation.ChildrenMutation{} ) :: {:ok, %{
     updates: map(),
     inserts: map(),
     deletes: map(),

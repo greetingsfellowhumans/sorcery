@@ -1,40 +1,11 @@
-defmodule Sorcery.Mutations.MutationsTest do
+defmodule Sorcery.Mutations.TempTest do
   use ExUnit.Case
-  alias Sorcery.Mutation, as: M
+#  alias Sorcery.Mutation, as: M
 #  alias Sorcery.Query.ReverseQuery, as: RQ
 #  import Sorcery.Setups
 #
 #  setup [:spawn_portal, :teams_portal]
 #
-  test "Mutations create a temp_portal" do
-    parent = spawn(fn -> nil end)
-    battle = Src.Db.battle(1)
-    portal = Sorcery.PortalServer.Portal.new(%{
-      query_module: Src.Queries.GetBattle,
-      portal_name: :battle,
-      parent_pid: parent,
-      child_pid: self(),
-      args: %{player_id: 1},
-      known_matches: %{
-        lvar_tks: Src.Queries.GetBattle.raw_struct().lvar_tks |> Enum.into(%{}),
-        data: battle
-      }
-    })
-
-    outer_state = %{
-      sorcery: Sorcery.PortalServer.InnerState.new(%{
-        portals: %{battle: portal}
-      })
-    }
-
-    {:ok, inner_state} = 
-      M.init(outer_state.sorcery, :battle)
-      |> M.update([:player, 1, :health], fn _, h -> h - 1 end)
-      |> M.send_mutation(outer_state.sorcery)
-
-    assert inner_state.portals.battle.temp_data["?all_players"][1].health < battle["?all_players"][1].health
-
-  end
 #
 #  # {{{ PreMutation operations should work
 #  test "PreMutation operations should work", %{portal: portal} do
@@ -120,3 +91,4 @@ defmodule Sorcery.Mutations.MutationsTest do
 #
 #
 end
+

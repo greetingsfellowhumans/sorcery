@@ -9,8 +9,9 @@ defmodule Sorcery.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       docs: [
-        main: "README.md", # The main page in the docs
-        extras: extras(),
+        #main: "README.md", # The main page in the docs
+        main: "readme",
+        #extras: extras(),
         #logo: "path/to/logo.png",
         extra_section: "GUIDES",
         groups_for_extras: groups_for_extras(),
@@ -36,7 +37,7 @@ defmodule Sorcery.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp extras() do
-      ["CHANGELOG.md"] ++ Path.wildcard("guides/*/*.md") ++ Path.wildcard("guides/*/*.cheatmd")
+      ["README.md", "CHANGELOG.md"] ++ Path.wildcard("guides/*/*.md") ++ Path.wildcard("guides/*/*.cheatmd")
   end
   defp groups_for_extras do
     [
@@ -64,9 +65,9 @@ defmodule Sorcery.MixProject do
       {:mix_test_watch, "~> 1.2", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 0.6.0"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:ecto, "~> 3.11.2", only: [:test]},
-      {:ecto_sql, "~> 3.11.1", only: [:test]},
-      {:postgrex, ">= 0.0.0", only: [:test]},
+      {:ecto, "~> 3.11.2", only: [:dev, :test]},
+      {:ecto_sql, "~> 3.11.1", only: [:dev, :test]},
+      {:postgrex, ">= 0.0.0", only: [:dev, :test]},
     ]
   end
 
