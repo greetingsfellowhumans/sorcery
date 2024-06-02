@@ -1,12 +1,11 @@
 defmodule Sorcery.Query.TkQuery do
   @moduledoc false
-  import Sorcery.Helpers.Maps
 
   def from_tk_map(mod, args, tk_data) do
     clauses = mod.clauses(args)
     finds = mod.finds()
 
-    data = Enum.reduce(clauses, %{}, fn clause, acc ->
+    Enum.reduce(clauses, %{}, fn clause, acc ->
       apply_clause(clause, args, acc, tk_data)
     end)
     |> apply_finds(finds)
@@ -30,7 +29,7 @@ defmodule Sorcery.Query.TkQuery do
     end)
   end
 
-  defp apply_clause(%{lvar: lvark, tk: tk, attr: attr, right_type: :literal, op: op, right: right} = clause, _args, curr_data, all_data) do
+  defp apply_clause(%{lvar: lvark, attr: attr, right_type: :literal, op: op, right: right} = clause, _args, curr_data, all_data) do
     set = get_set(clause, curr_data, all_data)
 
     new_set = Enum.filter(set, fn entity ->
@@ -40,7 +39,7 @@ defmodule Sorcery.Query.TkQuery do
 
     Map.put(curr_data, lvark, new_set)
   end
-  defp apply_clause(%{lvar: lvark, tk: tk, attr: attr, right_type: :arg, arg_name: arg_name, op: op} = clause, args, curr_data, all_data) do
+  defp apply_clause(%{lvar: lvark, attr: attr, right_type: :arg, arg_name: arg_name, op: op} = clause, args, curr_data, all_data) do
     set = get_set(clause, curr_data, all_data)
 
     new_set = Enum.filter(set, fn entity ->
@@ -51,7 +50,7 @@ defmodule Sorcery.Query.TkQuery do
 
     Map.put(curr_data, lvark, new_set)
   end
-  defp apply_clause(%{lvar: lvark, tk: tk, attr: attr, right_type: :lvar, op: op, other_lvar: other_lvark, other_lvar_attr: other_attr} = clause, _args, curr_data, all_data) do
+  defp apply_clause(%{lvar: lvark, attr: attr, right_type: :lvar, op: op, other_lvar: other_lvark, other_lvar_attr: other_attr} = clause, _args, curr_data, all_data) do
     other_set = Map.get(curr_data, other_lvark) || []
     set = get_set(clause, curr_data, all_data)
 
@@ -66,7 +65,7 @@ defmodule Sorcery.Query.TkQuery do
     Map.put(curr_data, lvark, new_set)
   end
 
-  defp get_set(%{lvar: lvark, tk: tk} = clause, curr_data, all_data) do
+  defp get_set(%{lvar: lvark, tk: tk}, curr_data, all_data) do
     Map.get(curr_data, lvark) || Map.values(Map.get(all_data, tk))
   end
   

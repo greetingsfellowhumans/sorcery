@@ -38,7 +38,7 @@ defmodule Sorcery.Mutation do
   """
   alias Sorcery.Mutation.PreMutation
   alias Sorcery.PortalServer.InnerState
-  import Sorcery.Helpers.Maps
+  #import Sorcery.Helpers.Maps
   
 
   # {{{ :init
@@ -109,8 +109,6 @@ defmodule Sorcery.Mutation do
   """
   def send_mutation(%{skip?: true}, _state), do: {:error, "Portal mutation already in progress."}
   def send_mutation(%{portal: portal} = mutation, %InnerState{} = state) do
-    %{portal_name: name} = portal
-
     %{parent_pid: parent} = portal
 
     operations = mutation.operations |> Enum.reverse()

@@ -1,7 +1,7 @@
 defmodule Src.PortalServers.Postgres do
   use GenServer
   use Sorcery.PortalServer
-  import Sorcery.Helpers.Maps
+  #import Sorcery.Helpers.Maps
 
   def start_link(_) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)

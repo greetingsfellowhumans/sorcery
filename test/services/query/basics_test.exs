@@ -2,12 +2,7 @@ defmodule Sorcery.Query.BasicsTest do
   use ExUnit.Case
   alias Src.Queries.GetBattle
   doctest Sorcery.Query
-  alias Src.Schemas.{Player, BattleArena, Team, SpellType, SpellInstance}
-#  alias Sorcery.ReturnedEntities, as: RE
-#  import Sorcery.Setups
 
-
-  #setup [:spawn_portal]
 
   test "A demo query module fulfills behaviour interface" do
     clauses = GetBattle.clauses(%{player_id: 1})
@@ -19,7 +14,6 @@ defmodule Sorcery.Query.BasicsTest do
     player1 = results["?all_players"][1]
     assert %{health: 99} = player1
   end
-
 
 
 end
