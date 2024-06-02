@@ -5,7 +5,7 @@
 - Create the killbot module to periodically trim data from SorceryDb when pids are dead.
 - Better document SorceryDb.
 
-## [0.4.0] - 2024-06-01
+## [0.3.2] - 2024-06-01
 ### Added
 - Optimistic Updates
   Now when you send a mutation, it will return a :temp_data field, guessing at the changes. This allows us to see the updated data long before the changes reach the parent portal_server or database.
