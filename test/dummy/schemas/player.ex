@@ -5,6 +5,7 @@ defmodule Src.Schemas.Player do
       optional?: false
     },
     fields: %{
+      a_list: %{t: :list, coll_of: :integer},
       name: %{t: :string, min: 4, max: 45, default: "Nameless"},
       age: %{t: :integer, min: 13, max: 99, optional?: true},
       health: %{t: :integer, min: 0, max: 100},

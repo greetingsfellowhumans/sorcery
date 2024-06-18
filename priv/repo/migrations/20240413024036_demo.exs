@@ -14,6 +14,7 @@ defmodule Sorcery.Repo.Migrations.Demo do
 
       create table("player") do
         add :name,      :string
+        add :a_list,    {:array, :integer}
         add :team_id,   references("team")
         add :health,    :integer
         add :mana,      :integer

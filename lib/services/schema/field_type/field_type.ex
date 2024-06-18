@@ -10,7 +10,11 @@ defmodule Sorcery.Schema.FieldType do
   def new(%{t: t} = args, meta) do
     mod = case t do
       :integer -> FT.Integer
+      :float -> FT.Float
       :string -> FT.String
+      :list -> FT.List
+      :boolean -> FT.Boolean
+      :map -> FT.Map
       :fk -> FT.Fk
     end
     args = Map.put_new(args, :optional?, meta.optional?)

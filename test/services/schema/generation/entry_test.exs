@@ -16,10 +16,12 @@ defmodule Sorcery.Schema.Generation.EntryTest do
     # Can generate a specific id
     [demo_player] = Player.gen(%{id: 42}) |> Enum.take(1)
     assert demo_player.id == 42
+
+    assert demo_player.a_list == []
   end
 
   #test "Generate ReturnedEntities" do
-  #  re = Player.gen_re(2)
+  #  re = Player.gen_one(%{a_list: [1, 2, 3]})
   #end
 end
 

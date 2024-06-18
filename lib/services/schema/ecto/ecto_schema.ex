@@ -14,6 +14,7 @@ defmodule Sorcery.Schema.EctoSchema do
       time = @meta[:timestamps]
 
       schema "#{tk}" do
+
         for {k, field_struct} <- @full_fields do
           field k, (Map.get(field_struct, :ecto_t) || field_struct.t), Map.take(field_struct, [:default, :source, :autogenerate, :read_after_writes, :virtual, :primary_key, :load_in_query, :redact, :skip_default_validation]) |> Enum.into([])
         end

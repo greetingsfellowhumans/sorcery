@@ -1,4 +1,14 @@
 # Changelog
+## [0.3.4] - 2024-06-17
+### Added
+- New field types for schemas: float, boolean, list, map
+Note that list fields must contain a :coll_of type. for example:
+```elixir
+my_items: %{t: :list, coll_of: :integer}
+```
+
+While using ecto/postgres, lists and maps are stored as json. I have not tested this with anything else
+
 ## [0.3.3] - 2024-06-17
 ### Added
 - The Killbot module
