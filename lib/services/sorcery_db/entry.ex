@@ -17,6 +17,9 @@ defmodule Sorcery.SorceryDb do
   end
   # }}}
 
+  defdelegate get_all_portal_names(), to: RQ
+  defdelegate get_all_portal_instances(portal_name, opts), to: RQ
+
 
 
 
@@ -73,7 +76,7 @@ defmodule Sorcery.SorceryDb do
 
   # {{{ use macro / GenServer
 
-  defmacro __using__(_opts) do
+  defmacro __using__(opts) do
     quote do
       use GenServer
 
@@ -86,6 +89,11 @@ defmodule Sorcery.SorceryDb do
       def init(state) do
         :mnesia.create_schema([node()])
         :mnesia.start()
+
+        killbot_config = unquote(opts)[:opts]
+                         |> Keyword.put(:src, __MODULE__)
+
+        Sorcery.Killbot.start_link(killbot_config)
 
         for {tk, mod} <- __MODULE__.config().schemas do
           Sorcery.SorceryDb.build_mnesia_table(tk, mod)

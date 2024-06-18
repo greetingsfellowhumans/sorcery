@@ -76,7 +76,9 @@ defmodule Sorcery.Mutation.DiffRow do
   end
 
   def new(%{tk: tk, old_entity: entity, changes: changes}) do
-    new(%{tk: tk, old_entity: entity, new_entity: Map.merge(entity, changes)})
+    #new(%{tk: tk, old_entity: entity, new_entity: Map.merge(entity, changes)})
+    new_entity = Enum.reduce(changes, entity, fn {attr, _, v}, acc -> Map.put(acc, attr, v) end)
+    new(%{tk: tk, old_entity: entity, new_entity: new_entity})
   end
   def new(%{tk: tk, new_entity: new_entity}) do
     body = %{

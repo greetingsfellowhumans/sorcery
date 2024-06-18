@@ -30,7 +30,6 @@ defmodule Sorcery do
         }
       end
 
-
       def get_mod_map(k, opts) do 
         sorcery_module_list = Module.split(__MODULE__) ++ [Macro.camelize("#{k}")]
         sorcery_module_len = Enum.count(sorcery_module_list)

@@ -9,6 +9,7 @@ defmodule Sorcery.Application do
         {Src.PortalServers.Postgres, name: Src.PortalServers.Postgres},
         {Src, []},
 
+
         Sorcery.Repo
       ]
     else

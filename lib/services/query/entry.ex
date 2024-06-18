@@ -224,7 +224,7 @@ defmodule Sorcery.Query do
   """
   @callback tks_affected() :: list(atom())
   # }}}
-  
+
   # {{{ finds
   @doc """
   Returns the finds. This differs from raw_struct().finds because :id fields have been added.

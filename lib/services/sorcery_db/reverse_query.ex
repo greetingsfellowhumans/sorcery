@@ -82,6 +82,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
     :ets.insert(table, {child_pid, query_mod, args})
   end
 
+
   def get_all_portal_instances(portal_name, opts \\ []) do
     table_name = get_portal_table_name(portal_name)
     guards = []
