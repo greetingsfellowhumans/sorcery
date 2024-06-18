@@ -1,4 +1,24 @@
 # Changelog
+## [0.3.3] - 2024-06-17
+### Added
+- The Killbot module
+  This is basically a garbage collection system. Since SorceryDb stores a lot of entities in :mnesia, and some other portal data in :ets, Killbot is a process that periodically checks which entities are no longer being used anywhere, and safely removes them.
+
+### Changed
+New options for your Src module
+```elixir
+use Sorcery,
+    killbot: %{
+      interval: int,
+      postmortem_delay: int
+    }
+```
+These are optional. 
+In theory, Killbot should not require any setup, it is initialized by the `use Sorcery` under the hood.
+
+
+### Breaking Changes
+None (in theory)
 
 ## [Unreleased]
 - Most likely optimistic updates will break when the mutation creates new entities. Still need to figure out what to do there.

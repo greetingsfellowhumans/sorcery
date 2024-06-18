@@ -20,6 +20,23 @@ defmodule Sorcery.SorceryDb do
   defdelegate get_all_portal_names(), to: RQ
   defdelegate get_all_portal_instances(portal_name, opts), to: RQ
 
+  def remove_entities(tk_ids) do
+    :mnesia.transaction(fn ->
+      for {tk, ids} <- tk_ids do
+        for id <- ids do
+          :mnesia.delete(tk, id, :write)
+        end
+      end
+    end)
+  end
+
+
+  def remove_pids(pid_portals) do
+    for {pid, portal_name, _query, _args} <- pid_portals do
+      table_name = RQ.get_portal_table_name(portal_name)
+      :ets.delete(table_name, pid)
+    end
+  end
 
 
 
