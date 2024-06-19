@@ -77,11 +77,11 @@ defmodule Sorcery.Mutation.ParentMutation do
   # }}}
 
   # {{{ get_id_set
-  defp get_id_set(table) do
-    table
-    |> Map.keys()
-    |> MapSet.new()
-  end
+  #defp get_id_set(table) do
+  #  table
+  #  |> Map.keys()
+  #  |> MapSet.new()
+  #end
   # }}}
 
 end
