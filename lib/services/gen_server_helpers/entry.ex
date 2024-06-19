@@ -66,7 +66,7 @@ defmodule Sorcery.GenServerHelpers do
 
   defmacro __using__(_) do
     quote do
-      @behaviour Sorcery.LiveHelpers
+      @behaviour Sorcery.GenServerHelpers
 
 
       # {{{ spawn_portal/2

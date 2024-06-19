@@ -85,3 +85,14 @@ children = [
 ```
 
 The next thing you should do is create some schemas, and queries. 
+
+
+## Local development
+If you want to work on Sorcery itself, use the bash environment variable SORCERY_DEVELOPMENT=true to get around some nasty conflicts.
+
+```bash
+git clone https://github.com/greetingsfellowhumans/sorcery
+cd sorcery
+mix deps.get
+SORCERY_DEVELOPMENT=true mix test.watch
+```

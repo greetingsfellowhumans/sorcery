@@ -36,7 +36,7 @@ defmodule Sorcery.Setups do
     pid
   end
 
-  def demo_state(args \\ %{}) do
+  def demo_state(_args \\ %{}) do
     portal = spawn_portal()
     %{
       sorcery: Sorcery.PortalServer.InnerState.new(%{

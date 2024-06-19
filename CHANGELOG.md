@@ -1,4 +1,10 @@
 # Changelog
+## [0.3.6] - 2024-06-19
+### Fixed
+- Conflict when starting tests on an app that depends on sorcery.
+workaround for now is setting an environment varialbe SORCERY_DEVELOPMENT=true when working on sorcery itself
+- Cleaned up several warnings
+
 ## [0.3.5] - 2024-06-18
 ### Fixed
 Mutation.create_entity was broken. I fixed it.

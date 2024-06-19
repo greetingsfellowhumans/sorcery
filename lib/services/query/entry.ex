@@ -211,7 +211,7 @@ defmodule Sorcery.Query do
       iex> Enum.at(q.lvar_tks, 3)
       {"?all_teams", :team}
   """
-  @callback raw_struct() :: __MODULE__
+  @callback raw_struct() :: %__MODULE__{}
   # }}}
 
   # {{{ tks_affected()

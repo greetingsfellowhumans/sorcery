@@ -4,7 +4,7 @@ defmodule Sorcery.Application do
   
   @impl true
   def start(_start_type, _start_args) do
-    children = if Mix.env() == :test do
+    children = if Mix.env() == :test && System.fetch_env("SORCERY_DEVELOPMENT") == {:ok, "true"} do
       [
         {Src.PortalServers.Postgres, name: Src.PortalServers.Postgres},
         {Src, []},

@@ -42,9 +42,9 @@ defmodule Sorcery.Mutations.MutationsTest do
   test "PreMutation operations should work" do
     outer_state = Sorcery.Setups.demo_state(%{})
 
-    m = M.init(outer_state.sorcery, :the_battle)
-      |> M.create_entity(:team, "?new_team", %{name: "I am a new team!", location_id: 1})
-      |> M.send_mutation(outer_state.sorcery)
+    M.init(outer_state.sorcery, :the_battle)
+    |> M.create_entity(:team, "?new_team", %{name: "I am a new team!", location_id: 1})
+    |> M.send_mutation(outer_state.sorcery)
 
 
     assert_receive {:sorcery, %{command: :portal_put, data: data}}

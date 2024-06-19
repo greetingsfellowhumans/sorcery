@@ -13,12 +13,14 @@ defmodule Sorcery.LiveHelpers do
       iex> body = %{portal_server: Postgres, portal_name: :my_portal, query_module: MyQuery, query_args: %{player_id: 1}}
       iex> socket = spawn_portal(socket, body)
   """
-  @callback spawn_portal(socket :: Phoenix.LiveView.Socket.t(), body :: %{
+  @type socket_type :: %{__struct__: Phoenix.LiveView.Socket}
+
+  @callback spawn_portal(socket :: socket_type, body :: %{
     portal_server: module(),
     portal_name: atom(),
     query_module: module(),
     query_args: map(),
-  }) :: Phoenix.LiveView.Socket.t()
+  }) :: socket_type
 
 
   @doc ~s"""
@@ -32,11 +34,11 @@ defmodule Sorcery.LiveHelpers do
       iex> body = %{sorcery_module: Src}
       iex> socket = initialize_sorcery(socket, body)
   """
-  @callback initialize_sorcery(socket :: Phoenix.LiveView.Socket.t(), body :: %{
+  @callback initialize_sorcery(socket :: socket_type, body :: %{
     optional(:sorcery_module) => module(),
     optional(:args) => map(),
     optional(:store_adapter) => module()
-  }) :: Phoenix.LiveView.Socket.t()
+  }) :: socket_type
 
 
   @doc ~s"""
@@ -65,7 +67,6 @@ defmodule Sorcery.LiveHelpers do
 
   #You can still use your own `handle_info` functions with different function heads. But `handle_info({:sorcery, _}, socket)` is reserved.
   #"""
-  ##@callback handle_info(msg :: {:sorcery, map()}, socket :: Phoenix.LiveView.Socket.t()) :: {:noreply, Phoenix.LiveView.Socket.t()}
 
 
   # }}}
@@ -137,7 +138,6 @@ defmodule Sorcery.LiveHelpers do
 
 
     # {{{ handle_sorcery({:sorcery, msg}, socket)
-    #@impl Phoenix.LiveView #Sorcery.LiveHelpers
     def handle_sorcery({:sorcery, msg}, socket) do
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}

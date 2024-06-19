@@ -4,7 +4,7 @@ defmodule Sorcery.MixProject do
   def project do
     [
       app: :sorcery,
-      version: "0.3.5",
+      version: "0.3.6",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -65,9 +65,9 @@ defmodule Sorcery.MixProject do
       {:mix_test_watch, "~> 1.2", only: [:dev, :test], runtime: false},
       {:stream_data, "~> 0.6.0"},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
-      {:ecto, "~> 3.11.2", only: [:dev, :test]},
-      {:ecto_sql, "~> 3.11.1", only: [:dev, :test]},
-      {:postgrex, ">= 0.0.0", only: [:dev, :test]},
+      {:ecto, "~> 3.11.2"},
+      {:ecto_sql, "~> 3.11.1"},
+      {:postgrex, ">= 0.0.0"},
     ]
   end
 
