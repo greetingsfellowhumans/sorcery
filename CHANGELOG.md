@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.5] - 2024-06-18
+### Fixed
+Mutation.create_entity was broken. I fixed it.
+
 ## [0.3.4] - 2024-06-17
 ### Added
 - New field types for schemas: float, boolean, list, map
