@@ -54,6 +54,7 @@ defmodule Sorcery.Mutation.PreMutation do
 
   def create_entity(%{skip?: true} = m, _tk, _lvar, _body), do: m
   def create_entity(mutation, tk, "?" <> _ = lvar, body) do
+    body = Map.put(body, :id, lvar)
     __MODULE__.put(mutation, [tk, lvar], body)
   end
 

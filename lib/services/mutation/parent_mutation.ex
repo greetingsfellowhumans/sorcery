@@ -40,18 +40,22 @@ defmodule Sorcery.Mutation.ParentMutation do
 
   # {{{ find_inserts
   defp find_inserts(pre_mutation) do
-    Enum.reduce(pre_mutation.new_data, %{}, fn {tk, new_table}, acc ->
-      old_table = get_in_p(pre_mutation, [:old_data, tk])
-      old_ids = get_id_set(old_table)
-      new_ids = get_id_set(new_table)
-      inserted_ids = MapSet.difference(new_ids, old_ids) |> MapSet.to_list()
-      inserted_table = Map.take(new_table, inserted_ids)
-      if Enum.empty?(inserted_table) do
-        acc
-      else
-        Map.put(acc, tk, inserted_table)
-      end
+    Enum.reduce(pre_mutation.operations, %{}, fn 
+      {:put, [tk, "?" <> _ = id], entity}, acc -> put_in_p(acc, [tk, id], entity)
+      _, acc -> acc
     end)
+    #Enum.reduce(pre_mutation.new_data, %{}, fn {tk, new_table}, acc ->
+    #  old_table = get_in_p(pre_mutation, [:old_data, tk])
+    #  old_ids = get_id_set(old_table)
+    #  new_ids = get_id_set(new_table)
+    #  inserted_ids = MapSet.difference(new_ids, old_ids) |> MapSet.to_list()
+    #  inserted_table = Map.take(new_table, inserted_ids)
+    #  if Enum.empty?(inserted_table) do
+    #    acc
+    #  else
+    #    Map.put(acc, tk, inserted_table)
+    #  end
+    #end)
   end
   # }}}
 

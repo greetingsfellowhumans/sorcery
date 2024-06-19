@@ -5,7 +5,8 @@ defmodule Sorcery.Mutations.MutationsTest do
 #  import Sorcery.Setups
 #
 #  setup [:spawn_portal, :teams_portal]
-#
+
+  # {{{ temp_portals for optimistic updates
   test "Mutations create a temp_portal" do
     parent = spawn(fn -> nil end)
     battle = Src.Db.battle(1)
@@ -34,6 +35,7 @@ defmodule Sorcery.Mutations.MutationsTest do
 
     assert inner_state.portals.battle.temp_data["?all_players"][1].health < battle["?all_players"][1].health
   end
+  # }}}
 
 
   # {{{ PreMutation operations should work
@@ -41,26 +43,16 @@ defmodule Sorcery.Mutations.MutationsTest do
     outer_state = Sorcery.Setups.demo_state(%{})
 
     m = M.init(outer_state.sorcery, :the_battle)
-    dbg m
-#    m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
-#    new_player = M.get(m, [:player, 1])
-#    old_player = M.get_original(m, [:player, 1])
-#    assert new_player.age == 1 + old_player.age
-#
-#    m = M.put(m, [:player, 1, :age], 10)
-#    new_player2 = M.get(m, [:player, 1])
-#    old_player2 = M.get_original(m, [:player, 1])
-#    assert new_player2.age == 10
-#    assert old_player2.age == old_player.age
-#    m = M.update(m, [:player, 1, :age], fn _, age -> age * 2 end)
-#    new_player3 = M.get(m, [:player, 1])
-#    assert new_player3.age == 20
-#
-#    m = M.create_entity(m, :team, "?my_new_team", %{name: "My New Team"})
-#    new_team = M.get(m, [:team, "?my_new_team"])
-#    assert new_team.name == "My New Team"
-#    m = M.delete_entity(m, :player, 1)
-#    assert m.deletes.player == [1]
+      |> M.create_entity(:team, "?new_team", %{name: "I am a new team!", location_id: 1})
+      |> M.send_mutation(outer_state.sorcery)
+
+
+    assert_receive {:sorcery, %{command: :portal_put, data: data}}
+    new_team = data["?all_teams"] |> Enum.find_value(fn 
+      {_, %{name: "I am a new team!"} = entity} -> entity
+      _ -> false
+    end)
+    assert is_integer(new_team.id)
   end
   # }}}
 #

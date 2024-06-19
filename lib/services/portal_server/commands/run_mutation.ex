@@ -45,7 +45,9 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
           Enum.reduce(entities, acc, fn %{id: id} = entity, acc ->
             put_in_p(acc, [tk, id], entity)
           end)
-        _ -> raise "Unable to find the matching entities for :#{tk}"
+        err -> 
+          dbg err
+          raise "Unable to find the matching entities for :#{tk}"
       end
     end)
     

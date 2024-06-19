@@ -24,7 +24,10 @@ defmodule Sorcery.Query.TkQuery do
   defp prettify(data) do
     Enum.reduce(data, %{}, fn {lvark, li}, acc ->
       lvar = "#{lvark}"
-      table = Enum.reduce(li, %{}, fn entity, table -> Map.put(table, entity.id, entity) end)
+      table = Enum.reduce(li, %{}, fn 
+        %{id: _} = entity, table -> Map.put(table, entity.id, entity) 
+        _, table -> table
+      end)
       Map.put(acc, lvar, table)
     end)
   end

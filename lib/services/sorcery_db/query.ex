@@ -46,16 +46,15 @@ defmodule Sorcery.SorceryDb.Query do
     end)
     |> case do
       {:atomic, li} ->
-        entities = Enum.map(li, fn [ent_tup] ->
-          [tk | ent_list] = Tuple.to_list(ent_tup)
-          Enum.zip(schemas_attrs[tk], ent_list)
-          |> Enum.into(%{})
+        entities = Enum.reduce(li, [], fn 
+          [ent_tup], acc ->
+            [tk | ent_list] = Tuple.to_list(ent_tup)
+            ent = Enum.zip(schemas_attrs[tk], ent_list)
+            |> Enum.into(%{})
+            [ent | acc]
+          [], acc -> acc
         end)
-        if Enum.count(ids) == Enum.count(entities) do
-          {:ok, entities}
-        else
-          {:partial, entities}
-        end
+        {:ok, entities}
       err -> {:error, err}
     end
   end
