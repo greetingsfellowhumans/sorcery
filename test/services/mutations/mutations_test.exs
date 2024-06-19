@@ -33,12 +33,15 @@ defmodule Sorcery.Mutations.MutationsTest do
       |> M.send_mutation(outer_state.sorcery)
 
     assert inner_state.portals.battle.temp_data["?all_players"][1].health < battle["?all_players"][1].health
-
   end
-#
-#  # {{{ PreMutation operations should work
-#  test "PreMutation operations should work", %{portal: portal} do
-#    m = M.init(portal)
+
+
+  # {{{ PreMutation operations should work
+  test "PreMutation operations should work" do
+    outer_state = Sorcery.Setups.demo_state(%{})
+
+    m = M.init(outer_state.sorcery, :the_battle)
+    dbg m
 #    m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
 #    new_player = M.get(m, [:player, 1])
 #    old_player = M.get_original(m, [:player, 1])
@@ -58,8 +61,8 @@ defmodule Sorcery.Mutations.MutationsTest do
 #    assert new_team.name == "My New Team"
 #    m = M.delete_entity(m, :player, 1)
 #    assert m.deletes.player == [1]
-#  end
-#  # }}}
+  end
+  # }}}
 #
 #
 #  # {{{ PreMutation should convert into a ParentMutation

@@ -12,6 +12,7 @@ defmodule Sorcery.Setups do
     {:ok, ctx}
   end
 
+
   @doc """
   This is NOT to be used like setup `[:spawn_client]`
   But call it inside a test to create a new GenServer, like a LiveView
@@ -34,7 +35,33 @@ defmodule Sorcery.Setups do
     })
     pid
   end
-#
+
+  def demo_state(args \\ %{}) do
+    portal = spawn_portal()
+    %{
+      sorcery: Sorcery.PortalServer.InnerState.new(%{
+        portals: %{the_battle: portal}
+      })
+    }
+  end
+
+  ##
+  # This is also NOT meant to be used like a test setup
+  # It seems to just work smoother when called directly
+  # portal = spawn_portal()
+  def spawn_portal() do
+    {:ok, pid} = GenServer.start_link(Src.PortalServers.Postgres, %{})
+    msg = %{
+      command: :create_portal,
+      child_pid: self(),
+      portal_name: :the_battle,
+      query_module: GetBattle,
+      args: %{player_id: 1}
+    }
+    send(pid, {:sorcery, msg})
+    assert_receive {:sorcery, %{command: :portal_merge, portal: portal}}
+    portal
+  end
 #  
 #  def commands_setup(ctx) do
 #    msg = %{
