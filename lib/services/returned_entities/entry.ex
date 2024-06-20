@@ -51,6 +51,8 @@ defmodule Sorcery.ReturnedEntities do
         entity = Map.from_struct(strct) |> Map.delete(:__meta__)
         Map.put(acc, entity.id, entity)
 
+      nil, acc -> acc
+
       entity, acc -> 
         Map.put(acc, entity.id, entity)
     end)

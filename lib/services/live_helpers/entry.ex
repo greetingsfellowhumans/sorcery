@@ -13,7 +13,7 @@ defmodule Sorcery.LiveHelpers do
       iex> body = %{portal_server: Postgres, portal_name: :my_portal, query_module: MyQuery, query_args: %{player_id: 1}}
       iex> socket = spawn_portal(socket, body)
   """
-  @type socket_type :: %{__struct__: Phoenix.LiveView.Socket}
+  @type socket_type :: %{optional(any) => any, :__struct__ => Phoenix.LiveView.Socket, :assigns => map()} #%{__struct__: Phoenix.LiveView.Socket, assigns: map(), optional(any) => any}
 
   @callback spawn_portal(socket :: socket_type, body :: %{
     portal_server: module(),

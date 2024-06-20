@@ -1,4 +1,9 @@
 # Changelog
+## [0.3.7] - 2024-06-19
+### Fixed
+- Typespec warnings
+- Issues when Phoenix mounts twice, particularly the first time when the expected data is not present
+
 ## [0.3.6] - 2024-06-19
 ### Fixed
 - Conflict when starting tests on an app that depends on sorcery.
