@@ -1,4 +1,19 @@
 # Changelog
+
+## [Unreleased]
+- Better documentation.
+- Clean up the demo app
+
+
+## [0.4.0] - 2024-06-22
+### Fixed
+A lot of the automatic data generation was broken. Rebuilt much of it, added some pretty thorough prop tests.
+
+### Breaking Changes
+The Schema defaults are somewhat different, so you should be aware that:
+- List and map fields now default to optional?: false because it makes more sense for an empty list to be `[]` than `nil`
+
+
 ## [0.3.7] - 2024-06-19
 ### Fixed
 - Typespec warnings
@@ -45,10 +60,6 @@ In theory, Killbot should not require any setup, it is initialized by the `use S
 ### Breaking Changes
 None (in theory)
 
-## [Unreleased]
-- Most likely optimistic updates will break when the mutation creates new entities. Still need to figure out what to do there.
-- Create the killbot module to periodically trim data from SorceryDb when pids are dead.
-- Better document SorceryDb.
 
 ## [0.3.2] - 2024-06-01
 ### Added

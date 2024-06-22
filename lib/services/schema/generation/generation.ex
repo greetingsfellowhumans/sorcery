@@ -8,12 +8,19 @@ defmodule Sorcery.Schema.Generation do
     end
 
     sd_map = Enum.reduce(full_fields, %{id: id}, fn {k, v}, acc -> 
-      sd_field = if Map.has_key?(body, k) do
-        StreamData.constant(body[k])
-      else
-        v.__struct__.get_sd_field(v)
+      optional? = Map.get(v, :optional?)
+      constant? = Map.has_key?(body, k)
+      default = Map.get(v, :default)
+      sd_field = v.__struct__.get_sd_field(v)
+
+      field = cond do
+        constant? -> StreamData.constant(body[k])
+        default -> StreamData.constant(default)
+        optional? -> StreamData.one_of([StreamData.constant(nil), sd_field])
+        true -> sd_field
       end
-      Map.put(acc, k, sd_field)
+
+      Map.put(acc, k, field)
     end)
     StreamData.fixed_map(sd_map)
   end

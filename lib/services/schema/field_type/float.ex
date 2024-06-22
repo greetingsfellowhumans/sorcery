@@ -12,6 +12,7 @@ defmodule Sorcery.Schema.FieldType.Float do
     max: nil,
     default: nil,
     optional?: true,
+    unique: false,
   ]
 
 
@@ -35,11 +36,7 @@ defmodule Sorcery.Schema.FieldType.Float do
   def get_sd_field(field_struct) do
     min = Map.get(field_struct, :min) || @default_min
     max = Map.get(field_struct, :max) || @default_max
-    li = []
-    li = [SD.float(min: min, max: max) | li]
-    li = if field_struct.default, do: [SD.constant(field_struct.default) | li], else: li
-    li = if field_struct.optional?, do: [nil | li], else: li
-    SD.one_of(li)
+    SD.float(min: min, max: max)
   end
 
 

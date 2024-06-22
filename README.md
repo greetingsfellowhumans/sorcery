@@ -1,3 +1,5 @@
+## This is not production ready. I am fixing bugs nearly daily right now.
+
 # Sorcery
 
 A framework which rethinks how data flows, and how we build apps.
@@ -6,21 +8,16 @@ Plays nicely with Phoenix LiveViews, or can be used alone.
 
 The philosophy of Sorcery:
 
-```
-A database has a table called People.
-
-There are 3 different web pages that all display *some* data about the row where People.id == 1
-No matter where this person appears, they are always the same entity.
-
-If they change their name in one place, it should automatically update their name in EVERY place that it appears.
-
-This should be the DEFAULT way of building an app. 
-I don't want to setup a Phoenix.Channel, nor a PubSub.
-I don't have time to wire this up in every page where I want it to happen.
-It should be automatic.
-
-We should not even need to think about it. I use an entity in a page, and it should stay up to date forever. Period.
-```
+> Suppose a database has a table called People.  
+There are 3 different web pages that all display *some* data about the row where People.id == 1  
+No matter where in the app this person appears, and no matter which columns are known about them, they are conceptually *the same entity*.  
+If they change their name in one place, it should automatically update their name in EVERY place that it appears.  
+This should be the DEFAULT way of building an app.  
+I don't want to setup a Phoenix.Channel, nor a PubSub.  
+I don't have time to wire this up in every page where I want it to happen.  
+It should be automatic without thinking about it.  
+All data should stay up to date, at all times, forever.  
+But when I apply a mutation, it should happen in a functional, immutable way, with all the benefits one would expect.
 
 ## See the demo
 These docs are horribly incomplete. But you can clone and run the demo app [https://github.com/greetingsfellowhumans/sorcery_demo.git](https://github.com/greetingsfellowhumans/sorcery_demo.git)
@@ -51,7 +48,7 @@ So a Portal is almost like a PubSub, if a PubSub had access to a full featured l
 ## Performance
 Memory hog with almost no latency.
 
-All entities being watched are cached in mnesia tables. So often this allows us to skip calling the database, and use cache.
+All entities being watched are cached in mnesia tables. So this often allows us to skip calling the database.
 
 
 ## Installation
@@ -60,7 +57,7 @@ All entities being watched are cached in mnesia tables. So often this allows us 
 ```elixir
 def deps do
   [
-    {:sorcery, "~> 0.3.0"},
+    {:sorcery, "~> 0.3.8"},
   ]
 end
 ```

@@ -6,9 +6,10 @@ defmodule Sorcery.Schema.FieldType.Map do
   defstruct [
     :coll_of,
     :ecto_t,
-    t: :integer,
-    default: %{},
-    optional?: true,
+    t: :map,
+    default: nil,
+    optional?: false,
+    unique: false,
   ]
 
 

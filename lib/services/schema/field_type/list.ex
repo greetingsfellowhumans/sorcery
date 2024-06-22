@@ -2,13 +2,19 @@ defmodule Sorcery.Schema.FieldType.List do
   @moduledoc false
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
+  @default_min 0
+  @default_max 10
 
   defstruct [
     :coll_of,
     :ecto_t,
-    t: :integer,
-    default: [],
-    optional?: true,
+    t: :list,
+    min: @default_min,
+    max: @default_max,
+    default: nil,
+    inner: %{},
+    optional?: false,
+    unique: false,
   ]
 
 
@@ -26,10 +32,15 @@ defmodule Sorcery.Schema.FieldType.List do
 
 
   @impl true
-  def get_sd_field(field_struct) do
-    case Map.get(field_struct, :coll_of) do
-      _ -> SD.constant([])
-    end
+  def get_sd_field(%{min: min, max: max, coll_of: t} = field_struct) do
+    inner_default = %{optional?: false, t: t}
+    inner_given = Map.get(field_struct, :inner, %{})
+    inner = Map.merge(inner_default, inner_given)
+    inner_meta = %{optional?: false}
+
+    inner_field = Sorcery.Schema.FieldType.new(inner, inner_meta)
+    sd = inner_field.__struct__.get_sd_field(inner_field)
+    SD.list_of(sd, min_length: min, max_length: max)
   end
 
 

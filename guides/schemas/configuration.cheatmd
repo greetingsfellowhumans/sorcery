@@ -1,6 +1,6 @@
 # Configuration
 
-Herein lies the key to writing a schema. Here is how we would rewrite the Example given by Ecto.Schema:
+Herein lies the key to writing a schema. Here is how we would rewrite [the Example given by Ecto.Schema](https://hexdocs.pm/ecto/Ecto.Schema.html#module-example):
 
 ```elixir
 defmodule App.User do
@@ -32,92 +32,89 @@ defmodule App.User do
 end
 ```
 
+For a more complete example, look at this:
+```elixir
+defmodule Src.Schemas.Types do
+  use Sorcery.Schema, fields: %{
+    bool_mandatory: %{t: :boolean, optional?: false},
+    bool_optional: %{t: :boolean, optional?: true},
+    int_mandatory: %{t: :integer, optional?: false, min: 0, max: 10},
+    int_optional: %{t: :integer, optional?: true, min: -10, max: 10},
+    float_mandatory: %{t: :float, optional?: false, min: 0.0, max: 10.0},
+    float_optional: %{t: :float, optional?: true, min: -10.0, max: 10.0},
+    string_mandatory: %{t: :string, optional?: false, min: 10, max: 20},
+    string_optional: %{t: :string, optional?: true, min: 10, max: 20},
+    list_mandatory: %{t: :list, coll_of: :integer, min: 10, max: 20},
+    list_optional:  %{t: :list, coll_of: :string, optional?: true,  min: 10, max: 20},
+    list_inner: %{t: :list, coll_of: :string, inner: %{min: 15, max: 25}, min: 5, max: 10},
+    map_mandatory: %{t: :map, optional?: false},
+    map_optional: %{t: :map, optional?: true},
+  }
+end
+```
+
+### Optional?
+In the above example, notice how we explicitly declare the :optional? key in every field. If this is set to true, and if no value is provided while generating the struct, then the field will use the FieldType default. For most fields (:integers, :strings, etc) this is nil. For lists and maps, it's an empty list or map respectively.
+For example an :integer field with optional?: true will only ever be an integer.
+But an :integer field with optional?: false might be either an integer or nil.
+
 ## Meta Map
 
 Before getting into the meat of it, notice the empty map called :meta up there? We can use it to set some schema-wide configuration.
 
 | :meta         | types           | Default       | Description      |
 | ---           | ---             | ---           | ---              |
-| :optional?    | boolean         | true          | Whether every field allows nil. Individual fields can override |
-| :tk           | atom            | :module_name  | The snake case, atom form, of this schemas name. Used in queries etc. |
+| :optional?    | boolean         | true          | Whether every field allows nil. Individual fields can override. Maps and lists default to false. |
 
 
-## String fields
-| t: :string    | types           | Optional? | Default | Description      |
+## Fields by type
+### :boolean
+|               | types           | Optional? | Default | Description      |
 | ---           | ---             | ---       | ---     | ---              |
-| :min          | integer, nil    | true      | nil     | field must have at least this many characters.     |
-| :max          | integer, nil    | true      | nil     | field must have no more than this many characters. |
-| :default      | string, nil     | true      | ""      | If no string is given, this will be used.          |
+| :default      | boolean         | true      | nil     | If no value is given, this will be used.          |
+| :optional?    | boolean         | true      | nil     | Whether field is allowed to be nil      |
+
+
+### :string
+|               | types           | Optional? | Default | Description      |
+| ---           | ---             | ---       | ---     | ---              |
+| :min          | integer         | true      | 0       | field must have at least this many characters.     |
+| :max          | integer         | true      | 25      | field must have no more than this many characters. |
+| :default      | string          | true      | nil     | If no value is given, this will be used.          |
 | :optional?    | boolean         | true      | true    | Whether field is allowed to be nil      |
 
-## String Examples
-```elixir
-iex> alias Sorcery.Schema.Field.String, as: S
 
-# This fails because "hi" is not long enough
-iex> S.new(%{min: 5}, "hi")
-%S{valid?: false, value: "hi", fails: [ {:min, :value} ], ...}
-
-# This passes
-iex> S.new(%{min: 5}, "Hello world, how are you?")
-%S{valid?: true, value: "Hello world, how are you?", fails: [], ...}
-
-# This failse because the schema itself is invalid. :min must be an integer, not a float!
-iex> S.new(%{min: 5.6}, "Hello world, how are you?")
-%S{valid?: false, value: "Hello world, how are you?", fails: [ {:min, :type} ], ...}
-
-# Now we check :max
-iex> S.new(%{max: 5}, "Hello world, how are you?")
-%S{valid?: false, value: "Hello world, how are you?", fails: [ {:max, :value} ], ...}
-
-# By default, strings are optional, with a default of an empty string.
-iex> S.new(%{}, nil)
-%S{valid?: true, value: "", fails: [], ...}
-
-# ... but you can change that
-iex> S.new(%{default: "Elixir is fun"}, nil)
-%S{valid?: true, value: "Elixir is fun", ...}
-
-iex> S.new(%{optional?: false}, nil)
-%S{valid?: false, value: nil, fails: [ {:optional?, :value} ] }
-
-# Note that optional?: false does nothing if a default is set.
-iex> S.new(%{optional?: false, default: "Elixir is fun"}, nil)
-%S{valid?: true, value: "Elixir is fun", ...}
-
-```
-
-## Integer fields
+### :integer
 |               | types           | Optional? | Default | Description                     |
 | ---           | ---             | ---       | ---     | ---                             |
-| :min          | integer, nil    | true      | nil     | field be at least this big.     |
-| :max          | integer, nil    | true      | nil     | field be no more than this big. |
-| :default      | integer, nil    | true      | nil     | If no value is given, this will be used.          |
-| :optional?    | boolean         | true      | true    | If no value is given, this field is invalid.      |
+| :min          | integer         | true      | -10_000 | field be at least this big.     |
+| :max          | integer         | true      | 10_000  | field be no more than this big. |
+| :default      | integer         | true      | nil     | If no value is given, this will be used.          |
+| :optional?    | boolean         | true      | true    | Whether field is allowed to be nil      |
 
-## Integer Examples
-```elixir
-iex> alias Sorcery.Schema.Field.I, as: I
+### :float
+|               | types           | Optional? | Default   | Description                     |
+| ---           | ---             | ---       | ---       | ---                             |
+| :min          | float           | true      | -10_000.0 | field be at least this big.     |
+| :max          | float           | true      | 10_000.0  | field be no more than this big. |
+| :default      | integer         | true      | nil       | If no value is given, this will be used.          |
+| :optional?    | boolean         | true      | true      |  Whether field is allowed to be nil      |
 
-# This fails because 2 is not big enough
-iex> I.new(%{min: 5}, 2)
-%S{valid?: false, value: 2, fails: [ {:min, :value} ], ...}
+### :list
+|               | types           | Optional? | Default   | Description                     |
+| ---           | ---             | ---       | ---       | ---                             |
+| :min          | integer         | true      | 0         | list must have at least this many items     |
+| :max          | integer         | true      | 10        | list must have at most this many items     |
+| :default      | integer         | true      | nil       | If no value is given (and optional?: true), then nil.          |
+| :optional?    | boolean         | true      | false     | Whether field is allowed to be nil      |
 
-iex> I.new(%{min: 5}, 1337)
-%S{valid?: true, value: 1337, fails: [], ...}
+### :map
+|               | types           | Optional? | Default   | Description                     |
+| ---           | ---             | ---       | ---       | ---                             |
+| :default      | integer         | true      | nil       | If no value is given (and optional?: true), then nil.          |
+| :optional?    | boolean         | true      | false     | Whether field is allowed to be nil      |
 
-iex> I.new(%{max: 5}, 2)
-%S{valid?: true, value: 2, fails: [], ...}
+We don't both generating content inside maps. Too much complexity, and too far from the core goals of Sorcery.
 
-iex> I.new(%{}, nil)
-%S{valid?: true, value: nil, fails: [], ...}
-
-iex> I.new(%{default: 5}, nil)
-%S{valid?: true, value: 5, fails: [], ...}
-
-iex> I.new(%{optional?: false}, nil)
-%S{valid?: false, value: nil, fails: [ {:optional?, :value} ], ...}
-
-iex> I.new(%{optional?: false, default: 5}, nil)
-%S{valid?: true, value: 5, fails: [], ...}
-```
+### :fk
+This is still under construction. For now I would suggest using :integer instead.

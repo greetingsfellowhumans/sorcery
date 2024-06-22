@@ -8,6 +8,7 @@ defmodule Sorcery.Schema.FieldType.Boolean do
     t: :boolean,
     default: nil,
     optional?: true,
+    unique: false,
   ]
 
 

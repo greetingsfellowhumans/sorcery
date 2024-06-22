@@ -26,14 +26,24 @@ defmodule Sorcery.Schema.EctoSchema do
         %__MODULE__{}
         #|> cast(body, Map.keys(@schema))
         |> cast(body, castable_fields(:insert, @full_fields))
-
+        |> add_uniq_constraints(@full_fields)
       end
 
       def sorcery_update_cs(entity, body) do
         entity
         #|> cast(body, Map.keys(@schema))
         |> cast(body, castable_fields(:update, @full_fields))
+        |> add_uniq_constraints(@full_fields)
       end
+
+      # {{{ add_uniq_constraints
+      defp add_uniq_constraints(cs, full_fields) do
+        Enum.reduce(full_fields, cs, fn 
+          {fk, %{unique: true}}, cs -> unique_constraint(cs, [fk])
+          _, cs -> cs
+        end)
+      end
+      # }}}
 
 
       tk = nil
@@ -41,5 +51,6 @@ defmodule Sorcery.Schema.EctoSchema do
     end
 
   end
+
 
 end

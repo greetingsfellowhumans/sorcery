@@ -26,11 +26,16 @@ defmodule Sorcery.Repo.Migrations.Demo do
         add :name,      :string
         add :cost,      :integer
         add :power,     :integer
+        add :coin_flip, :boolean
       end
 
       create table("spell_instance") do
         add :player_id, references("player")
         add :type_id, references("spell_type")
+      end
+
+      create table("types") do
+        add :int1, :integer
       end
 
     end

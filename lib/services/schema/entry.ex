@@ -45,7 +45,10 @@ defmodule Sorcery.Schema do
       @doc ~s"""
       A generator that returns a lazy stream of entities matching the schema.
       """
-      def gen(body \\ %{}), do: Sorcery.Schema.Generation.gen(@full_fields, body)
+      def gen(body) when is_map(body), do: Sorcery.Schema.Generation.gen(@full_fields, body)
+      def gen(n) when is_integer(n), do: Sorcery.Schema.Generation.gen(@full_fields, %{}) |> Enum.take(n)
+      def gen(), do: Sorcery.Schema.Generation.gen(@full_fields, %{})
+      def gen(body, n) when is_map(body) and is_integer(n), do: Sorcery.Schema.Generation.gen(@full_fields, body) |> Enum.take(n)
 
 
       @doc ~s"""

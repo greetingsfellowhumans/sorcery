@@ -10,14 +10,14 @@ defmodule Sorcery.Schema.FieldType do
   def new(%{t: t} = args, meta) do
     mod = case t do
       :integer -> FT.Integer
+      :fk -> FT.Fk
       :float -> FT.Float
       :string -> FT.String
       :list -> FT.List
       :boolean -> FT.Boolean
       :map -> FT.Map
-      :fk -> FT.Fk
     end
-    args = Map.put_new(args, :optional?, meta.optional?)
+    args = add_optional(args, meta)
     mod.new(args)
   end
   def new(_) do
@@ -25,7 +25,9 @@ defmodule Sorcery.Schema.FieldType do
   end
 
 
-
+  def add_optional(%{optional?: _} = args, _meta), do: args
+  def add_optional(%{t: t} = args, _meta) when t in [:list, :map], do: Map.put(args, :optional?, false)
+  def add_optional(args, meta), do: Map.put(args, :optional?, meta[:optional?])
 
 
   @doc """

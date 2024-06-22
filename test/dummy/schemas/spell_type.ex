@@ -5,5 +5,6 @@ defmodule Src.Schemas.SpellType do
       name: %{t: :string, min: 4, max: 45, default: "Nameless"},
       cost: %{t: :integer},
       power: %{t: :integer},
+      coin_flip: %{t: :boolean, optional?: true}
     }
 end

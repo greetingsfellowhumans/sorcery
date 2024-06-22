@@ -2,6 +2,8 @@ defmodule Sorcery.Schema.FieldType.String do
   @moduledoc false
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
+  @default_min 0
+  @default_max 25
 
 
   defstruct [
@@ -9,10 +11,11 @@ defmodule Sorcery.Schema.FieldType.String do
      
     # @TODO
     # SD.string does not take min and max
-    min: nil,
-    max: nil,
+    min: @default_min,
+    max: @default_max,
     default: nil,
     optional?: true,
+    unique: false,
   ]
 
 
@@ -30,13 +33,16 @@ defmodule Sorcery.Schema.FieldType.String do
 
   @impl true
   def get_sd_field(field_struct) do
-    opts = :utf8
+    cb = generator(field_struct)
+    SD.repeatedly(cb)
+  end
 
-    li = []
-    li = [SD.string(opts) | li]
-    li = if field_struct.default, do: [SD.constant(field_struct.default) | li], else: li
-    li = if field_struct.optional?, do: [nil | li], else: li
-    SD.one_of(li)
+  def generator(%{min: min, max: max}) do
+    fn ->
+      chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 !@#$%^&*(){}()[]':;,.<>/?" |> String.split("") |> Enum.filter(&(&1 != ""))
+      count = Enum.random(min..max)
+      Enum.take_random(chars, count) |> Enum.join("")
+    end
   end
 
 

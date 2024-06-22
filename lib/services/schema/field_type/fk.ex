@@ -1,10 +1,5 @@
 defmodule Sorcery.Schema.FieldType.Fk do
   @moduledoc false
-
-  ##
-  ## @TODO All of this
-  ##
-
   alias StreamData, as: SD
   @behaviour Sorcery.Schema.FieldType
 
@@ -18,30 +13,24 @@ defmodule Sorcery.Schema.FieldType.Fk do
     has_many: nil,
     has_one: nil,
     belongs_to: nil,
-    optional?: true,
+    optional?: false,
   ]
 
 
   @impl true
   def new(args), do: struct(__MODULE__, args)
 
-  def ecto_attrs(_field_struct) do
-    []
-  end
+  def ecto_attrs(_field_struct), do: []
 
   @impl true
-  def is_valid?(:tk,    nil, _value), do: false
   def is_valid?(_, _, _), do: true
 
 
   @impl true
-  def get_sd_field(field_struct) do
-    li = []
-    li = [SD.positive_integer() | li]
-    li = if field_struct.default, do: [SD.constant(field_struct.default) | li], else: li
-    li = if field_struct.optional?, do: [nil | li], else: li
-    SD.one_of(li)
+  def get_sd_field(_field_struct) do
+    SD.positive_integer()
   end
 
 
 end
+
