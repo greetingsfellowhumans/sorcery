@@ -77,6 +77,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
 
   defp just_in_time_insertion_cleanup(multi, entity, order) do
     Enum.reduce(entity, entity, fn 
+      {:id, _}, acc -> acc
       {entity_attr, "?" <> _ = full_lvar}, acc ->
         {lvar, attr} = String.split(full_lvar, ".")
                        |> case do
@@ -101,14 +102,17 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
     end) |> List.flatten()
     insert_order(inserts, tups, [])
   end
-  def insert_order(_inserts, [], ordered), do: ordered
+  def insert_order(_inserts, [], ordered), do: ordered |> Enum.reverse()
   def insert_order(inserts, [{tk, lvar} | tups], ordered) do
     entity = get_in_p(inserts, [tk, lvar])
-    deps = Map.values(entity) |> Enum.filter(fn 
-      "?" <> _ = dep -> Enum.any?(ordered, fn {_, lvar} -> dep == lvar end)
-      _ -> false
+    fields = entity |> Map.delete(:id) |> Map.values()
+    Enum.all?(fields, fn 
+      "?" <> _ = dep -> 
+        [dep | _] = String.split(dep, ".")
+        !Enum.any?(tups, fn {_, lvar} -> dep == lvar end)
+      _ -> true
     end)
-    if Enum.empty?(deps) do
+    |> if do
       insert_order(inserts, tups, [{tk, lvar} | ordered])
     else
       insert_order(inserts, tups ++ [{tk, lvar}], ordered)

@@ -11,6 +11,7 @@ defmodule Sorcery.Repo.Migrations.Demo do
         add :name,   :string
         add :location_id, references("battle_arena")
       end
+      drop_if_exists constraint("team", "team_location_id_fkey")
 
       create table("player") do
         add :name,      :string

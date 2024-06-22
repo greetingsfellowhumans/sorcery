@@ -44,7 +44,7 @@ defmodule Sorcery.Mutations.MutationsTest do
 
     M.init(outer_state.sorcery, :the_battle)
     |> M.create_entity(:team, "?new_team", %{name: "I am a new team!", location_id: 1})
-    #|> M.create_entity(:team, "?enemy_team", %{name: "I am a bad team!", location_id: "?new_team.id"})
+    |> M.create_entity(:team, "?enemy_team", %{name: "I am a bad team!", location_id: "?new_team.id"})
     |> M.send_mutation(outer_state.sorcery)
 
 
@@ -72,7 +72,7 @@ defmodule Sorcery.Mutations.MutationsTest do
         "?new_team" => %{id: "?new_team", name: "I am a new team!", location_id: 1}
       },
     }
-    assert [{:team, "?new_team"}, {:team, "?enemy_team"}, {:dog, "?my_dog"}] = Sorcery.StoreAdapter.Ecto.Mutation.insert_order(inserts)
+    assert [{:team, "?new_team"}, {:team, "?enemy_team"}, {:dog, "?my_dog"}] == Sorcery.StoreAdapter.Ecto.Mutation.insert_order(inserts)
   end
 
   # }}}

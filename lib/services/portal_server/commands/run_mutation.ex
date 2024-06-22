@@ -14,7 +14,6 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
       {:ok, results} ->
         child_mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, results)
         diff = Sorcery.Mutation.Diff.new(child_mutation)
-
         inner_state.config_module.run_mutation(results, diff)
 
       err -> dbg err
