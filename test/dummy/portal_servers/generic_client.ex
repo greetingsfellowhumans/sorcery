@@ -33,8 +33,6 @@ defmodule Src.PortalServers.GenericClient do
   @impl true
   def handle_info({:sorcery, msg}, outer_state) do
     inner_state = Sorcery.PortalServer.handle_info(msg, outer_state.sorcery)
-    #dbg new_state
-    #dbg msg
 
     case outer_state[:origin] do
       nil -> nil

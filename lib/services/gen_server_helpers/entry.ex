@@ -125,6 +125,12 @@ defmodule Sorcery.GenServerHelpers do
       # }}}
 
 
+    # {{{ handle_sorcery({:sorcery, msg}, state)
+    def handle_sorcery({:sorcery, msg}, state) do
+      inner_state = Sorcery.PortalServer.handle_info(msg, state.sorcery)
+      {:noreply, Map.put(state, :sorcery, inner_state)}
+    end
+    # }}}
 
 
     # {{{ portal_view(sorcery, portal_name, lvar)

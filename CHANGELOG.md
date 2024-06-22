@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.1] - 2024-06-22
+### Fixed
+A bug when you insert multiple entities and one depends on the other.
+Note there might still be an ecto foreign key constraint error. Dropping the constraint solved it for me, but I wish there were a cleaner solution.
 
 ## [0.4.0] - 2024-06-22
 ### Fixed

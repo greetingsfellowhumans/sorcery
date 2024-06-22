@@ -63,15 +63,56 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
 
   # {{{ handle_inserts
   defp handle_inserts(multi, mutation, schemas) do
-    Enum.reduce(mutation.inserts, multi, fn {tk, table}, acc ->
+    order = insert_order(mutation.inserts)
+    Enum.reduce(order, multi, fn {tk, lvar}, acc ->
       mod = schemas[tk]
-
-      Enum.reduce(table, acc, fn {id, new_entity}, acc ->
-        cs = mod.sorcery_insert_cs(new_entity)
-        M.insert(acc, "insert:#{tk}:#{id}", cs)
+      entity = get_in_p(mutation, [:inserts, tk, lvar])
+      id = entity.id
+      M.insert(acc, "insert:#{tk}:#{id}", fn m ->
+        entity = just_in_time_insertion_cleanup(m, entity, order)
+        mod.sorcery_insert_cs(entity)
       end)
-
     end)
+  end
+
+  defp just_in_time_insertion_cleanup(multi, entity, order) do
+    Enum.reduce(entity, entity, fn 
+      {entity_attr, "?" <> _ = full_lvar}, acc ->
+        {lvar, attr} = String.split(full_lvar, ".")
+                       |> case do
+                         [lvar, attr] -> {lvar, String.to_existing_atom(attr)}
+                         [lvar] -> {lvar, :id}
+                       end
+        tk = Enum.find_value(order, fn {tk, l} -> if l == lvar, do: tk, else: nil end)
+        multi_k = "insert:#{tk}:#{lvar}"
+        new_v = get_in_p(multi, [multi_k, attr])
+        Map.put(acc, entity_attr, new_v)
+      _, acc -> acc
+    end)
+  end
+
+
+  @doc false
+  def insert_order(inserts) do
+    tups = Enum.reduce(inserts, [], fn {tk, table}, acc ->
+      lvars = Map.keys(table)
+      tk_tups = Enum.map(lvars, &{tk, &1})
+      [tk_tups | acc]
+    end) |> List.flatten()
+    insert_order(inserts, tups, [])
+  end
+  def insert_order(_inserts, [], ordered), do: ordered
+  def insert_order(inserts, [{tk, lvar} | tups], ordered) do
+    entity = get_in_p(inserts, [tk, lvar])
+    deps = Map.values(entity) |> Enum.filter(fn 
+      "?" <> _ = dep -> Enum.any?(ordered, fn {_, lvar} -> dep == lvar end)
+      _ -> false
+    end)
+    if Enum.empty?(deps) do
+      insert_order(inserts, tups, [{tk, lvar} | ordered])
+    else
+      insert_order(inserts, tups ++ [{tk, lvar}], ordered)
+    end
   end
   # }}}
 

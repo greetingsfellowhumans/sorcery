@@ -44,6 +44,7 @@ defmodule Sorcery.Mutations.MutationsTest do
 
     M.init(outer_state.sorcery, :the_battle)
     |> M.create_entity(:team, "?new_team", %{name: "I am a new team!", location_id: 1})
+    #|> M.create_entity(:team, "?enemy_team", %{name: "I am a bad team!", location_id: "?new_team.id"})
     |> M.send_mutation(outer_state.sorcery)
 
 
@@ -53,7 +54,27 @@ defmodule Sorcery.Mutations.MutationsTest do
       _ -> false
     end)
     assert is_integer(new_team.id)
+
+    Sorcery.Repo.get_by(Src.Schemas.Team, [location_id: new_team.id])
   end
+
+  test "ordering inserts" do
+    inserts = %{
+      dog: %{
+        "?my_dog" => %{id: "?my_dog", team_id: "?enemy_team.id"},
+      },
+      team: %{
+        "?enemy_team" => %{
+          id: "?enemy_team",
+          name: "I am a bad team!",
+          location_id: "?new_team.id"
+        },
+        "?new_team" => %{id: "?new_team", name: "I am a new team!", location_id: 1}
+      },
+    }
+    assert [{:team, "?new_team"}, {:team, "?enemy_team"}, {:dog, "?my_dog"}] = Sorcery.StoreAdapter.Ecto.Mutation.insert_order(inserts)
+  end
+
   # }}}
 #
 #
