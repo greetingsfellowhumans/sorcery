@@ -78,7 +78,12 @@ defmodule Sorcery.LiveHelpers do
       # {{{ spawn_portal/2
       @impl true
       def spawn_portal(socket, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body) do
-          if connected?(socket) do
+        passes_checks = cond do
+          !function_exported?(__MODULE__, :connected?, 1) -> true
+          apply(__MODULE__, :connected?, [socket]) -> true
+          true -> false
+        end
+        if passes_checks do
           msg = %{
             command: :create_portal,
             portal_name: name,
@@ -136,6 +141,10 @@ defmodule Sorcery.LiveHelpers do
       end
       # }}}
 
+      def has_loaded?(sorcery) do
+        Enum.empty?(sorcery.pending_portals)
+      end
+
 
     # {{{ handle_sorcery({:sorcery, msg}, socket)
     def handle_sorcery({:sorcery, msg}, socket) do
@@ -164,7 +173,19 @@ defmodule Sorcery.LiveHelpers do
     end
     # }}}
 
+      # {{{ optimistic_mutation(mutation, socket)
+      def optimistic_mutation(mutation, socket) do
+        case Sorcery.Mutation.send_mutation(mutation, socket.assigns.sorcery) do
 
+          {:ok, new_sorcery} -> 
+            assign(socket, :sorcery, new_sorcery)
+
+          {:error, {:skip, kind, reason}} when is_binary(reason) ->
+            Phoenix.LiveView.put_flash(socket, kind, reason)
+
+        end
+      end
+      # }}}
 
       
     end

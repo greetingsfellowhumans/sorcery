@@ -75,6 +75,9 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
     end)
   end
 
+  defp just_in_time_insertion_cleanup(multi, entity, order) when is_struct(entity) do
+    just_in_time_insertion_cleanup(multi, Map.from_struct(entity), order)
+  end
   defp just_in_time_insertion_cleanup(multi, entity, order) do
     Enum.reduce(entity, entity, fn 
       {:id, _}, acc -> acc

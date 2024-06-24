@@ -9,8 +9,15 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
     reverse_query(diff, portal_names, [])
   end
   def reverse_query(diff, [portal_name | portal_names], passing_pid_portals) do
-    passing_pids = Enum.map(passing_pid_portals, fn {pid, _portal_name, _query_mod, _args} -> pid end)# &(Enum.at(&1, 0)))
-    instances = get_all_portal_instances(portal_name, exclude_pids: passing_pids)
+    ####
+    # Ok since a process can have multiple portals, we don't actually want to exclude it's pid
+    # Even though it would give better performance
+    # Leaving this here in case I come up with a better solution later.
+    #passing_pids = Enum.map(passing_pid_portals, fn {pid, _portal_name, _query_mod, _args} -> pid end)# &(Enum.at(&1, 0)))
+    #instances = get_all_portal_instances(portal_name, exclude_pids: passing_pids)
+    instances = get_all_portal_instances(portal_name, [])
+    ####
+
     ctx = %{diff: diff, portal_name: portal_name}
 
     new_passing_pid_portals = intersect_clauses_and_diffs(instances, ctx)

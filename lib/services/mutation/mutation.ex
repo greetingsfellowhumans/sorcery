@@ -36,10 +36,37 @@ defmodule Sorcery.Mutation do
   "My New Team"
   ```
   """
+  alias Sorcery.LiveHelpers
   alias Sorcery.Mutation.PreMutation
   alias Sorcery.PortalServer.InnerState
-  #import Sorcery.Helpers.Maps
+  import Sorcery.Helpers.Maps
   
+  # {{{ get_in(mutation, path)
+  def get_in(mutation, path) do
+    get_in_p(mutation, [:portal, :known_matches, :data] ++ path)
+  end
+  # }}}
+
+  @doc ~s"""
+  The function must return either: 
+  :ok
+  or
+  {kind, reason}
+
+  for example
+  {:error, "You can't do that."}
+
+  This is used by LiveHelpers.optimistic_mutation to skip mutations and show flash messages instead.
+  
+  The function passed in takes two arguments, old_data and new_data
+  Be careful, the new_data is not real. It is simply the best guess based on the current diff. By time the mutation reaches the portal server, it could be different!
+
+  ## Examples
+      iex> Mutation.validate(mutation, [:tk, :id, :some_attr], fn v -> 
+        if v > 0, do: :ok, else: {:error, "Something went wrong"}
+      end)
+  """
+  defdelegate validate(mutation, path, cb), to: PreMutation
 
   # {{{ :init
   @doc """
@@ -96,7 +123,26 @@ defmodule Sorcery.Mutation do
   defdelegate delete_entity(mutation, tk, id), to: PreMutation
   # }}}
 
-  # {{{ send_mutation(mutation)
+  # {{{ skip(mutation, reason)
+  @doc ~s"""
+  Mark a mutation to NOT be sent to the PortalServer.
+  Instead such a mutation will return an error tuple.
+  When using the LiveView helper with optimistic_mutation/2, skipped mutations will trigger put_flash/3
+  ## Examples
+      iex> mutation = skip(mutation, :info, "Testing")
+      iex> send_mutation(mutation, sorcery)
+      {:error, {:skip, :info, "Testing"}}
+  """
+  def skip(mutation, reason), do: skip(mutation, :error, reason)
+  def skip(mutation, kind, reason) do
+    mutation
+    |> Map.put(:skip?, true)
+    |> Map.put(:skip_reason, reason)
+    |> Map.put(:skip_kind, kind)
+  end
+  # }}}
+
+  # {{{ send_mutation(mutation, inner_state)
   @doc """
   Sends the mutation to the corresponding Portal Server
   The Portal Server will then update its own data store.
@@ -107,7 +153,9 @@ defmodule Sorcery.Mutation do
   To be clear, this does not return the new data you are waiting for. You probably won't need the return value.
   All the updates happen automatically, through some ~~magic~~  sorcery behind the scenes.
   """
-  def send_mutation(%{skip?: true}, _state), do: {:error, "Portal mutation already in progress."}
+  def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind}, _state) do
+    {:error, {:skip, kind, reason}}
+  end
   def send_mutation(%{portal: portal} = mutation, %InnerState{} = state) do
     %{parent_pid: parent} = portal
 

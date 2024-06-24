@@ -1,8 +1,7 @@
 defmodule Sorcery.Mutation.Temp do
   import Sorcery.Helpers.Maps
 
-
-  def add_temp_portal(inner_state, %{portal: portal} = mutation) do
+  def get_split_data(%{portal: portal} = mutation) do
     original_data = portal.known_matches.data
                     |> remove_created_entities()
 
@@ -10,9 +9,22 @@ defmodule Sorcery.Mutation.Temp do
       [_, "?" <> _], acc -> acc
       operation, latest_data -> build_temp_portal(operation, original_data, latest_data)
     end)
-    |> data_to_lvar_data(inner_state.portals[portal.portal_name])
+    {original_data, new_data}
+  end
 
-    portal = Map.put(portal, :temp_data, new_data)
+  def add_temp_portal(inner_state, %{portal: portal} = mutation) do
+    #original_data = portal.known_matches.data
+    #                |> remove_created_entities()
+
+    #new_data = Enum.reduce(mutation.operations, original_data, fn 
+    #  [_, "?" <> _], acc -> acc
+    #  operation, latest_data -> build_temp_portal(operation, original_data, latest_data)
+    #end)
+    {_original_data, new_data} = Sorcery.Mutation.Temp.get_split_data(mutation)
+    lvar_data = data_to_lvar_data(new_data, inner_state.portals[portal.portal_name])
+
+
+    portal = Map.put(portal, :temp_data, lvar_data)
 
     inner_state
     |> put_in_p([:portals, portal.portal_name], portal)

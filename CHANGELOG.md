@@ -6,8 +6,17 @@
 
 ## [0.4.1] - 2024-06-22
 ### Fixed
-A bug when you insert multiple entities and one depends on the other.
+- A bug when you insert multiple entities and one depends on the other.
 Note there might still be an ecto foreign key constraint error. Dropping the constraint solved it for me, but I wish there were a cleaner solution.
+
+- Allow spawn_portal to work even in an environment without the html helpers
+
+- Fix a bug in which only one portal per pid could ever be found by the reverse query
+
+### Added
+- Mutation.skip/3
+- Mutation.validate/3
+- LiveHelpers add an optimistic_mutations function
 
 ## [0.4.0] - 2024-06-22
 ### Fixed

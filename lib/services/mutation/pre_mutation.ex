@@ -9,6 +9,8 @@ defmodule Sorcery.Mutation.PreMutation do
     :portal,
     version: 1,
     skip?: false,
+    skip_reason: "Portal mutation already in progress.",
+    skip_kind: :error,
     args: %{},
     entities: %{},
     old_data: %{},
@@ -45,12 +47,7 @@ defmodule Sorcery.Mutation.PreMutation do
     #put_in_p(mutation, [:new_data | path], value)
   end
 
-  #def get(mutation, path) do
-  #  get_in_p(mutation, [:new_data | path])
-  #end
-  #def get_original(mutation, path) do
-  #  get_in_p(mutation, [:old_data | path])
-  #end
+  
 
   def create_entity(%{skip?: true} = m, _tk, _lvar, _body), do: m
   def create_entity(mutation, tk, "?" <> _ = lvar, body) do
@@ -62,6 +59,17 @@ defmodule Sorcery.Mutation.PreMutation do
   def delete_entity(%{skip?: true} = m, _tk, _id), do: m
   def delete_entity(mutation, tk, id) do
     update_in_p(mutation, [:deletes, tk], [id], &([id | &1]))
+  end
+
+  def validate(%{skip?: true} = m, _path, _cb), do: m
+  def validate(mutation, path, cb) do
+    {original_data, new_data} = Sorcery.Mutation.Temp.get_split_data(mutation)
+    o = get_in_p(original_data, path)
+    n = get_in_p(new_data, path)
+    case cb.(o, n) do
+      :ok -> mutation
+      {kind, reason} -> Sorcery.Mutation.skip(mutation, kind, reason)
+    end
   end
 
 end

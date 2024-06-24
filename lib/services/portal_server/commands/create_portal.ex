@@ -54,13 +54,14 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
 
     end
 
-
     state
+    |> Map.put(:pending_portals, [portal_name | state.pending_portals])
   end
 
   defp create_and_send_portal(child_pid, args, results, portal_name, query, timestamp) do
     portal = Portal.new(%{
       args: args,
+      has_loaded?: false,
       known_matches: results,
       parent_pid: self(), 
       child_pid: child_pid, 
