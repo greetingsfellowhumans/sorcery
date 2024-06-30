@@ -2,6 +2,7 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
   use ExUnit.Case
   use Sorcery.GenServerHelpers
   import Sorcery.Setups
+  import Sorcery.Helpers.Maps
   alias Src.Queries.GetBattle
   alias Src.PortalServers.GenericClient, as: Client
   alias Sorcery.SorceryDb.Inspection
@@ -31,6 +32,116 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
     ## SorceryDb should now have an entry for the query
     expected = [pid, Src.Queries.GetBattle, args]
     assert expected in Inspection.get_all_portal_instances(portal_name)
+  end
+
+  test "Should handle multiple where clauses on joined tables" do
+# {{{ sorcery
+  src = %Sorcery.PortalServer.InnerState{
+  config_module: Src,
+  store_adapter: Sorcery.StoreAdapter.Ecto,
+  pending_portals: [:kennel_portal, :player_portal, :kennel_portal,
+   :player_portal],
+  args: %{repo_module: Sorcery.Repo},
+  portals: %{}
+}
+# }}}
+
+    # {{{ wheres
+    wheres = [
+      %Sorcery.Query.WhereClause{
+        lvar: :"?player",
+        tk: :player,
+        attr: :id,
+        left: nil,
+        right: 1,
+        op: :==,
+        other_lvar: nil,
+        other_lvar_attr: nil,
+        arg_name: nil,
+        right_type: :literal
+      },
+      %Sorcery.Query.WhereClause{
+        lvar: :"?spell_instances",
+        tk: :spell_instance,
+        attr: :player_id,
+        left: nil,
+        right: "?player.id",
+        op: :==,
+        other_lvar: :"?player",
+        other_lvar_attr: :id,
+        arg_name: nil,
+        right_type: :lvar
+      },
+      %Sorcery.Query.WhereClause{
+        lvar: :"?spell_instances",
+        tk: :spell_instance,
+        attr: :type_id,
+        left: nil,
+        right: 1,
+        op: :==,
+        other_lvar: nil,
+        other_lvar_attr: nil,
+        arg_name: nil,
+        right_type: :literal
+      },
+    ]
+    # }}}
+
+# {{{ finds
+  finds = %{
+  "?player": [:id, :name],
+  "?spell_instances": [:id, :player_id, :type_id]
+}
+# }}}
+ 
+    {:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
+    assert has_in_p(data, ["?player", 1])
+    assert has_in_p(data, ["?spell_instances", 1])
+
+    # Now when the spell instance does not exist
+    # {{{ wheres 2
+    wheres = [
+      %Sorcery.Query.WhereClause{
+        lvar: :"?player",
+        tk: :player,
+        attr: :id,
+        left: nil,
+        right: 1,
+        op: :==,
+        other_lvar: nil,
+        other_lvar_attr: nil,
+        arg_name: nil,
+        right_type: :literal
+      },
+      %Sorcery.Query.WhereClause{
+        lvar: :"?spell_instances",
+        tk: :spell_instance,
+        attr: :player_id,
+        left: nil,
+        right: "?player.id",
+        op: :==,
+        other_lvar: :"?player",
+        other_lvar_attr: :id,
+        arg_name: nil,
+        right_type: :lvar
+      },
+      %Sorcery.Query.WhereClause{
+        lvar: :"?spell_instances",
+        tk: :spell_instance,
+        attr: :type_id,
+        left: nil,
+        right: 99999999,
+        op: :==,
+        other_lvar: nil,
+        other_lvar_attr: nil,
+        arg_name: nil,
+        right_type: :literal
+      },
+    ]
+    # }}}
+    {:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
+    assert has_in_p(data, ["?player", 1])
+    refute has_in_p(data, ["?spell_instances", 1])
   end
 
 end

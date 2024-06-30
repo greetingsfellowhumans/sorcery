@@ -3,20 +3,38 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
   import Ecto.Query
   alias Sorcery.ReturnedEntities, as: RE
 
+  _comment = ~s"""
+  Do not do this:
+
+  from p0, where p0...
+  join l1 on(...), where(l1)
+
+  Instead, do this
+  from p0, where p0...
+  join l1 on( ... and l1)
+
+  """
+
 
   def run_query(inner_state, wheres, finds) do
     repo = inner_state.args.repo_module
+
     config = inner_state.config_module.config()
+    debug? = inner_state.config_module.debug?()
     tk_map = config.schemas
 
     q = initial_from(wheres, tk_map)
     results = Enum.reduce(wheres, q, fn wc, q -> add_where(q, wc, tk_map) end)
               |> add_select(finds)
+              #|> debug_print(debug?)
               |> repo.all()
               |> convert_to_returned_entities()
               |> assign_tks(wheres)
     {:ok, results}
   end
+
+  defp debug_print(query, true), do: dbg(query)
+  defp debug_print(query, _), do: query
 
   def initial_from([wc | _], tk_map) do
     mod = tk_map[wc.tk]
@@ -34,14 +52,16 @@ defmodule Sorcery.StoreAdapter.Ecto.Query do
 
   def add_literal_clause(q, where_clause) do
     %{lvar: lvar, attr: attr, right: value} = where_clause
-    case where_clause.op do
-      :== -> where(q, [{^lvar, x}], field(x, ^attr) == ^value)
-      :in -> where(q, [{^lvar, x}], field(x, ^attr) in ^value)
-      :!= -> where(q, [{^lvar, x}], field(x, ^attr) != ^value)
-      :> ->  where(q, [{^lvar, x}], field(x, ^attr) >  ^value)
-      :>= -> where(q, [{^lvar, x}], field(x, ^attr) >= ^value)
-      :< ->  where(q, [{^lvar, x}], field(x, ^attr) <  ^value)
-      :<= -> where(q, [{^lvar, x}], field(x, ^attr) <= ^value)
+    case {where_clause.op, value} do
+      {:==, nil} -> where(q, [{^lvar, x}], is_nil(field(x, ^attr)))
+      {:==, _} -> where(q, [{^lvar, x}], field(x, ^attr) == ^value)
+      {:in, _} -> where(q, [{^lvar, x}], field(x, ^attr) in ^value)
+      {:!=, nil} -> where(q, [{^lvar, x}], not is_nil(field(x, ^attr)))
+      {:!=, _} -> where(q, [{^lvar, x}], field(x, ^attr))
+      {:>, _} ->  where(q, [{^lvar, x}], field(x, ^attr) >  ^value)
+      {:>=, _} -> where(q, [{^lvar, x}], field(x, ^attr) >= ^value)
+      {:<, _} ->  where(q, [{^lvar, x}], field(x, ^attr) <  ^value)
+      {:<=, _} -> where(q, [{^lvar, x}], field(x, ^attr) <= ^value)
     end
   end
 

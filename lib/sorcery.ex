@@ -21,6 +21,9 @@ defmodule Sorcery do
     quote do
       use Sorcery.SorceryDb, opts: unquote(opts)
 
+      @debug? Keyword.get(unquote(opts), :debug, false)
+      def debug?(), do: @debug?
+
       def config() do
         %{
           mutations: get_mod_map(:mutations, unquote(opts)),

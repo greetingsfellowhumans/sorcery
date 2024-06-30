@@ -23,7 +23,7 @@ defmodule Sorcery.Helpers.Maps do
   Given a map, converts all string keys into atoms
 
   ## Examples
-      iex> to_atom_keys(%{"a" => 1, "b" => 2, "c" => %{"foo" => "bar"}})
+      iex> to_atom_keys(%{"a" => 1, b: 2, "c" => %{"foo" => "bar"}})
       %{a: 1, b: 2, c: %{foo: "bar"}}
   """
   def to_atom_keys(map) do

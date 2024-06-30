@@ -36,7 +36,7 @@ defmodule Sorcery.Mutation do
   "My New Team"
   ```
   """
-  alias Sorcery.LiveHelpers
+  #alias Sorcery.LiveHelpers
   alias Sorcery.Mutation.PreMutation
   alias Sorcery.PortalServer.InnerState
   import Sorcery.Helpers.Maps
@@ -158,8 +158,9 @@ defmodule Sorcery.Mutation do
   end
   def send_mutation(%{portal: portal} = mutation, %InnerState{} = state) do
     %{parent_pid: parent} = portal
-
     operations = mutation.operations |> Enum.reverse()
+                 |> sanitize_operations()
+
     mutation = Map.put(mutation, :operations, operations)
 
     msg = %{
@@ -171,7 +172,21 @@ defmodule Sorcery.Mutation do
 
     state = Sorcery.Mutation.Temp.add_temp_portal(state, mutation)
     {:ok, state}
-    
+  end
+  # }}}
+
+  # {{{ sanitize_operations
+  defp sanitize_operations(operations) do
+    Enum.map(operations, fn
+      {op, path, body} when is_struct(body) -> {op, path, body}
+      {op, path, body} when is_map(body) ->
+        body = Map.new(body, fn 
+          {k, v} when is_binary(k) -> {String.to_existing_atom(k), v}
+          {k, v} -> {k, v}
+        end)
+        {op, path, body}
+      other -> other
+    end)
   end
   # }}}
 

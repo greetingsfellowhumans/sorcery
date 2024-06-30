@@ -15,5 +15,8 @@ defmodule Sorcery.Query.BasicsTest do
     assert %{health: 99} = player1
   end
 
+  test "Should handle nil comparison" do
+  end
+
 
 end

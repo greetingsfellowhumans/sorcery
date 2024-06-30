@@ -20,7 +20,18 @@ defmodule Sorcery.Mutation.PreMutation do
   ]
 
   def init(sorcery_state, portal_name) do
-    init(sorcery_state.portals[portal_name])
+    portal = get_in_p(sorcery_state, [:portals, portal_name])
+    if portal do
+      init(portal)
+    else
+      available_names = Map.get(sorcery_state, :portals, %{}) |> Map.keys()
+      raise Sorcery.NoPortalInStateError,
+        portal_name: portal_name,
+        available_names: available_names
+    end
+  end
+  defp init(nil) do
+    raise Sorcery.NoPortalError
   end
   defp init(portal) do
     portal = Portal.freeze(portal)
