@@ -60,6 +60,18 @@ defmodule Sorcery.ReturnedEntities do
   end
   # }}}
 
+  def merge(li) do
+    Enum.reduce(li, new(), fn curr, acc ->
+      d = deep_merge(acc.data, curr.data)
+      l = deep_merge(acc.lvar_tks, curr.lvar_tks)
+      p = curr.primary_entities ++ acc.primary_entities
+      acc
+      |> Map.put(:data, d)
+      |> Map.put(:lvar_tks, l)
+      |> Map.put(:primary_entities, p)
+    end)
+  end
+
 
   # {{{ delete_entities(re, tk, li) :: re?()
   @doc ~S"""

@@ -6,6 +6,7 @@
 
 ## [0.4.1] - 2024-06-22
 ### Fixed
+- Several bugs with the SrcQL Ecto Adapter
 - Add a :pending_portals list to inner_state, and a has_loaded? function to LiveHelpers.
 - A bug when you insert multiple entities and one depends on the other.
 Note there might still be an ecto foreign key constraint error. Dropping the constraint solved it for me, but I wish there were a cleaner solution.

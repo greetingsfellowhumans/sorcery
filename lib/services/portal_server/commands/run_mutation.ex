@@ -19,7 +19,6 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
       err -> dbg err
     end
 
-
     inner_state
   end
 

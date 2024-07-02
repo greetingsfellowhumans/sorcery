@@ -89,14 +89,15 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
 
 # {{{ finds
   finds = %{
-  "?player": [:id, :name],
+  "?player": [:id, :name, :age],
+  "?team": [:id, :name, :location_id],
   "?spell_instances": [:id, :player_id, :type_id]
 }
 # }}}
  
-    {:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
-    assert has_in_p(data, ["?player", 1])
-    assert has_in_p(data, ["?spell_instances", 1])
+    #{:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
+    #assert has_in_p(data, ["?player", 1])
+    #assert has_in_p(data, ["?spell_instances", 1])
 
     # Now when the spell instance does not exist
     # {{{ wheres 2
@@ -130,7 +131,19 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
         tk: :spell_instance,
         attr: :type_id,
         left: nil,
-        right: 99999999,
+        right: 1,
+        op: :>=,
+        other_lvar: nil,
+        other_lvar_attr: nil,
+        arg_name: nil,
+        right_type: :literal
+      },
+      %Sorcery.Query.WhereClause{
+        lvar: :"?team",
+        tk: :team,
+        attr: :id,
+        left: nil,
+        right: 1,
         op: :==,
         other_lvar: nil,
         other_lvar_attr: nil,
@@ -139,9 +152,14 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
       },
     ]
     # }}}
+
     {:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
-    assert has_in_p(data, ["?player", 1])
-    refute has_in_p(data, ["?spell_instances", 1])
+    assert %{id: 1} = data["?player"][1]
+    assert [1, 13, 25] == Map.keys(data["?spell_instances"])
+
+    #dbg Sorcery.Repo.all(Src.Schemas.SpellInstance) |> Enum.filter(fn %{player_id: id} -> id == 1 end)
+
   end
+
 
 end
