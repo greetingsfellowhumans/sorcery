@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.1] - 2024-07-06
+### Fixed
+- A bug that would crash mutations whenever the portal had an empty value for an lvar.
+
 ## [0.4.1] - 2024-06-22
 ### Fixed
 - Several bugs with the SrcQL Ecto Adapter

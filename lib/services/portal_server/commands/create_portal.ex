@@ -50,7 +50,7 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
             end)
           end)
         end)
-        MnesiaAdapter.apply_fetched(to_atom_keys(data), schemas)
+        MnesiaAdapter.apply_fetched(to_atom_keys(data, 1), schemas)
 
     end
 

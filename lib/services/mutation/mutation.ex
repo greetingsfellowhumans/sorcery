@@ -54,7 +54,9 @@ defmodule Sorcery.Mutation do
   {kind, reason}
 
   for example
-  {:error, "You can't do that."}
+  ```elixir
+      {:error, "You can't do that."}
+  ```
 
   This is used by LiveHelpers.optimistic_mutation to skip mutations and show flash messages instead.
   
@@ -170,6 +172,7 @@ defmodule Sorcery.Mutation do
     }
     send(parent, {:sorcery, msg})
 
+    
     state = Sorcery.Mutation.Temp.add_temp_portal(state, mutation)
     {:ok, state}
   end

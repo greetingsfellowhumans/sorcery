@@ -25,21 +25,27 @@ defmodule Sorcery.Helpers.Maps do
   ## Examples
       iex> to_atom_keys(%{"a" => 1, b: 2, "c" => %{"foo" => "bar"}})
       %{a: 1, b: 2, c: %{foo: "bar"}}
+      iex> to_atom_keys(%{"a" => 1, b: 2, "c" => %{"foo" => "bar"}}, 1)
+      %{a: 1, b: 2, c: %{"foo" => "bar"}}
   """
-  def to_atom_keys(map) do
-    Enum.reduce(map, %{}, fn 
-      {sk, v}, acc when is_binary(sk) -> 
-        k = String.to_existing_atom(sk)
+  def to_atom_keys(map, max_depth \\ -1, curr_depth \\ 0) do
+    if max_depth == curr_depth do
+      map
+    else
+      Enum.reduce(map, %{}, fn 
+        {sk, v}, acc when is_binary(sk) -> 
+          k = String.to_existing_atom(sk)
 
-        v = case v do
-          m when is_map(m) -> to_atom_keys(m)
-          v -> v
-        end
+          v = case v do
+            m when is_map(m) -> to_atom_keys(m, max_depth, curr_depth + 1)
+            v -> v
+          end
 
-        Map.put(acc, k, v)
-      {k, m}, acc when is_map(m) -> Map.put(acc, k, to_atom_keys(m))
-      {k, v}, acc -> Map.put(acc, k, v)
-    end)
+          Map.put(acc, k, v)
+        {k, m}, acc when is_map(m) -> Map.put(acc, k, to_atom_keys(m, max_depth, curr_depth + 1))
+        {k, v}, acc -> Map.put(acc, k, v)
+      end)
+    end
   end
   # }}}
 

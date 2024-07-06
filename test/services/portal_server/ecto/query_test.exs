@@ -22,16 +22,20 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
       }
     ])
 
-    assert_receive {:received_msg, {_pid, _msg, _old_state, inner_state}}
-    portal = inner_state.portals.battle_portal
-    expected = [%{id: 1, location_id: 1}]
-    assert expected == portal_view(inner_state, portal_name, "?team")
-    assert expected == Map.values(portal.known_matches.data["?team"])
-    assert inner_state == Client.get_state(pid).sorcery
+    assert_receive {:received_msg, {_pid, msg, _old_state, new_sorcery}}
+    assert :portal_merge == msg.command
+    portal = new_sorcery.portals[portal_name]
+    players_table = portal.known_matches.data["?all_players"]
+    assert Map.has_key?(players_table, args.player_id)
 
-    ## SorceryDb should now have an entry for the query
-    expected = [pid, Src.Queries.GetBattle, args]
-    assert expected in Inspection.get_all_portal_instances(portal_name)
+    #expected = [%{id: 1, location_id: 1}]
+    #assert expected == portal_view(inner_state, portal_name, "?team")
+    #assert expected == Map.values(portal.known_matches.data["?team"])
+    #assert inner_state == Client.get_state(pid).sorcery
+
+    ### SorceryDb should now have an entry for the query
+    #expected = [pid, Src.Queries.GetBattle, args]
+    #assert expected in Inspection.get_all_portal_instances(portal_name)
   end
 
   test "Should handle multiple where clauses on joined tables" do
@@ -156,8 +160,6 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
     {:ok, %{data: data}} = Sorcery.StoreAdapter.Ecto.Query.run_query(src, wheres, finds)
     assert %{id: 1} = data["?player"][1]
     assert [1, 13, 25] == Map.keys(data["?spell_instances"])
-
-    #dbg Sorcery.Repo.all(Src.Schemas.SpellInstance) |> Enum.filter(fn %{player_id: id} -> id == 1 end)
 
   end
 

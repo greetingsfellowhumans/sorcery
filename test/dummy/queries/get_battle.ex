@@ -4,7 +4,6 @@ defmodule Src.Queries.GetBattle do
   use Sorcery.Query, %{
     find: %{
       #"?player" => :*,
-      #"?team" => :*,
       "?arena" => :*,
       "?all_teams" => [:name, :location_id],
       "?all_players" => :*,
