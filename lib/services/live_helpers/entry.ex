@@ -173,6 +173,14 @@ defmodule Sorcery.LiveHelpers do
     end
     # }}}
 
+    def portal_one(sorcery, portal_name, lvar) do
+      case portal_view(sorcery, portal_name, lvar) do
+        [item | _] -> item
+        _ -> nil
+      end
+    end
+     
+
       # {{{ optimistic_mutation(mutation, socket)
       def optimistic_mutation(mutation, socket) do
         case Sorcery.Mutation.send_mutation(mutation, socket.assigns.sorcery) do
