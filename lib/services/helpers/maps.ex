@@ -2,6 +2,22 @@ defmodule Sorcery.Helpers.Maps do
   @moduledoc false
 
 
+  # {{{ get_one(m)
+  _doc = ~s"""
+  Careful, this does not care about order and is probably best reserved for times when you know there is only one key/value pair in a map.
+  """
+  def get_one(m) when is_map(m) do
+    case Map.values(m) do
+      [hd | _] -> hd
+      _ -> nil
+    end
+  end
+  def get_one(m, li) when is_list(li) do
+    get_in_p(m, li)
+    |> get_one()
+  end
+  # }}}
+
   # {{{ from_struct/1
   @doc ~S"""
   The usual Map.from_struct/1 causes huge trouble because the __meta__ field contains a '#'. Tests break with EOF errors.
