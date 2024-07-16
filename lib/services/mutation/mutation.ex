@@ -152,8 +152,9 @@ defmodule Sorcery.Mutation do
 
   Returns the mutation passed in.
 
-  To be clear, this does not return the new data you are waiting for. You probably won't need the return value.
-  All the updates happen automatically, through some ~~magic~~  sorcery behind the scenes.
+  The return state will include a temp_portal, which is handy for both testing, and for optimistic updates. 
+  When the PortalServer sends the new, fully updated data, then it will overwrite the portal and remove the temp_portal data.
+  There are limitations to the temp_portal, and it should not be trusted too much.
   """
   def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind}, _state) do
     {:error, {:skip, kind, reason}}
