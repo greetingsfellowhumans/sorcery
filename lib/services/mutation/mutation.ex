@@ -144,7 +144,7 @@ defmodule Sorcery.Mutation do
   end
   # }}}
 
-  # {{{ send_mutation(mutation, inner_state)
+  # {{{ send_mutation(mutation, inner_state, opts)
   @doc """
   Sends the mutation to the corresponding Portal Server
   The Portal Server will then update its own data store.
@@ -156,10 +156,13 @@ defmodule Sorcery.Mutation do
   When the PortalServer sends the new, fully updated data, then it will overwrite the portal and remove the temp_portal data.
   There are limitations to the temp_portal, and it should not be trusted too much.
   """
-  def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind}, _state) do
+  def send_mutation(mutation, state), do: send_mutation(mutation, state, [])
+  def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind}, _state, _opts) do
     {:error, {:skip, kind, reason}}
   end
-  def send_mutation(%{portal: portal} = mutation, %InnerState{} = state) do
+  def send_mutation(%{portal: portal} = mutation, %InnerState{} = state, opts) do
+    opts = Keyword.merge(default_opts(), opts)
+
     %{parent_pid: parent} = portal
     operations = mutation.operations |> Enum.reverse()
                  |> sanitize_operations()
@@ -173,10 +176,10 @@ defmodule Sorcery.Mutation do
     }
     send(parent, {:sorcery, msg})
 
-    
-    state = Sorcery.Mutation.Temp.add_temp_portal(state, mutation)
+    state = if Keyword.get(opts, :optimistic), do: Sorcery.Mutation.Temp.add_temp_portal(state, mutation), else: state
     {:ok, state}
   end
+  defp default_opts(), do: [optimistic: true]
   # }}}
 
   # {{{ sanitize_operations

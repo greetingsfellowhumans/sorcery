@@ -4,7 +4,13 @@
 - Better documentation.
 - Clean up the demo app
 
-## [0.4.1] - 2024-07-06
+## [0.4.3] - 2024-07-21
+### Added
+Mutation.send_mutation now takes an optional 3rd argument.
+This must be a keyword list of options. 
+Currently only one option is used (:optimistic) which defaults to true
+
+## [0.4.2] - 2024-07-06
 ### Fixed
 - A bug that would crash mutations whenever the portal had an empty value for an lvar.
 
