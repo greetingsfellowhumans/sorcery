@@ -153,8 +153,8 @@ defmodule Sorcery.LiveHelpers do
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}
     end
-    def handle_sorcery({:sorcery, %{command: :mutation_failed, args: %{error: %{reason: reason}}} = msg}, socket) do
-      socket = put_flash(socket, :error, reason)
+    def handle_sorcery({:sorcery, %{command: :mutation_failed, args: %{error: %{reason: reason} }} = msg}, socket) do
+      socket = Phoenix.LiveView.put_flash(socket, :error, reason)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}
     end

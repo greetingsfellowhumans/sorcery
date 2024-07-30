@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.4] - 2024-07-29
+### Fixed
+Broken call to put_flash
+
 ## [0.4.3] - 2024-07-21
 ### Added
 Mutation.send_mutation now takes an optional 3rd argument.
