@@ -8,7 +8,13 @@
 ### Added
 Mutation.send_mutation now takes an optional 3rd argument.
 This must be a keyword list of options. 
-Currently only one option is used (:optimistic) which defaults to true
+There are three options
+  :optimistic     | true | Whether to try to do an optimistic update. Does not work well when creating new entities.
+  :handle_fail    | nil | a function that takes the error, and the state. Returns state.
+  :handle_success | nil | a function that takes the error, and the state. Returns state.
+
+### Fixed
+Ecto Adapter error handling when a transaction fails.
 
 ## [0.4.2] - 2024-07-06
 ### Fixed

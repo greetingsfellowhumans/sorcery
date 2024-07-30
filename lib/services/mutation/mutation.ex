@@ -155,9 +155,31 @@ defmodule Sorcery.Mutation do
   The return state will include a temp_portal, which is handy for both testing, and for optimistic updates. 
   When the PortalServer sends the new, fully updated data, then it will overwrite the portal and remove the temp_portal data.
   There are limitations to the temp_portal, and it should not be trusted too much.
+
+  Takes an optional keyword list of options. Available options: :optimistic, :handle_fail, :handle_success
+
+  ### :optimistic (true)
+  When true, this will attempt an optimistic update. Does not work great when creating a new entity because we do not yet have the id.
+
+  ### :handle_fail (nil)
+  Expects nil, or a callback function of the shape `fn error, state -> state end`
+  For example if you use Mutation.validate, which fails, then the error argument will be a map including keys :kind, :reason
+  
+  ### :handle_success (nil)
+  Expects nil, or a callback function of the shape `fn data, state -> state end`
+  DO NOT try to manually persist the data into a portal. That happens automatically after SorceryDb does some work.
+  Instead this can be useful as a sanity test, or to verify that the transaction has, indeed, completed successfully.
+  
   """
   def send_mutation(mutation, state), do: send_mutation(mutation, state, [])
-  def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind}, _state, _opts) do
+  def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind} = mutation, _state, opts) do
+    if cb = Keyword.get(opts, :handle_fail) do
+      child_pid = mutation.portal.child_pid
+      msg = %{mutation: mutation}
+            |> put_in_p([:args, :handle_fail], cb)
+      err = %{reason: reason, kind: kind}
+      Sorcery.PortalServer.Commands.RunMutation.on_fail(child_pid, msg, err)
+    end
     {:error, {:skip, kind, reason}}
   end
   def send_mutation(%{portal: portal} = mutation, %InnerState{} = state, opts) do

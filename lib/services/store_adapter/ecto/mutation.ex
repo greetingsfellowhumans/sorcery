@@ -41,6 +41,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Mutation do
      
     {:ok, m}
   end
+  defp handle_formatting(err), do: err
 
 
 

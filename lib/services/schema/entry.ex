@@ -20,7 +20,7 @@ defmodule Sorcery.Schema do
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
-
+      @skip_sorcery false
       @fields Keyword.get(opts, :fields, %{})
       @meta Map.merge(
         Sorcery.Schema.meta_defaults(__MODULE__),

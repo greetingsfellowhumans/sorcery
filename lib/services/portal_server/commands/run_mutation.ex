@@ -3,6 +3,7 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
   import Sorcery.Helpers.Maps
 
   def entry(%{mutation: mutation} = msg, inner_state) do
+    child_pid = mutation.portal.child_pid
     mutation = 
       mutation
       |> refresh_data(inner_state)
@@ -12,15 +13,45 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
     # Submit changes to store
     case update_the_store(msg, inner_state) do
       {:ok, results} ->
+        on_success(child_pid, msg, results)
         child_mutation = Sorcery.Mutation.ChildrenMutation.init(mutation, results)
         diff = Sorcery.Mutation.Diff.new(child_mutation)
         inner_state.config_module.run_mutation(results, diff)
 
+      {:error, err} -> on_fail(child_pid, msg, err)
       err -> dbg err
     end
 
     inner_state
   end
+
+  # {{{ on_success
+  def on_success(child_pid, original_msg, data) do
+    args = Map.get(original_msg, :args, %{})
+           |> Map.put(:data, data)
+    msg = %{
+      command: :mutation_success,
+      mutation: original_msg.mutation, 
+      args: args
+    }
+
+    send(child_pid, {:sorcery, msg})
+  end
+  # }}}
+
+  # {{{ on_fail
+  def on_fail(child_pid, original_msg, err) do
+    args = Map.get(original_msg, :args, %{})
+           |> Map.put(:error, err)
+    msg = %{
+      command: :mutation_failed,
+      mutation: original_msg.mutation, 
+      args: args
+    }
+
+    send(child_pid, {:sorcery, msg})
+  end
+  # }}}
 
   # To eliminate the possibility of race conditions and more nefarious issues
   # We grab the most recent data from SorceryDb

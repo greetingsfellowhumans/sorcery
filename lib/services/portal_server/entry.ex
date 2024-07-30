@@ -59,6 +59,8 @@ defmodule Sorcery.PortalServer do
   def handle_info(%{command: :portal_merge} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.PortalMerge.entry(msg, state)
   def handle_info(%{command: :run_mutation} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.RunMutation.entry(msg, state)
   def handle_info(%{command: :portal_put} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.PortalPut.entry(msg, state)
+  def handle_info(%{command: :mutation_failed} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.MutationFailed.entry(msg, state)
+  def handle_info(%{command: :mutation_success} = msg, %Sorcery.PortalServer.InnerState{} = state), do: Cmd.MutationSuccess.entry(msg, state)
 
   def handle_info(%{command: cmd}, %Sorcery.PortalServer.InnerState{}) do
     raise "#{cmd} was just sent as a :command."
