@@ -169,7 +169,8 @@ defmodule Sorcery.Mutation do
   Expects nil, or a callback function of the shape `fn data, state -> state end`
   DO NOT try to manually persist the data into a portal. That happens automatically after SorceryDb does some work.
   Instead this can be useful as a sanity test, or to verify that the transaction has, indeed, completed successfully.
-  
+
+  If you are using Sorcery.LiveHelpers, this takes a socket instead of state, allowing you to redirect, put_flash, etc.
   """
   def send_mutation(mutation, state), do: send_mutation(mutation, state, [])
   def send_mutation(%{skip?: true, skip_reason: reason, skip_kind: kind} = mutation, _state, opts) do
@@ -184,6 +185,7 @@ defmodule Sorcery.Mutation do
   end
   def send_mutation(%{portal: portal} = mutation, %InnerState{} = state, opts) do
     opts = Keyword.merge(default_opts(), opts)
+    args = Enum.into(opts, %{})
 
     %{parent_pid: parent} = portal
     operations = mutation.operations |> Enum.reverse()
@@ -192,6 +194,7 @@ defmodule Sorcery.Mutation do
     mutation = Map.put(mutation, :operations, operations)
 
     msg = %{
+      args: args,
       command: :run_mutation,
       portal: portal,
       mutation: mutation

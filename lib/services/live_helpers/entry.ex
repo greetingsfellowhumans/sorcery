@@ -148,8 +148,7 @@ defmodule Sorcery.LiveHelpers do
 
     # {{{ handle_sorcery({:sorcery, msg}, socket)
     def handle_sorcery({:sorcery, %{command: :mutation_failed, args: %{error: error, handle_fail: cb}} = msg}, socket) when is_function(cb) do
-      assigns = cb.(error, socket.assigns)
-      socket = Map.put(socket, :assigns, assigns)
+      socket = cb.(error, socket)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}
     end
@@ -159,8 +158,7 @@ defmodule Sorcery.LiveHelpers do
       {:noreply, assign(socket, :sorcery, inner_state)}
     end
     def handle_sorcery({:sorcery, %{command: :mutation_success, args: %{data: data, handle_success: cb}} = msg}, socket) when is_function(cb) do
-      assigns = cb.(data, socket.assigns)
-      socket = Map.put(socket, :assigns, assigns)
+      socket = cb.(data, socket)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}
     end
@@ -199,8 +197,8 @@ defmodule Sorcery.LiveHelpers do
      
 
       # {{{ optimistic_mutation(mutation, socket)
-      def optimistic_mutation(mutation, socket) do
-        case Sorcery.Mutation.send_mutation(mutation, socket.assigns.sorcery) do
+      def optimistic_mutation(mutation, socket, opts \\ []) do
+        case Sorcery.Mutation.send_mutation(mutation, socket.assigns.sorcery, opts) do
 
           {:ok, new_sorcery} -> 
             assign(socket, :sorcery, new_sorcery)
