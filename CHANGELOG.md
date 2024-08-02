@@ -4,6 +4,14 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.5] - 2024-08-01
+### Fixed
+Broken handle_success and handle_fail options for mutations
+
+### Changed
+handle_success and handle_fail options with LiveHelpers now update the socket instead of sorcery state.
+
+
 ## [0.4.4] - 2024-07-29
 ### Fixed
 Broken call to put_flash
