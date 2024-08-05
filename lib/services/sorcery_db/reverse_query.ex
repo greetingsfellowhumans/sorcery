@@ -63,10 +63,14 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
     get_all_portal_names()
     |> Enum.filter(fn name ->
       table_name = get_portal_table_name(name)
-      case :ets.select(table_name, [{ {:_, :"$2", :_}, [], [:"$2"]}], 1) do
-        {[query_mod], _} -> 
-          qmtks = query_mod.tks_affected() |> MapSet.new()
-          !MapSet.disjoint?(difftks, qmtks)
+      try do
+        case :ets.select(table_name, [{ {:_, :"$2", :_}, [], [:"$2"]}], 1) do
+          {[query_mod], _} -> 
+            qmtks = query_mod.tks_affected() |> MapSet.new()
+            !MapSet.disjoint?(difftks, qmtks)
+          _ -> false
+        end
+      rescue
         _ -> false
       end
     end)
