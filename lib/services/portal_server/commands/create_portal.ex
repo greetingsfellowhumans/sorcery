@@ -51,6 +51,7 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
           end)
         end)
         MnesiaAdapter.apply_fetched(to_atom_keys(data, 1), schemas)
+      fail -> dbg fail
 
     end
 

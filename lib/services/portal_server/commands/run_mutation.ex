@@ -19,7 +19,8 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
         inner_state.config_module.run_mutation(results, diff)
 
       {:error, err} -> on_fail(child_pid, msg, err)
-      err -> dbg err
+      err -> 
+        dbg err
     end
 
     inner_state
@@ -75,7 +76,6 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
             put_in_p(acc, [tk, id], entity)
           end)
         err -> 
-          dbg err
           raise "Unable to find the matching entities for :#{tk}"
       end
     end)

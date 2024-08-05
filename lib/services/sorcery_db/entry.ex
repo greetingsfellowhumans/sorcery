@@ -67,9 +67,16 @@ defmodule Sorcery.SorceryDb do
     end)
     |> case do
       :unmet_deps ->
-        # Try again after other lvars have resolved.
-        all_lvars = all_lvars ++ [lvar]
-        query_lvars(all_lvars, all_clauses, data, args, schemas_attrs)
+        retried_lvars = Map.get(args, :retried_lvars, [])
+        if lvar in retried_lvars do
+          # Last chance to resolve this lvar
+          query_lvars(all_lvars, all_clauses, data, args, schemas_attrs)
+        else
+          # Try again after other lvars have resolved.
+          all_lvars = all_lvars ++ [lvar]
+          args = update_in_p(args, [:retried_lvars], [lvar], &([lvar | &1]))
+          query_lvars(all_lvars, all_clauses, data, args, schemas_attrs)
+        end
       guards ->
         ret = [:"$$"]
         entity_table = :mnesia.select(tk, [{ head, guards, ret} ])
@@ -148,7 +155,8 @@ defmodule Sorcery.SorceryDb do
               }
               send(pid, {:sorcery, msg})
 
-            err -> raise err
+            err -> 
+              raise err
           end
       end
 

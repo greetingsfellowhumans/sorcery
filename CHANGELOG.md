@@ -6,7 +6,9 @@
 
 ## [0.4.6] - 2024-08-05
 ### Fixed
-table not found error, usually when app is starting up.
+- table not found error, usually when app is starting up.
+- Fixed a bug with the reverse query when not all dependencies are met.
+- Fixed a bug where reverse query broke while deleting entities
 
 ## [0.4.5] - 2024-08-01
 ### Fixed

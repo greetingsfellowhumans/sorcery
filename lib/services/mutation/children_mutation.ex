@@ -1,6 +1,6 @@
 defmodule Sorcery.Mutation.ChildrenMutation do
   @moduledoc false
-  #import Sorcery.Helpers.Maps
+  import Sorcery.Helpers.Maps
   #alias Sorcery.PortalServer.Portal
 
   defstruct [
@@ -17,8 +17,19 @@ defmodule Sorcery.Mutation.ChildrenMutation do
       |> Map.from_struct()
       |> Map.put(:inserts, resolved_data.inserts)
       |> Map.put(:updates, resolved_data.updates)
-      |> Map.put(:deletes, resolved_data.deletes)
+      #|> Map.put(:deletes, resolved_data.deletes)
+      |> Map.put(:deletes, resolve_deletes(parent_mutation, resolved_data.deletes))
     struct(__MODULE__, body)
+  end
+
+  defp resolve_deletes(parent_mutation, deletes) do
+    Enum.reduce(deletes, %{}, fn {tk, ids}, acc ->
+      entities = get_in_p(parent_mutation, [:portal, :known_matches, :data, tk]) || %{}
+      Enum.reduce(ids, acc, fn id, acc ->
+        entity = Map.get(entities, id, %{id: id})
+        put_in_p(acc, [tk, id], entity)
+      end)
+    end)
   end
 
 end

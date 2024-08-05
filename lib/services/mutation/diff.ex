@@ -26,6 +26,12 @@ defmodule Sorcery.Mutation.Diff do
         [row | acc]
       end)
     end)
+    acc = Enum.reduce(mutation.deletes, acc, fn {tk, table}, acc ->
+      Enum.reduce(table, acc, fn {_id, entity}, acc ->
+        row = Sorcery.Mutation.DiffRow.new(%{tk: tk, new_entity: nil, old_entity: entity})
+        [row | acc]
+      end)
+    end)
     Enum.reduce(mutation.updates, acc, fn {tk, table}, acc ->
       Enum.reduce(table, acc, fn {id, entity}, acc ->
         
@@ -56,6 +62,14 @@ defmodule Sorcery.Mutation.DiffRow do
     changes: [],
   ]
 
+  def new(%{tk: tk, old_entity: %{id: id} = entity, new_entity: nil}) when is_integer(id) do
+    body = %{
+      tk: tk, id: id,
+      old_entity: entity, new_entity: nil,
+      changes: [{:id, id, nil}]
+    }
+    struct(__MODULE__, body)
+  end
   def new(%{tk: tk, old_entity: old, new_entity: new_entity}) do
     changes =
       old
