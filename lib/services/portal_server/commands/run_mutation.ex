@@ -8,6 +8,7 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
       mutation
       |> refresh_data(inner_state)
       |> apply_operations()
+
     msg = Map.put(msg, :mutation, mutation)
 
     # Submit changes to store
@@ -18,7 +19,8 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
         diff = Sorcery.Mutation.Diff.new(child_mutation)
         inner_state.config_module.run_mutation(results, diff)
 
-      {:error, err} -> on_fail(child_pid, msg, err)
+      {:error, err} -> 
+        on_fail(child_pid, msg, err)
       err -> 
         dbg err
     end
@@ -75,7 +77,7 @@ defmodule Sorcery.PortalServer.Commands.RunMutation do
           Enum.reduce(entities, acc, fn %{id: id} = entity, acc ->
             put_in_p(acc, [tk, id], entity)
           end)
-        err -> 
+        _err -> 
           raise "Unable to find the matching entities for :#{tk}"
       end
     end)

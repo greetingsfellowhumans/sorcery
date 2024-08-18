@@ -50,7 +50,7 @@ defmodule Sorcery.SorceryDb.ReverseQuery do
 
   # {{{ get_portal_names_affected_by_diff(diff) 
   def put_all_portal_names(portal_name) do
-    ensure_table(:sorcery_portal_names, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
+    #ensure_table(:sorcery_portal_names, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
     :ets.insert(:sorcery_portal_names, {portal_name})
   end
   def get_all_portal_names() do

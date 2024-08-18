@@ -21,7 +21,8 @@ defmodule Sorcery.Mutation.Temp do
     #  operation, latest_data -> build_temp_portal(operation, original_data, latest_data)
     #end)
     {_original_data, new_data} = Sorcery.Mutation.Temp.get_split_data(mutation)
-    lvar_data = data_to_lvar_data(new_data, inner_state.portals[portal.portal_name])
+    portal = inner_state.portals[portal.portal_name]
+    lvar_data = data_to_lvar_data(new_data, portal)
 
 
     portal = Map.put(portal, :temp_data, lvar_data)

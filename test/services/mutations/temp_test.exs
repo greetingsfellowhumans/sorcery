@@ -1,19 +1,23 @@
 defmodule Sorcery.Mutations.TempTest do
   use ExUnit.Case
-#  alias Sorcery.Mutation, as: M
-#  alias Sorcery.Query.ReverseQuery, as: RQ
-#  import Sorcery.Setups
-#
-#  setup [:spawn_portal, :teams_portal]
-#
-#
-#  # {{{ PreMutation operations should work
-#  test "PreMutation operations should work", %{portal: portal} do
-#    m = M.init(portal)
-#    m = M.update(m, [:player, 1, :age], fn _, age -> age + 1 end)
-#    new_player = M.get(m, [:player, 1])
-#    old_player = M.get_original(m, [:player, 1])
-#    assert new_player.age == 1 + old_player.age
+  alias Sorcery.Mutation, as: M
+  alias Sorcery.Query.ReverseQuery, as: RQ
+  import Sorcery.Setups
+  alias Sorcery.Mutation.Temp
+
+  #setup [:spawn_portal, :teams_portal]
+
+
+  # {{{ PreMutation operations should work
+  test "PreMutation operations should work" do
+    portal = spawn_portal()
+    inner_state = Sorcery.PortalServer.InnerState.new(%{portals: %{the_battle: portal}})
+    m = M.init(inner_state, :the_battle)
+    m = M.update(m, [:player, 1, :health], fn _, age -> age - 10 end)
+    assert 99 == inner_state.portals.the_battle.known_matches.data["?all_players"][1].health
+    new_state = Temp.add_temp_portal(inner_state, m)
+    assert 89 == new_state.portals.the_battle.temp_data["?all_players"][1].health
+
 #
 #    m = M.put(m, [:player, 1, :age], 10)
 #    new_player2 = M.get(m, [:player, 1])
@@ -29,8 +33,8 @@ defmodule Sorcery.Mutations.TempTest do
 #    assert new_team.name == "My New Team"
 #    m = M.delete_entity(m, :player, 1)
 #    assert m.deletes.player == [1]
-#  end
-#  # }}}
+  end
+  # }}}
 #
 #
 #  # {{{ PreMutation should convert into a ParentMutation
@@ -91,4 +95,3 @@ defmodule Sorcery.Mutations.TempTest do
 #
 #
 end
-

@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.7] - 2024-08-18
+### Fixed
+- Optimistic updates were not respecting lvar names
+
 ## [0.4.6] - 2024-08-05
 ### Fixed
 - table not found error, usually when app is starting up.

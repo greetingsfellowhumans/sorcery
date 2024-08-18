@@ -106,6 +106,7 @@ defmodule Sorcery.SorceryDb do
 
       # {{{ Setup
       def start_link(_state) do
+        Sorcery.Helpers.Ets.ensure_table(:sorcery_portal_names, [:set, :public, :named_table, read_concurrency: true, write_concurrency: true])
         GenServer.start_link(__MODULE__, %{})
       end
 
