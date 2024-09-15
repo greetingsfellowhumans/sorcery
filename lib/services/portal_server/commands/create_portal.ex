@@ -75,6 +75,7 @@ defmodule Sorcery.PortalServer.Commands.CreatePortal do
     msg = %{
       command: :portal_merge,
       portal: portal,
+      args: args
     }
     send(portal.child_pid, {:sorcery, msg})
      

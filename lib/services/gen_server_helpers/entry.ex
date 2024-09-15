@@ -85,7 +85,6 @@ defmodule Sorcery.GenServerHelpers do
       end
       @impl true
       def spawn_portal(inner_state, body) do
-        dbg inner_state
         expected = [:portal_server, :portal_name, :query_module, :query_args]
         expected_str = Enum.reduce(expected, "", fn k, acc -> ":#{k} " <> acc end)
 

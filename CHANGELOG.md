@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.8] - 2024-09-15
+### Added
+- You can now put a handle_success/2 callback into spawn_portal
+
 ## [0.4.7] - 2024-08-18
 ### Fixed
 - Optimistic updates were not respecting lvar names

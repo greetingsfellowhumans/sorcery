@@ -77,12 +77,13 @@ defmodule Sorcery.LiveHelpers do
 
       # {{{ spawn_portal/2
       @impl true
-      def spawn_portal(socket, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body) do
+      def spawn_portal(socket, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body, opts \\ []) do
         passes_checks = cond do
           !function_exported?(__MODULE__, :connected?, 1) -> true
           apply(__MODULE__, :connected?, [socket]) -> true
           true -> false
         end
+        args = Enum.into(opts, args)
         if passes_checks do
           msg = %{
             command: :create_portal,
@@ -98,7 +99,7 @@ defmodule Sorcery.LiveHelpers do
         socket
       end
       @impl true
-      def spawn_portal(_, body) do
+      def spawn_portal(_, body, _) do
         expected = [:portal_server, :portal_name, :query_module, :query_args]
         expected_str = Enum.reduce(expected, "", fn k, acc -> ":#{k} " <> acc end)
 
@@ -161,6 +162,13 @@ defmodule Sorcery.LiveHelpers do
       socket = cb.(data, socket)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       {:noreply, assign(socket, :sorcery, inner_state)}
+    end
+    def handle_sorcery({:sorcery, %{command: :portal_merge, portal: new_portal, args: %{handle_success: cb}} = msg}, socket) when is_function(cb) do
+      inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
+      socket = assign(socket, :sorcery, inner_state)
+      socket = cb.(new_portal, socket)
+
+      {:noreply, socket}
     end
     def handle_sorcery({:sorcery, msg}, socket) do
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)

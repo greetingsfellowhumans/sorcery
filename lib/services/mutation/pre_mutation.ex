@@ -80,6 +80,7 @@ defmodule Sorcery.Mutation.PreMutation do
     case cb.(o, n) do
       :ok -> mutation
       {kind, reason} -> Sorcery.Mutation.skip(mutation, kind, reason)
+      _ -> raise "Sorcery.Mutation.validate/3 MUST return either :ok, or a tuple of {kind, reason} (e.g. {:error, \"user friendly message\"})"
     end
   end
 
