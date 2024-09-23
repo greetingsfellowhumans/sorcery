@@ -20,7 +20,7 @@ defmodule Sorcery.LiveHelpers do
     portal_name: atom(),
     query_module: module(),
     query_args: map(),
-  }) :: socket_type
+  }, opts :: []) :: socket_type
 
 
   @doc ~s"""
@@ -75,9 +75,11 @@ defmodule Sorcery.LiveHelpers do
     quote do
       @behaviour Sorcery.LiveHelpers
 
-      # {{{ spawn_portal/2
+      # {{{ spawn_portal/3
+      def spawn_portal(socket, body), do: spawn_portal(socket, body, [])
+
       @impl true
-      def spawn_portal(socket, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body, opts \\ []) do
+      def spawn_portal(socket, %{portal_server: parent, portal_name: name, query_module: mod, query_args: args} = body, opts) do
         passes_checks = cond do
           !function_exported?(__MODULE__, :connected?, 1) -> true
           apply(__MODULE__, :connected?, [socket]) -> true

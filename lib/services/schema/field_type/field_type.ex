@@ -12,6 +12,7 @@ defmodule Sorcery.Schema.FieldType do
       :integer -> FT.Integer
       :fk -> FT.Fk
       :float -> FT.Float
+      :decimal -> FT.Decimal
       :string -> FT.String
       :list -> FT.List
       :boolean -> FT.Boolean

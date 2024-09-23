@@ -4,6 +4,10 @@
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.9] - 2024-09-22
+### Added
+- New field type :decimal, for whenever you are working with :numeric fields in ecto migrations.
+
 ## [0.4.8] - 2024-09-15
 ### Added
 - You can now put a handle_success/2 callback into spawn_portal

@@ -49,7 +49,7 @@ defmodule Sorcery.PortalServer.Portal do
   def freeze(%{known_matches: matches} = portal) do
     frozen_data = Enum.reduce(matches.data, %{}, fn {lvar, table}, acc ->
       tk = matches.lvar_tks[lvar]
-      acc = Map.put(acc, tk, %{})
+      acc = Map.put_new(acc, tk, %{})
       Enum.reduce(table, acc, fn {id, entity}, acc ->
         update_in_p(acc, [tk, id], entity, &(Map.merge(&1, entity)))
       end)
