@@ -3,6 +3,7 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
   use Sorcery.GenServerHelpers
   import Sorcery.Setups
   import Sorcery.Helpers.Maps
+  alias Src.Queries.MultiJoin
   alias Src.Queries.GetBattle
   alias Src.PortalServers.GenericClient, as: Client
   alias Sorcery.SorceryDb.Inspection
@@ -37,6 +38,8 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
     #expected = [pid, Src.Queries.GetBattle, args]
     #assert expected in Inspection.get_all_portal_instances(portal_name)
   end
+
+
 
   test "Should handle multiple where clauses on joined tables" do
 # {{{ sorcery
@@ -163,5 +166,103 @@ defmodule Sorcery.PortalServer.Ecto.QueryTest do
 
   end
 
+
+  # Since apparently the bug is not fixed. Trying it again with a hard coded query MultiJoin
+#
+#    where: [
+#      [ "?player", :player, :id, :args_player_id],
+#      [ "?spell_type", :spell_type, :power, 100],
+#
+#      [ "?spells", :spell_instance, [
+#        {:player_id, "?player.id"},
+#        {:type_id, "?spell_type.id"},
+#      ]],          
+#    ]
+#  I think possibly the only way this works is that I start actually using subqueries.
+#  Which was kinda already on the TODO list anyway...
+#  But it is going to get extra gnarly.
+#  I literally don't know how that would be possible.
+#  almost like you need to query each lvar in isolation, in order.
+#  which is even WORSE performance. 
+#  
+#  You *could* use Ecto.Multi.all(:"?lvar", query)
+#  This is possibly the best you can hope for.
+#  It actually might be better than what I have currently.
+#  player_query = from(x in Player, where: x.id == ^arg, select: mandatory_fields)
+#  st_query = from(x in SpellType, where: x.power == 100, select: mandatory_fields)
+#  spell_query = from(x in SpellInstance, select: mandatory_fields)
+#                |> where(x.player_id == ^multi[k])
+#                |> where(x.type_id == ^multi[k])
+#  M.all(:"?player", )
+#  yaaaaa That might not work. It will scream when you pass in something like that. Maybe. Try it manually first
+#
+  # Currently getting:
+  #** (Ecto.QueryError) unknown bind name `:"?player"` in query:
+  #from s0 in Src.Schemas.SpellType,
+  #  as: :"?spell_type",
+  #  left_join: s1 in Src.Schemas.SpellInstance,
+  #  as: :"?spells",
+  #  on: nil,
+  #  where: s0.power == ^100
+#
+#
+#  Now it is creating a list of two threads:
+#   [
+#     [:"?spell_type", :"?spells"], 
+#     [:"?player", :"?spells"]
+#   ]
+
+  test "Should handle the MultiJoin query", _ctx do
+    #M.new()
+    #|> M.all(:"?player", fn _ ->
+    #  from(p in Src.Schemas.Player)
+    #  |> where([p], p.id == 2)
+    #end)
+    #|> M.all(:"?spell_type", fn _ ->
+    #  from(s in Src.Schemas.SpellType)
+    #  |> where([s], s.power > 0)
+    #end)
+    #|> M.all(:"?spells", fn m ->
+    #  player_ids = Enum.map(m[:"?player"], &(&1.id))
+    #  type_ids = Enum.map(m[:"?spell_type"], &(&1.id))
+    #  from(s in Src.Schemas.SpellInstance)
+    #  |> where([s], s.player_id in ^player_ids)
+    #  |> where([s], s.type_id in ^type_ids)
+    #end)
+    #|> dbg
+    #|> Sorcery.Repo.transaction()
+    #|> dbg
+    portal_name = :multijoin
+    args = %{player_id: 2}
+
+    pid = spawn_client([
+      %{
+      portal_server: Postgres, 
+      portal_name: portal_name,
+      query_module: MultiJoin,
+      query_args: args
+      }
+    ])
+
+    assert_receive {:received_msg, {_pid, msg, _old_state, new_sorcery}}
+    data = new_sorcery.portals.multijoin.known_matches.data
+    #assert :portal_merge == msg.command
+    #portal = new_sorcery.portals[portal_name]
+    #players_table = portal.known_matches.data["?player"]
+    #assert Map.has_key?(players_table, args.player_id)
+    refute Enum.empty?(data["?player"])
+    refute Enum.empty?(data["?spells"])
+
+  end
+
+  ### DELETE ME
+  #defp handle_clause(q, clause, multi) do
+  #  right = case clause.right_type do
+  #    :lvar -> 
+  #      Enum.map(multi[clause.right_type], &(&1[clause.right]))
+  #    _ -> clause.right
+  #  end
+  #  where(q, [x], x[^clause.attr], ^clause.op, ^right)
+  #end
 
 end

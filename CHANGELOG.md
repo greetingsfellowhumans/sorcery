@@ -1,8 +1,19 @@
 # Changelog
+Dates are in the format of yyyy-mm-dd
 
 ## [Unreleased]
 - Better documentation.
 - Clean up the demo app
+
+## [0.4.10] - 2024-11-01
+This is a complete rewrite of the query engine for the Ecto adapter.
+Instead of manually building an entire query, we now leverage Ecto.Multi.
+In SrcQL, every clause per Lvar will be put into its own Multi.all(...), and is given access to the previous results.
+Just as before, it is important that SrcQL clauses come in an order that makes sense. Do not reference an Lvar that appears later.
+This change fixes several bugs with queries.
+
+### Fixed
+- Several SrcQL query bugs 
 
 ## [0.4.9] - 2024-09-22
 ### Added

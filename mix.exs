@@ -4,7 +4,7 @@ defmodule Sorcery.MixProject do
   def project do
     [
       app: :sorcery,
-      version: "0.4.9",
+      version: "0.4.10",
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
