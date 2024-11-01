@@ -2,7 +2,7 @@ defmodule Sorcery.StoreAdapter.Ecto.Thread do
   @moduledoc ~s"""
   Since we are translating SrcQL into SQL, there are some oddities.
   One is how we handle completely unrelated lvars that are not joined.
-  So in this adapter we call cluster a group of where clauses and joins together, and call it a thread.
+  So in this adapter we cluster a group of where clauses and joins together, and call it a thread.
   We must call Repo.all(thread) seperately with each thread.
   """
   import Sorcery.Helpers.Maps

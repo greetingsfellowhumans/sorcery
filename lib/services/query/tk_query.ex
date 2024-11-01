@@ -4,7 +4,6 @@ defmodule Sorcery.Query.TkQuery do
   def from_tk_map(mod, args, tk_data) do
     clauses = mod.clauses(args)
     finds = mod.finds()
-
     Enum.reduce(clauses, %{}, fn clause, acc ->
       apply_clause(clause, args, acc, tk_data)
     end)
