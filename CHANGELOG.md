@@ -5,6 +5,24 @@ Dates are in the format of yyyy-mm-dd
 - Better documentation.
 - Clean up the demo app
 
+## [0.4.14] - 2024-11-20
+### Added
+- add handle_sorcery middleware for GenServerHelpers
+
+
+## [0.4.13] - 2024-11-18
+### Added
+- handle_sorcery now has some documentation.
+- handle_sorcery now allows middleware hooks (hook_before, hook_after)
+
+## [0.4.12] - 2024-11-03
+### Fixed
+- When using LiveHelpers portal_view or portal_one, raises if searching for a portal that doesn't exist.
+
+## [0.4.11] - 2024-11-03
+### Fixed
+- When using LiveHelpers portal_view or portal_one, raises if searching for an lvar that doesn't exist in that portal.
+
 ## [0.4.10] - 2024-11-01
 This is a complete rewrite of the query engine for the Ecto adapter.
 Instead of manually building an entire query, we now leverage Ecto.Multi.

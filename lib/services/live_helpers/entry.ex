@@ -2,8 +2,57 @@ defmodule Sorcery.LiveHelpers do
   @moduledoc ~s"""
   Functions for combining Sorcery and LiveViews
   """
+alias ElixirLS.LanguageServer.Plugins.Phoenix
 
   # {{{ callback docs
+  @doc ~s"""
+  Wherever you keep your handle_info functions, put this: 
+  ```elixir
+  defmodule MyModule do
+    use Sorcery.LiveHelpers
+
+    def handle_info({:sorcery, _} = msg, socket), do: handle_sorcery(msg, socket)
+    # If you have any other handle_info's, put them BELOW
+  end
+  ```
+  By doing this, the socket will automatically communicate with the rest of Sorcery.
+  For example whenever we receive new data about a portal, this is where it happens.
+
+  You can optionally pass in an options argument, which is handy for writing your own middleware.
+  
+  ```elixir
+  defmodule SomeModule do
+    def my_func(socket, msg), {:ok, socket}
+    def another_func(socket, msg), {:ok, socket}
+  end
+
+  defmodule MyModule do
+    use Sorcery.LiveHelpers
+
+    def handle_info({:sorcery, _} = msg, socket), do: handle_sorcery(msg, socket,
+      hook_before: [&SomeModule.my_func/2],
+      hook_after: [&SomeModule.another_func/2],
+    )
+  end
+  ```
+  Note that every middleware function must return a tuple. Either {:ok, socket} or {:error, socket}
+
+  In this case, every time the LiveView receives a sorcery message, it will:
+
+  1. Call all the functions in hook_before, in order
+  2. Do some sorcery magic behind the scenes
+  3. Call all the functions in hook_after, in order
+
+  Often in step 2, it will send a message to the parent PortalServer. Then 3 is called before we get a response. "After" means after you SEND the message, not after you RECEIVE a response.
+  So this could take some advanced understanding of how Sorcery works, or a lot of fiddling and pattern matching on msg[:command]
+
+  """
+  @type hook :: (Phoenix.LiveView.Socket, map() -> {:ok, Phoenix.LiveView.Socket} | {:error, Phoenix.LiveView.Socket})
+
+  @callback handle_sorcery({:sorcery, map()}, Phoenix.LiveView.Socket, list(hook())) :: {:noreply, Phoenix.LiveView.Socket}
+  @callback handle_sorcery({:sorcery, map()}, Phoenix.LiveView.Socket) :: {:noreply, Phoenix.LiveView.Socket}
+
+
   @doc ~s"""
   Creates a portal between the LiveView and the PortalServer, using the given arguments.
 
@@ -57,10 +106,9 @@ defmodule Sorcery.LiveHelpers do
   If this lvar only exists in ONE portal, you can leave out the portal_name, just know that it might be imperceptibly slower since the function needs to iterate over all portals until it finds one with that lvar..
 
   ```elixir
-  <% players = portal_view(@sorcery, "?all_players") %>
+  <% players = portal_view(@sorcery, :my_portal, "?all_players") %>
   ```
   """
-  @callback portal_view(sorcery_config :: map(), lvar :: binary()) :: list()
 
   #@doc """
   #When a PortalServer needs to send a message to this LiveView, it goes through this.
@@ -98,7 +146,11 @@ defmodule Sorcery.LiveHelpers do
           send(Module.concat([socket.assigns.sorcery.config_module, "PortalServers", parent]), {:sorcery, msg})
         end
 
-        socket
+        sorcery = socket.assigns[:sorcery]
+                  |> Map.update(:pending_portals, [name], &([name | &1]))
+                  |> Map.put(:has_loaded?, false)
+
+        assign(socket, :sorcery, sorcery)
       end
       @impl true
       def spawn_portal(_, body, _) do
@@ -144,54 +196,71 @@ defmodule Sorcery.LiveHelpers do
       end
       # }}}
 
-      def has_loaded?(sorcery) do
-        Enum.empty?(sorcery.pending_portals)
-      end
+    def has_loaded?(%{has_loaded?: true}), do: true
+    def has_loaded?(_), do: false
 
 
     # {{{ handle_sorcery({:sorcery, msg}, socket)
-    def handle_sorcery({:sorcery, %{command: :mutation_failed, args: %{error: error, handle_fail: cb}} = msg}, socket) when is_function(cb) do
+    def handle_sorcery(msg, socket), do: handle_sorcery(msg, socket, [])
+
+    @impl true
+    def handle_sorcery({:sorcery, msg}, socket, opts) do
+      before_hooks = Keyword.get(opts, :hook_before, [])
+      after_hooks = Keyword.get(opts, :hook_after, [])
+
+      # hook_before
+      socket = Enum.reduce_while(before_hooks, socket, fn cb, socket ->
+        case cb.(socket, msg) do
+          {:ok, socket} -> {:cont, socket}
+          {:error, socket} -> {:halt, socket}
+          _ -> raise "Invalid middleware #{cb}, it must return {:ok, socket}"
+        end
+      end)
+
+      # run_command
+      socket = handle_sorcery(msg, socket)
+
+      # hook_after
+      socket = Enum.reduce_while(after_hooks, socket, fn cb, socket ->
+        case cb.(socket, msg) do
+          {:ok, socket} -> {:cont, socket}
+          {:error, socket} -> {:halt, socket}
+        end
+      end)
+
+      {:noreply, socket}
+    end
+
+    def handle_sorcery(%{command: :mutation_failed, args: %{error: error, handle_fail: cb}} = msg, socket, _opts) when is_function(cb) do
       socket = cb.(error, socket)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
-      {:noreply, assign(socket, :sorcery, inner_state)}
+      assign(socket, :sorcery, inner_state)
     end
-    def handle_sorcery({:sorcery, %{command: :mutation_failed, args: %{error: %{reason: reason} }} = msg}, socket) do
+    def handle_sorcery(%{command: :mutation_failed, args: %{error: %{reason: reason} }} = msg, socket, _opts) do
       socket = Phoenix.LiveView.put_flash(socket, :error, reason)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
-      {:noreply, assign(socket, :sorcery, inner_state)}
+      assign(socket, :sorcery, inner_state)
     end
-    def handle_sorcery({:sorcery, %{command: :mutation_success, args: %{data: data, handle_success: cb}} = msg}, socket) when is_function(cb) do
+    def handle_sorcery(%{command: :mutation_success, args: %{data: data, handle_success: cb}} = msg, socket, _opts) when is_function(cb) do
       socket = cb.(data, socket)
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
-      {:noreply, assign(socket, :sorcery, inner_state)}
+      assign(socket, :sorcery, inner_state)
     end
-    def handle_sorcery({:sorcery, %{command: :portal_merge, portal: new_portal, args: %{handle_success: cb}} = msg}, socket) when is_function(cb) do
+    def handle_sorcery(%{command: :portal_merge, portal: new_portal, args: %{handle_success: cb}} = msg, socket, _opts) when is_function(cb) do
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
       socket = assign(socket, :sorcery, inner_state)
       socket = cb.(new_portal, socket)
 
-      {:noreply, socket}
+      socket
     end
-    def handle_sorcery({:sorcery, msg}, socket) do
+    def handle_sorcery(msg, socket, _opts) do
       inner_state = Sorcery.PortalServer.handle_info(msg, socket.assigns.sorcery)
-      {:noreply, assign(socket, :sorcery, inner_state)}
+      assign(socket, :sorcery, inner_state)
     end
     # }}}
 
 
     # {{{ portal_view(sorcery, portal_name, lvar)
-    @impl true
-    def portal_view(sorcery, lvar) do
-      portal_name = Enum.find_value(sorcery.portals, fn {name, portal} ->
-        lvars = Map.keys(portal.known_matches.lvar_tks)
-        if lvar in lvars do
-          name
-        else
-          nil
-        end
-      end)
-      portal_view(sorcery, portal_name, lvar)
-    end
     @impl true
     def portal_view(sorcery, portal_name, lvar) do
       Sorcery.PortalServer.Portal.get_in(sorcery, portal_name, lvar)
@@ -199,8 +268,8 @@ defmodule Sorcery.LiveHelpers do
     # }}}
 
     def portal_one(sorcery, portal_name, lvar) do
-      case portal_view(sorcery, portal_name, lvar) do
-        [item | _] -> item
+      case Sorcery.PortalServer.Portal.get_in(sorcery, portal_name, lvar) do
+        [hd | _] -> hd
         _ -> nil
       end
     end

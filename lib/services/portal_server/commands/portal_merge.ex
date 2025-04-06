@@ -9,6 +9,7 @@ defmodule Sorcery.PortalServer.Commands.PortalMerge do
     inner_state
     |> put_in_p([:portals, name], portal)
     |> put_in_p([:pending_portals], pending_portals)
+    |> put_in_p([:has_loaded?], Enum.empty?(pending_portals))
   end
 
 
