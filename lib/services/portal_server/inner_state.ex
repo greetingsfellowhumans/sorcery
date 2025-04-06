@@ -12,6 +12,7 @@ defmodule Sorcery.PortalServer.InnerState do
     config_module: Module.concat(["Src"]),
     store_adapter: Sorcery.StoreAdapter.InMemory,
     pending_portals: [],
+    has_loaded?: true,
     args: %{},
     portals: %{},
   ]

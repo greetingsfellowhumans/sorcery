@@ -4,6 +4,8 @@ defmodule Sorcery.GenServerHelpers do
   Put these in your init function to create portals and receive updates.
   """
 
+  @type hook :: (map(), map() -> {:ok, map()} | {:error, map()})
+
   # {{{ callback docs
   @doc ~s"""
   Creates a portal between the GenServer and the PortalServer, using the given arguments.
@@ -56,10 +58,9 @@ defmodule Sorcery.GenServerHelpers do
   If this lvar only exists in ONE portal, you can leave out the portal_name, just know that it might be imperceptibly slower since the function needs to iterate over all portals until it finds one with that lvar..
 
   ```elixir
-  <% players = portal_view(@sorcery, "?all_players") %>
+  <% players = portal_view(@sorcery, :my_portal, "?all_players") %>
   ```
   """
-  @callback portal_view(sorcery_config :: map(), lvar :: binary()) :: list()
 
 
   # }}}
@@ -126,32 +127,51 @@ defmodule Sorcery.GenServerHelpers do
 
 
     # {{{ handle_sorcery({:sorcery, msg}, state)
-    def handle_sorcery({:sorcery, msg}, state) do
+    def handle_sorcery({:sorcery, msg}, state), do: handle_sorcery(msg, state, [])
+    def handle_sorcery(msg, state), do: handle_sorcery(msg, state, [])
+    def handle_sorcery({:sorcery, msg}, state, opts), do: handle_sorcery(msg, state, opts)
+
+    def handle_sorcery(msg, state, opts) do
+      before_hooks = Keyword.get(opts, :hook_before, [])
+      after_hooks = Keyword.get(opts, :hook_after, [])
+
+      state = Enum.reduce_while(before_hooks, state, fn cb, state ->
+        case cb.(state, msg) do
+          {:ok, state} -> {:cont, state}
+          {:error, state} -> {:halt, state}
+          _ -> raise "Invalid middleware #{cb}, it must return {:ok, state}"
+        end
+      end)
+      
       inner_state = Sorcery.PortalServer.handle_info(msg, state.sorcery)
-      {:noreply, Map.put(state, :sorcery, inner_state)}
+      state = Map.put(state, :sorcery, inner_state)
+
+      state = Enum.reduce_while(after_hooks, state, fn cb, state ->
+        case cb.(state, msg) do
+          {:ok, state} -> {:cont, state}
+          {:error, state} -> {:halt, state}
+          _ -> raise "Invalid middleware #{cb}, it must return {:ok, state}"
+        end
+      end)
+
+      {:noreply, state}
     end
     # }}}
 
 
     # {{{ portal_view(sorcery, portal_name, lvar)
     @impl true
-    def portal_view(sorcery, lvar) do
-      portal_name = Enum.find_value(sorcery.portals, fn {name, portal} ->
-        lvars = Map.keys(portal.known_matches.lvar_tks)
-        if lvar in lvars do
-          name
-        else
-          nil
-        end
-      end)
-      portal_view(sorcery, portal_name, lvar)
-    end
-    @impl true
     def portal_view(sorcery, portal_name, lvar) do
       Sorcery.PortalServer.Portal.get_in(sorcery, portal_name, lvar)
     end
     # }}}
 
+    def portal_one(sorcery, portal_name, lvar) do
+      case Sorcery.PortalServer.Portal.get_in(sorcery, portal_name, lvar) do
+        [hd | _] -> hd
+        _ -> nil
+      end
+    end
 
 
       

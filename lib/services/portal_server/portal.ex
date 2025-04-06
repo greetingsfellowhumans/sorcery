@@ -26,18 +26,29 @@ defmodule Sorcery.PortalServer.Portal do
     struct(__MODULE__, body)
   end
 
+  def get_in(%{has_loaded?: false}, _portal_name, _lvar), do: []
   def get_in(sorcery_state, portal_name, lvar) when is_map(sorcery_state) do
-    path = [:portals, portal_name, :known_matches, :data, lvar]
-    temp_path = [:portals, portal_name, :temp_data, lvar]
-
-    cond do
-      has_in_p(sorcery_state, temp_path) -> get_in_p(sorcery_state, temp_path) |> Map.values()
-      has_in_p(sorcery_state, path) -> get_in_p(sorcery_state, path) |> Map.values()
-      true -> []
+    with {:portal, portal}      when is_map(portal) <- {:portal, get_in_p(sorcery_state, [:portals, portal_name])},
+         {:temp_table, table}   when is_map(table)  <- {:temp_table,  get_in_p(portal, [:temp_data, lvar])},
+         {:li, li} when is_list(li)                 <- {:li, Map.values(table)} do
+      li
+    else
+      {:portal, nil} -> 
+        portal_names = Map.keys(sorcery_state.portals)
+                       |> Enum.join("\n")
+        raise "No portal named #{portal_name}. Available portal names:\n#{portal_names}"
+      {:temp_table, _} ->
+        portal = get_in_p(sorcery_state, [:portals, portal_name])
+        full_data = get_in_p(portal, [:known_matches, :data]) || %{}
+        cond do
+          is_map(full_data[lvar]) -> Map.values(full_data[lvar])
+          true -> 
+            lvars = Map.keys(full_data) |> Enum.join("\n")
+            raise "No lvar #{lvar} in #{portal_name}. Available lvars are:\n#{lvars}"
+        end
     end
-
   end
-  def get_in(_, _, _), do: []
+  #def get_in(_, _, _), do: []
 
  
   @doc """
